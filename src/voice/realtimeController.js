@@ -26,6 +26,7 @@ export {
   computeDownscale,
   estimateDataUrlBytes,
   renderFreshCesiumFrame,
+  snapshotViewportCanvas,
   isBenignViewportDeleteError,
 } from './realtimeViewport.js';
 export {

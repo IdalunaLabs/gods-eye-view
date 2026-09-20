@@ -82,6 +82,22 @@ test('style, allocation and model choices retain their current data attributes',
   control.destroy();
 });
 
+test('graphics tier buttons keep their data-tier attributes', () => {
+  const auto = element();
+  const cinema = element();
+  auto.dataset.tier = 'auto';
+  cinema.dataset.tier = 'cinematic';
+  const calls = [];
+  const control = bindDisplayControls({
+    elements: { graphicsTierButtons: [auto, cinema] },
+    actions: { setGraphicsTier: (value) => calls.push(value) },
+  });
+  auto.dispatchEvent(new Event('click'));
+  cinema.dispatchEvent(new Event('click'));
+  assert.deepEqual(calls, ['auto', 'cinematic']);
+  control.destroy();
+});
+
 test('optional controls are absent safely and subscriptions stay instance-owned', () => {
   const calls = [];
   const a = element();

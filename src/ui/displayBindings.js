@@ -47,6 +47,9 @@ export class DisplayBindings {
   get _detectionAllocationBtns() {
     return this.readState()._detectionAllocationBtns;
   }
+  get _graphicsTierButtons() {
+    return this.readState()._graphicsTierButtons;
+  }
   _initUI() {
     const {
       cycleDetectionMode,
@@ -113,6 +116,7 @@ export class DisplayBindings {
         celestialButton: this._celestialBtn,
         modelsButton: this._models3dBtn,
         modelModeButtons: this._models3dBtn ? this._models3dModeBtns : [],
+        graphicsTierButtons: this._graphicsTierButtons,
       },
       actions: {
         setStyle: (style) => this.setStyle(style),
@@ -202,6 +206,7 @@ export class DisplayBindings {
           this._syncModels3dModeRow();
         },
         setModelsMode: (mode) => this._setModels3dMode(mode),
+        setGraphicsTier: (tier) => this._setGraphicsTierSelection(tier),
       },
     });
   }

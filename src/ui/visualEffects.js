@@ -9,6 +9,7 @@ import {
   SHARPEN_SHADER,
   TRANSITION_DURATION_MS,
 } from './visualPresets.js';
+import { DEFAULT_STYLE_TICK_HZ } from '../graphicsTier.js';
 
 /** Own the post-process stages and their animation, without DOM dependencies. */
 export class VisualEffects {
@@ -50,6 +51,8 @@ export class VisualEffects {
     this.destroyed = false;
     this.stageEntries = [];
     this.previousBloom = null;
+    this.styleTickHz = DEFAULT_STYLE_TICK_HZ;
+    this._lastStyleTickAt = Number.NEGATIVE_INFINITY;
   }
 
   initStyles() {
@@ -167,6 +170,20 @@ export class VisualEffects {
     this.requestRender('sharpen');
   }
 
+  /**
+   * Pace the style `time` uniform. Does not take a render hold — the loop
+   * requests discrete frames at this rate while an animated stage is visible.
+   * @param {number} hz
+   * @returns {void}
+   */
+  setStyleTickHz(hz) {
+    const value = Number(hz);
+    this.styleTickHz =
+      Number.isFinite(value) && value > 0 ? value : DEFAULT_STYLE_TICK_HZ;
+    this._lastStyleTickAt = Number.NEGATIVE_INFINITY;
+    if (this.frameId !== null) this.requestRender('style-tick-rate');
+  }
+
   startTransition(styleName, from, to) {
     if (this.stopped) return;
     this.transitions.set(styleName, { start: this.now(), from, to });
@@ -197,13 +214,21 @@ export class VisualEffects {
       let animatedStageVisible = false;
       for (const [, stage] of this.stageEntries) {
         if (stage.enabled && stage.uniforms.time !== undefined) {
-          stage.uniforms.time = elapsedSec;
           if (stage.uniforms.intensity > 0.001) animatedStageVisible = true;
         }
       }
-      const needed = this.transitions.size > 0 || animatedStageVisible;
-      if (needed) this.holdRender('style-anim');
+      const minDelta = 1000 / Math.max(1, this.styleTickHz);
+      if (animatedStageVisible && now - this._lastStyleTickAt >= minDelta) {
+        for (const [, stage] of this.stageEntries) {
+          if (stage.enabled && stage.uniforms.time !== undefined)
+            stage.uniforms.time = elapsedSec;
+        }
+        this._lastStyleTickAt = now;
+        this.requestRender('style-tick');
+      }
+      if (this.transitions.size > 0) this.holdRender('style-anim');
       else this.releaseRender('style-anim');
+      const needed = this.transitions.size > 0 || animatedStageVisible;
       this.frameId = needed ? this.requestFrame(update) : null;
     };
     this.frameId = this.requestFrame(update);

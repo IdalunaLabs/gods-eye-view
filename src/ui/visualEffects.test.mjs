@@ -129,7 +129,7 @@ test('a superseding transition starts from the current rendered intensity', () =
   f.effects.destroy();
 });
 
-test('only visible animated stages keep the animation clock and render hold alive', () => {
+test('only visible animated stages keep the animation clock without a render hold', () => {
   const f = fixture();
   f.effects.initStyles();
   const animated = f.effects.stages.retro;
@@ -138,11 +138,59 @@ test('only visible animated stages keep the animation clock and render hold aliv
   f.tick(1000);
   assert.equal(animated.uniforms.time, 1);
   assert.equal(f.frames.size, 1);
-  assert.equal(f.holds.size, 1);
+  assert.equal(f.holds.size, 0);
+  assert.equal(f.requests.includes('style-tick'), true);
   f.effects.setStageIntensity(animated, 0);
   f.tick(1100);
   assert.equal(f.frames.size, 0);
   assert.equal(f.holds.size, 0);
+  f.effects.destroy();
+});
+
+test('a style crossfade still holds continuous render until it settles', () => {
+  const f = fixture();
+  f.effects.initStyles();
+  f.effects.startTransition('retro', 0, 1);
+  f.tick(125);
+  assert.equal(f.holds.has('style-anim'), true);
+  f.tick(500);
+  assert.equal(f.effects.transitions.size, 0);
+  // Retro stays visible and animated after the fade, so the clock continues
+  // without a hold.
+  assert.equal(f.holds.size, 0);
+  assert.equal(f.frames.size, 1);
+  f.effects.destroy();
+});
+
+test('style time advances at the configured tick rate', () => {
+  const f = fixture();
+  f.effects.initStyles();
+  f.effects.setStyleTickHz(15);
+  const animated = f.effects.stages.retro;
+  f.effects.setStageIntensity(animated, 1);
+  f.tick(10);
+  const firstTime = animated.uniforms.time;
+  const ticksAfterFirst = f.requests.filter(
+    (reason) => reason === 'style-tick',
+  ).length;
+  f.tick(20);
+  assert.equal(animated.uniforms.time, firstTime);
+  assert.equal(
+    f.requests.filter((reason) => reason === 'style-tick').length,
+    ticksAfterFirst,
+  );
+  f.tick(80);
+  assert.notEqual(animated.uniforms.time, firstTime);
+  assert.equal(f.holds.size, 0);
+  f.effects.destroy();
+});
+
+test('setStyleTickHz ignores non-positive values', () => {
+  const f = fixture();
+  f.effects.setStyleTickHz(0);
+  assert.equal(f.effects.styleTickHz, 30);
+  f.effects.setStyleTickHz(12);
+  assert.equal(f.effects.styleTickHz, 12);
   f.effects.destroy();
 });
 

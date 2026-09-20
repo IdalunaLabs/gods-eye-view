@@ -513,6 +513,8 @@ export class StyleManager extends ShellFacade {
         _setModels3dEnabled: (...args) => this._setModels3dEnabled(...args),
         _syncModels3dModeRow: (...args) => this._syncModels3dModeRow(...args),
         _setModels3dMode: (...args) => this._setModels3dMode(...args),
+        _setGraphicsTierSelection: (...args) =>
+          this._setGraphicsTierSelection(...args),
       },
       readState: () => ({
         shareLinkManager: this.shareLinkManager,
@@ -524,6 +526,7 @@ export class StyleManager extends ShellFacade {
         _models3dEnabled: this._models3dEnabled,
         _models3dModeBtns: this._models3dModeBtns,
         _detectionAllocationBtns: this._detectionAllocationBtns,
+        _graphicsTierButtons: this._graphicsTierButtons,
       }),
       claimDetection: () => {
         this._visualSettings._detectionUserOverridden = true;
@@ -720,7 +723,6 @@ export class StyleManager extends ShellFacade {
    * the ShareLinkManager so the URL hash stays in sync.
    * @returns {void}
    */
-
   _syncShareState() {
     if (this._disposed) return;
     this._shareState.publish({ type: 'settings-changed' });

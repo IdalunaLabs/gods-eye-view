@@ -1,5 +1,11 @@
 # Changelog
 
+- Add a Graphics quality tier (Auto / Battery / Balanced / Cinematic) that trades
+  resolution, MSAA, frame cap, tile detail and post effects together. Auto picks
+  Battery on discharge or a hidden tab. Idle sensor styles no longer hold the
+  60 fps render loop; voice snapshots copy inside `postRender` so the globe can
+  drop `preserveDrawingBuffer`, and FXAA is off because MSAA already covers edges.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 

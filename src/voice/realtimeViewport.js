@@ -13,32 +13,19 @@ export const VIEWPORT_MAX_ENCODED_BYTES = 200 * 1024;
 
 export async function captureViewportImage() {
   const viewer = window.__godsEyeView?.viewer;
-  const source =
-    viewer?.scene?.canvas ||
-    document.querySelector('#cesiumContainer .cesium-widget canvas');
-  if (!source || !source.width || !source.height) return null;
   // No fresh frame (hidden, or the bounded render wait timed out) → no
   // capture. The caller labels this image "Current"; a stale preserved
   // frame would feed the model old entities as current context. (perf
   // wave 2 fix)
-  const fresh = await renderFreshCesiumFrame(viewer);
-  if (!fresh) return null;
-
-  // Clamp BOTH dimensions by a total-pixel budget so tall portrait windows are
-  // downscaled too (the old width-only clamp let them through — M13).
-  const { width, height } = computeDownscale(
-    source.width,
-    source.height,
-    VIEWPORT_MAX_PIXELS,
-  );
-  const canvas = document.createElement('canvas');
-  canvas.width = width;
-  canvas.height = height;
-  const ctx = canvas.getContext('2d');
+  //
+  // The copy happens INSIDE postRender so the WebGL back buffer is still
+  // valid without preserveDrawingBuffer.
+  const canvas = await renderFreshCesiumFrame(viewer);
+  if (!canvas) return null;
+  const ctx = canvas.getContext?.('2d');
   if (!ctx) return null;
   try {
-    ctx.drawImage(source, 0, 0, width, height);
-    if (isNearlyBlackFrame(ctx, width, height)) {
+    if (isNearlyBlackFrame(ctx, canvas.width, canvas.height)) {
       console.warn('[GEV Voice] Skipped black Cesium viewport capture');
       return null;
     }
@@ -89,11 +76,43 @@ export function estimateDataUrlBytes(dataUrl) {
 }
 
 /**
+ * Copy the Cesium canvas during a live frame. Must run inside postRender:
+ * without preserveDrawingBuffer the back buffer is gone once that callback
+ * returns.
+ * @param {HTMLCanvasElement|{width:number,height:number}|null|undefined} source
+ * @returns {HTMLCanvasElement|false}
+ */
+export function snapshotViewportCanvas(source) {
+  if (!source || !source.width || !source.height) return false;
+  if (
+    typeof document === 'undefined' ||
+    typeof document.createElement !== 'function'
+  )
+    return false;
+  const { width, height } = computeDownscale(
+    source.width,
+    source.height,
+    VIEWPORT_MAX_PIXELS,
+  );
+  try {
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return false;
+    ctx.drawImage(source, 0, 0, width, height);
+    return canvas;
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Ensure the canvas holds a CURRENT frame before capture.
- * @returns {Promise<boolean>} true only when a fresh frame was presented —
- *   false while hidden (render loop suspended; a capture would be stale) or
- *   when the bounded wait timed out. Callers must not label a non-fresh
- *   canvas as current. (perf wave 2)
+ * @returns {Promise<HTMLCanvasElement|false>} the 2D snapshot when a fresh
+ *   frame was presented — false while hidden (render loop suspended; a
+ *   capture would be stale), when the copy failed, or when the bounded wait
+ *   timed out. Callers must not label a non-fresh canvas as current.
  */
 export async function renderFreshCesiumFrame(viewer) {
   const scene = viewer?.scene;
@@ -109,7 +128,7 @@ export async function renderFreshCesiumFrame(viewer) {
     const rendered = new Promise((resolve) => {
       const remove = scene.postRender.addEventListener(() => {
         remove();
-        resolve(true);
+        resolve(snapshotViewportCanvas(scene.canvas));
       });
       setTimeout(() => {
         remove();
@@ -117,10 +136,10 @@ export async function renderFreshCesiumFrame(viewer) {
       }, 400);
     });
     scene.requestRender?.();
-    const fresh = await rendered;
+    const snapshot = await rendered;
     // A tab switch during the bounded wait invalidates freshness.
     if (typeof document !== 'undefined' && document.hidden) return false;
-    return fresh;
+    return snapshot;
   } catch {
     return false;
   }
