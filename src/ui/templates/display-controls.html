@@ -126,6 +126,17 @@
       <span class="pp-label">Clean UI</span>
     </button>
     <div class="pp-toggle-group">
+      <div class="pp-slider-row visible" id="graphics-tier-row">
+        <span class="pp-slider-mini-label">Graphics</span>
+        <div class="pp-mode-seg" role="radiogroup" aria-label="Graphics quality">
+          <button class="pp-mode-btn active" id="graphics-tier-auto" data-tier="auto" role="radio" aria-checked="true" title="Match power and visibility">Auto</button>
+          <button class="pp-mode-btn" id="graphics-tier-battery" data-tier="battery" role="radio" aria-checked="false" title="30 fps, cooler GPU">Battery</button>
+          <button class="pp-mode-btn" id="graphics-tier-balanced" data-tier="balanced" role="radio" aria-checked="false" title="60 fps, 4x MSAA">Balanced</button>
+          <button class="pp-mode-btn" id="graphics-tier-cinematic" data-tier="cinematic" role="radio" aria-checked="false" title="Native resolution, HDR">Cinematic</button>
+        </div>
+      </div>
+    </div>
+    <div class="pp-toggle-group">
       <button class="pp-toggle-btn" id="bloom-toggle" title="Bloom / Glow">
         <span class="pp-icon">&#x2728;</span>
         <span class="pp-label">Bloom</span>

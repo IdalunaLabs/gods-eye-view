@@ -437,6 +437,14 @@ export class ShellFacade {
     this._visualSettings._detectionAllocationBtns = value;
   }
 
+  get _graphicsTierButtons() {
+    return this._visualSettings._graphicsTierButtons;
+  }
+
+  set _graphicsTierButtons(value) {
+    this._visualSettings._graphicsTierButtons = value;
+  }
+
   get _detectionAllocationPreference() {
     return this._visualSettings._detectionAllocationPreference;
   }
@@ -732,6 +740,22 @@ export class ShellFacade {
    */
   _applyDetectionDensityFromUi() {
     return this._visualSettings._applyDetectionDensityFromUi(...arguments);
+  }
+
+  setDetectionDensityCap(...args) {
+    return this._visualSettings.setDetectionDensityCap(...arguments);
+  }
+
+  setStyleTickHz(...args) {
+    return this._visualSettings.setStyleTickHz(...arguments);
+  }
+
+  attachGraphicsTier(...args) {
+    return this._visualSettings.attachGraphicsTier(...arguments);
+  }
+
+  _setGraphicsTierSelection(...args) {
+    return this._visualSettings._setGraphicsTierSelection(...arguments);
   }
 
   /** Apply responsive keyhole fade controls from normalized UI percentages. */

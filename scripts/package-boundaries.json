@@ -351,6 +351,7 @@
       "src/ui/visualEffects.js",
       "src/ui/visualPresets.js",
       "src/bloom.js",
+      "src/graphicsTier.js",
       "src/styles/retro.js",
       "src/styles/surveillance.js",
       "src/styles/thermal.js",
@@ -575,6 +576,7 @@
       "src/ui/visualInput.js",
       "src/ui/visualPresets.js",
       "src/ui/visualSettings.js",
+      "src/graphicsTier.js",
       "src/worldFocus.js",
       "src/data/feedState.js",
       "src/ui/aircraftDisplay.js",
@@ -1244,6 +1246,7 @@
       "src/app/stateChannel.js",
       "src/app/surfaceServices.js",
       "src/app/tools.js",
+      "src/app/graphicsTierController.js",
       "src/app/viewer.js",
       "src/bloom.js",
       "src/camera.js",
@@ -1587,6 +1590,7 @@
       "src/overlays/worldOverlayTokens.js",
       "src/panelStackLayout.js",
       "src/renderGovernor.js",
+      "src/graphicsTier.js",
       "src/rightRailPolicy.js",
       "src/scenes/director.js",
       "src/scenes/playbackAdapter.js",
@@ -2313,7 +2317,8 @@
       "src/ui/visualEffects.js",
       "src/ui/visualInput.js",
       "src/ui/visualPresets.js",
-      "src/ui/visualSettings.js"
+      "src/ui/visualSettings.js",
+      "src/graphicsTier.js"
     ],
     "external": ["cesium"]
   },

@@ -906,6 +906,15 @@ body.gev-drawing #cesiumContainer canvas {
   color: #000;
 }
 
+#graphics-tier-row {
+  min-width: 268px;
+}
+#graphics-tier-row .pp-mode-btn {
+  font-size: 8px;
+  letter-spacing: 0.35px;
+  padding: 0 4px;
+}
+
 /* These controls also move into Cockpit Display; keep focus on the control
    itself and inside clipped button groups, independent of selection color. */
 .pp-toggle-btn:focus-visible,

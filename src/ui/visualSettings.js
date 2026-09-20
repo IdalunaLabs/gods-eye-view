@@ -32,6 +32,10 @@ import {
   shareCacheNeedsHeal,
   shareableDetectionState,
 } from '../contactsDetectionPolicy.js';
+import {
+  clampDetectionDensity,
+  DEFAULT_STYLE_TICK_HZ,
+} from '../graphicsTier.js';
 const DETECTION_ALLOCATION_STORAGE_KEY = 'gev:detection-allocation:v1';
 
 /** Own visual preferences, detection overrides and display-control state. */
@@ -208,6 +212,15 @@ export class VisualSettings {
     this._detectionAllocationPreference = normalizeAllocationStrategy(
       storedDetectionAllocation,
     );
+    this._detectionDensityCap = null;
+    this._graphicsTier = null;
+    this._graphicsTierUnsubscribe = null;
+    this._graphicsTierButtons = [
+      document.getElementById('graphics-tier-auto'),
+      document.getElementById('graphics-tier-battery'),
+      document.getElementById('graphics-tier-balanced'),
+      document.getElementById('graphics-tier-cinematic'),
+    ].filter(Boolean);
   }
   get hud() {
     return this.readHud();
@@ -508,8 +521,55 @@ export class VisualSettings {
     this._detectionDensitySlider.value = String(pct);
     if (this._detectionDensityValue)
       this._detectionDensityValue.textContent = `${pct}%`;
-    setDetectionTuning({ densityPct: pct });
+    setDetectionTuning({
+      densityPct: clampDetectionDensity(pct, this._detectionDensityCap),
+    });
     this._updateDetectionButton(getDetectionMode());
+  }
+
+  /**
+   * Battery-tier overlay cap. Does not rewrite the slider or the operator
+   * override flag — leaving the tier restores the chosen density.
+   * @param {number|null|undefined} cap
+   * @returns {void}
+   */
+  setDetectionDensityCap(cap) {
+    const next =
+      cap == null || !Number.isFinite(Number(cap)) ? null : Number(cap);
+    if (next === this._detectionDensityCap) return;
+    this._detectionDensityCap = next;
+    this._applyDetectionDensityFromUi();
+  }
+
+  setStyleTickHz(hz) {
+    this._visualEffects.setStyleTickHz(hz ?? DEFAULT_STYLE_TICK_HZ);
+  }
+
+  attachGraphicsTier(controller) {
+    this._graphicsTierUnsubscribe?.();
+    this._graphicsTier = controller || null;
+    if (!controller?.subscribe) {
+      this._graphicsTierUnsubscribe = null;
+      return;
+    }
+    this._graphicsTierUnsubscribe = controller.subscribe((state) => {
+      this._syncGraphicsTierButtons(state.selection);
+      this.setStyleTickHz(state.preset?.styleTickHz);
+      this.setDetectionDensityCap(state.preset?.detectionDensityCap);
+    });
+  }
+
+  _setGraphicsTierSelection(tier) {
+    this._graphicsTier?.setSelection(tier);
+  }
+
+  _syncGraphicsTierButtons(selection) {
+    for (const button of this._graphicsTierButtons || []) {
+      if (!button) continue;
+      const active = button.dataset.tier === selection;
+      button.classList.toggle('active', active);
+      button.setAttribute('aria-checked', String(active));
+    }
   }
 
   _applyDetectionFadeFromUi() {
@@ -572,10 +632,15 @@ export class VisualSettings {
     const { getKeyholeFadeTuning, getDetectionTuning, getDetectionMode } =
       this.services;
     const tuning = getDetectionTuning();
-    if (this._detectionDensitySlider)
-      this._detectionDensitySlider.value = String(tuning.densityPct);
-    if (this._detectionDensityValue)
-      this._detectionDensityValue.textContent = `${tuning.densityPct}%`;
+    // A tier cap only changes what the overlay receives. The slider still
+    // shows the operator's density, so do not copy the capped engine value
+    // back into the control.
+    if (this._detectionDensityCap == null) {
+      if (this._detectionDensitySlider)
+        this._detectionDensitySlider.value = String(tuning.densityPct);
+      if (this._detectionDensityValue)
+        this._detectionDensityValue.textContent = `${tuning.densityPct}%`;
+    }
     this._setDetectionAllocation(tuning.allocationStrategy, {
       syncShare: false,
       persist: false,
@@ -1584,6 +1649,9 @@ export class VisualSettings {
     this._irFogWasEnabled = null;
   }
   destroy() {
+    this._graphicsTierUnsubscribe?.();
+    this._graphicsTierUnsubscribe = null;
+    this._graphicsTier = null;
     this.stop();
     this.releaseIrBoost();
     this._visualEffects.destroy();

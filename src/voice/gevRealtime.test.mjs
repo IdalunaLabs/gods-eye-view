@@ -2940,15 +2940,43 @@ test('isBenignViewportDeleteError is false for non-error payloads and junk', () 
 });
 
 
+/** 2D canvas stand-in so postRender snapshots do not need a real DOM. */
+function mockCaptureDocument({ hidden = false } = {}) {
+  return {
+    hidden,
+    createElement(tag) {
+      if (tag !== 'canvas') return {};
+      const canvas = {
+        width: 0,
+        height: 0,
+        getContext() {
+          return {
+            canvas,
+            drawImage() {},
+            getImageData() {
+              return { data: new Uint8ClampedArray([255, 255, 255, 255]) };
+            },
+          };
+        },
+        toDataURL() {
+          return 'data:image/jpeg;base64,QQ==';
+        },
+      };
+      return canvas;
+    },
+  };
+}
+
 test('hidden document yields no fresh frame — capture must not label a stale canvas Current', async () => {
   const originalDocument = globalThis.document;
   let requested = 0;
   const scene = {
+    canvas: { width: 100, height: 80 },
     postRender: { addEventListener() { return () => {}; } },
     requestRender() { requested += 1; },
   };
   try {
-    globalThis.document = { hidden: true };
+    globalThis.document = { hidden: true, createElement() { throw new Error('no capture while hidden'); } };
     const fresh = await renderFreshCesiumFrame({ scene });
     assert.equal(fresh, false, 'hidden capture reports non-fresh');
     assert.equal(requested, 0, 'no secret render restart while hidden');
@@ -2960,14 +2988,17 @@ test('hidden document yields no fresh frame — capture must not label a stale c
 test('visible document with a rendering scene reports a fresh frame', async () => {
   const originalDocument = globalThis.document;
   try {
-    globalThis.document = { hidden: false };
+    globalThis.document = mockCaptureDocument({ hidden: false });
     let fire = null;
     const scene = {
+      canvas: { width: 100, height: 80 },
       postRender: { addEventListener(listener) { fire = listener; return () => { fire = null; }; } },
       requestRender() { queueMicrotask(() => fire?.()); },
     };
     const fresh = await renderFreshCesiumFrame({ scene });
-    assert.equal(fresh, true);
+    assert.equal(Boolean(fresh), true);
+    assert.equal(fresh.width, 100);
+    assert.equal(fresh.height, 80);
   } finally {
     globalThis.document = originalDocument;
   }
@@ -2976,10 +3007,11 @@ test('visible document with a rendering scene reports a fresh frame', async () =
 test('a tab switch during the bounded render wait invalidates freshness', async () => {
   const originalDocument = globalThis.document;
   try {
-    const doc = { hidden: false };
+    const doc = mockCaptureDocument({ hidden: false });
     globalThis.document = doc;
     let fire = null;
     const scene = {
+      canvas: { width: 100, height: 80 },
       postRender: { addEventListener(listener) { fire = listener; return () => { fire = null; }; } },
       requestRender() { doc.hidden = true; queueMicrotask(() => fire?.()); },
     };
