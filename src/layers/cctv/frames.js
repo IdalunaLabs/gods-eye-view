@@ -283,6 +283,11 @@ export function createFrames({ state: layerState, services, parts, source }) {
 
     if (runtime.mode === 'video' && runtime.video) {
       const video = runtime.video;
+      const nextMedia = mediaUrlFor(record.camera);
+      if (nextMedia && video.dataset.mediaUrl !== nextMedia) {
+        video.dataset.mediaUrl = nextMedia;
+        video.src = nextMedia;
+      }
       if (
         video.readyState >= 2 &&
         video.videoWidth > 0 &&

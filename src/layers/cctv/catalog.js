@@ -185,6 +185,14 @@ export function createCatalog({ state: layerState, services, parts, source }) {
         ).toLowerCase(),
         feedType,
         feedConfigured: typeof source.url === 'string' && !!source.url.trim(),
+        // A JPEG poster beside a motion clip keeps ambient cards on the still.
+        // The sources route publishes this as a boolean and keeps the URL
+        // server-side. Cameras with no snapshot stay video-only and out of
+        // the card ring.
+        posterStill:
+          source.posterStill === true ||
+          (typeof source.snapshotUrl === 'string' &&
+            source.snapshotUrl.trim().length > 0),
         lat,
         lon,
         headingDeg,

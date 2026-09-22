@@ -153,6 +153,9 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
               mountHeightM: source.mountHeightM,
               groundElevationM: source.groundElevationM,
               feedType: normalizeFeedType(source.feedType),
+              posterStill:
+                typeof source.snapshotUrl === 'string' &&
+                source.snapshotUrl.trim().length > 0,
               sourceKind:
                 source.sourceKind || (source.url ? 'configured' : 'fallback'),
               poseSource: source.poseSource,
@@ -289,7 +292,7 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
                 sourceKind: isVideoFeedType(feedType) ? 'live' : 'snapshot',
                 label: source?.provider || 'Configured source',
                 message: isVideoFeedType(feedType)
-                  ? 'Live stream connected'
+                  ? 'Motion clip connected'
                   : 'Snapshot feed connected',
               });
             }

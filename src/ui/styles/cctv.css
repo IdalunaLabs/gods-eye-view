@@ -281,7 +281,8 @@
   }
 }
 
-#cctv-frame {
+#cctv-frame,
+#cctv-clip {
   width: 100%;
   /* A fixed 16:9 box with the frame CONTAINED inside it. Providers burn their
      timestamp into a corner (TfL top-left, Austin bottom-left) and the old
@@ -294,12 +295,26 @@
   height: auto;
   object-fit: contain;
   display: block;
+  background: #01070c;
   opacity: 0;
   transition: opacity 180ms ease;
 }
 
-#cctv-frame.active {
+#cctv-frame.active,
+#cctv-clip.active {
   opacity: 1;
+}
+
+#cctv-clip {
+  display: none;
+}
+
+.cctv-frame-wrap.has-clip #cctv-frame {
+  display: none;
+}
+
+.cctv-frame-wrap.has-clip #cctv-clip {
+  display: block;
 }
 
 #cctv-meta {

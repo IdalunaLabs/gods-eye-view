@@ -84,6 +84,8 @@ test('CCTV instances resolve their own application source root and isolate catal
     JSON.parse(b.body).sources.map((s) => s.id),
     ['second'],
   );
+  assert.equal(JSON.parse(a.body).sources[0].posterStill, false);
+  assert.equal(JSON.parse(a.body).sources[0].snapshotUrl, undefined);
   const stream = JSON.parse((await first('/stream/first')).body);
   assert.equal(stream.feedType, 'mp4');
   assert.equal(stream.mediaUrl, '/api/cctv/media/first');
@@ -93,6 +95,30 @@ test('CCTV instances resolve their own application source root and isolate catal
   assert.match(frame.body, /&lt;Camera &amp; test&gt;/);
   assert.equal(JSON.parse((await first('/health')).body).cameras.length, 1);
   assert.deepEqual(JSON.parse((await second('/health')).body).cameras, []);
+});
+
+test('a motion source with a poster reports posterStill and hides the upstream URL', async (t) => {
+  isolate(t);
+  process.env.CCTV_SOURCES_JSON = JSON.stringify([
+    {
+      id: 'clip',
+      name: 'Clip',
+      lat: 51.5,
+      lon: -0.12,
+      city: 'London',
+      feedType: 'mp4',
+      url: 'https://camera.example.org/live.mp4',
+      snapshotUrl: 'https://camera.example.org/still.jpg',
+    },
+  ]);
+  const request = install(cctvProxy({ sourceRoot: fixture(t, 'unused') }));
+  const body = JSON.parse((await request('/sources')).body);
+  const source = body.sources.find((item) => item.id === 'clip');
+  assert.ok(source);
+  assert.equal(source.feedType, 'mp4');
+  assert.equal(source.posterStill, true);
+  assert.equal(source.url, undefined);
+  assert.equal(source.snapshotUrl, undefined);
 });
 
 test('composition creates exactly one CCTV and radio provider without acquisition', (t) => {
