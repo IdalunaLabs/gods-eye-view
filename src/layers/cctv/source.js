@@ -2,6 +2,7 @@ import {
   ACTIVE_FRAME_REFRESH_MS,
   FRAME_ENDPOINT,
   MEDIA_ENDPOINT,
+  MEDIA_URL_TICK_MS,
 } from './sourcePolicy.js';
 function safeNumber(value, fallback = NaN) {
   const n = Number(value);
@@ -26,7 +27,8 @@ function frameUrlFor(camera, refreshMs = ACTIVE_FRAME_REFRESH_MS) {
   return `${FRAME_ENDPOINT}/${encodeURIComponent(camera.id)}?${params.toString()}`;
 }
 function mediaUrlFor(camera) {
-  return `${MEDIA_ENDPOINT}/${encodeURIComponent(camera.id)}?ts=${Math.floor(Date.now() / 15000)}`;
+  const tickMs = Math.max(1000, safeNumber(MEDIA_URL_TICK_MS, 180_000));
+  return `${MEDIA_ENDPOINT}/${encodeURIComponent(camera.id)}?ts=${Math.floor(Date.now() / tickMs)}`;
 }
 /** Supply catalog/health records and the existing registered camera URL families. */
 export function createCctvSource({

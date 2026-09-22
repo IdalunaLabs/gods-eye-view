@@ -1,5 +1,7 @@
 import {
+  _clearCctvClip,
   _clearCctvFrame,
+  _queueCctvClip,
   _queueCctvFrame,
   _settleCctvFrame,
   _syncCctvSourceBadge,
@@ -35,6 +37,7 @@ export class CctvControls {
     this._cctvChipWasBusy = false;
     this._cctvFrameRequestToken = 0;
     this._cctvFramePreloader = null;
+    this._cctvClipRequestToken = 0;
     this._calibrationEdit = null;
     this._actionGeneration = 0;
     this._initCctvPanel();
@@ -56,6 +59,12 @@ export class CctvControls {
       this._renderCctvState(state),
     );
     if (this.cctv.getUIState) this._renderCctvState(this.cctv.getUIState());
+  }
+  _clearCctvClip(...args) {
+    return _clearCctvClip.call(this, ...args);
+  }
+  _queueCctvClip(...args) {
+    return _queueCctvClip.call(this, ...args);
   }
   _clearCctvFrame(...args) {
     return _clearCctvFrame.call(this, ...args);
@@ -104,6 +113,7 @@ export class CctvControls {
     this._cctvUnsubscribe?.();
     this._cctvUnsubscribe = null;
     this._calibrationEdit?.(false);
+    this._clearCctvClip();
     this._clearCctvFrame();
     clearInterval(this._cctvSummaryTypingTimer);
     clearTimeout(this._cctvChipHideTimer);

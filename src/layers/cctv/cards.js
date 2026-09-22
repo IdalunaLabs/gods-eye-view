@@ -131,9 +131,10 @@ export function createCards({ state: layerState, services, parts, source }) {
           record.camera.lon,
         ),
         inView,
-        isVideo: parts.model.isVideoFeedType(
-          parts.model.normalizeFeedType(record.camera.feedType),
-        ),
+        isVideo:
+          parts.model.isVideoFeedType(
+            parts.model.normalizeFeedType(record.camera.feedType),
+          ) && record.camera.posterStill !== true,
         sx,
         sy,
       });

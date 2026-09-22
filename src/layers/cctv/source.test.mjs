@@ -88,6 +88,28 @@ test('frame and media URLs preserve registered camera identity and encoded metad
   assert.deepEqual([...media.searchParams.keys()], ['ts']);
 });
 
+test('a motion-clip URL stays stable for the length of a short JamCam file', () => {
+  const source = createCctvSource();
+  const now = 1_800_000;
+  const original = Date.now;
+  const read = (at) => {
+    Date.now = () => at;
+    return new URL(
+      source.getMediaUrl(camera),
+      'https://example.test',
+    ).searchParams.get('ts');
+  };
+  try {
+    const first = read(now);
+    const sameWindow = read(now + 179_999);
+    const nextWindow = read(now + 180_000);
+    assert.equal(first, sameWindow);
+    assert.notEqual(first, nextWindow);
+  } finally {
+    Date.now = original;
+  }
+});
+
 test('camera construction is inert and destruction cancels a pending catalog and its visibility listener', async (t) => {
   const original = globalThis.document;
   const listeners = new Set();

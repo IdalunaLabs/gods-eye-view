@@ -889,6 +889,7 @@ export class StyleManager extends ShellFacade {
         _cctvCoverageBtn: this._cctvCoverageBtn,
         _cctvEnableBtn: this._cctvEnableBtn,
         _cctvFocusBtn: this._cctvFocusBtn,
+        _cctvClip: this._cctvClip,
         _cctvFrame: this._cctvFrame,
         _cctvFrameWrap: this._cctvFrameWrap,
         _cctvMeta: this._cctvMeta,

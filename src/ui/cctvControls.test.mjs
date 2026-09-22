@@ -158,6 +158,78 @@ test('calibration commits against the captured camera base and releases its edit
   assert.equal(controls._calibrationEdit, null);
 });
 
+test('a viewed motion clip plays in the panel and a still camera stays an image', (t) => {
+  const clip = element();
+  let src = '';
+  let assigns = 0;
+  Object.defineProperty(clip, 'src', {
+    get() {
+      return src;
+    },
+    set(value) {
+      src = value;
+      assigns += 1;
+    },
+  });
+  clip.play = () => Promise.resolve();
+  const { controls } = fixture(t);
+  controls.actions.setPanelCollapsed = () => {};
+  controls._cctvClip = clip;
+  const motion = {
+    enabled: true,
+    activeCameraId: 'tfl-1',
+    cameras: [],
+    activeCamera: {
+      id: 'tfl-1',
+      feedType: 'mp4',
+      city: 'London',
+      headingDeg: 10,
+      fovDeg: 44,
+      rangeM: 145,
+      mediaUrl: '/api/cctv/media/tfl-1?ts=10',
+      frameUrl: '/api/cctv/frame/tfl-1',
+    },
+  };
+  controls._renderCctvState(motion);
+  assert.equal(clip.src, '/api/cctv/media/tfl-1?ts=10');
+  assert.equal(clip.muted, true);
+  assert.equal(clip.loop, true);
+  assert.equal(clip.playsInline, true);
+  assert.equal(controls._cctvFrameWrap.classList.contains('has-clip'), true);
+  assert.equal(controls._cctvFrame.src, '');
+  const assigned = assigns;
+  controls._renderCctvState(motion);
+  assert.equal(assigns, assigned);
+  clip.onloadeddata();
+  assert.equal(clip.classList.contains('active'), true);
+
+  controls._renderCctvState({
+    ...motion,
+    activeCamera: {
+      ...motion.activeCamera,
+      mediaUrl: '/api/cctv/media/tfl-1?ts=11',
+    },
+  });
+  assert.equal(clip.src, '/api/cctv/media/tfl-1?ts=11');
+
+  controls._renderCctvState({
+    enabled: true,
+    activeCameraId: 'aus-1',
+    cameras: [],
+    activeCamera: {
+      id: 'aus-1',
+      feedType: 'image',
+      city: 'Austin',
+      headingDeg: 20,
+      fovDeg: 50,
+      rangeM: 200,
+      frameUrl: '/api/cctv/frame/aus-1',
+    },
+  });
+  assert.equal(controls._cctvFrameWrap.classList.contains('has-clip'), false);
+  assert.equal(controls._cctvFrame.dataset.currentSrc, '/api/cctv/frame/aus-1');
+});
+
 test('a camera switch cancels calibration before old blur can change the new camera', (t) => {
   const { controls, chip, inputs, patches } = calibrationFixture(t);
   controls._beginCctvCalValueEdit(chip);

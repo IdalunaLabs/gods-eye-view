@@ -219,7 +219,9 @@ export function createProjection({
       video.playsInline = true;
       video.crossOrigin = 'anonymous';
       video.preload = 'auto';
-      video.src = parts.frames.mediaUrlFor(record.camera);
+      const mediaUrl = parts.frames.mediaUrlFor(record.camera);
+      video.dataset.mediaUrl = mediaUrl;
+      video.src = mediaUrl;
       video.addEventListener('canplay', () => {
         video.play().catch(() => {});
       });

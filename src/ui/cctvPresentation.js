@@ -1,3 +1,10 @@
+function viewedMotionClip(camera) {
+  const feedType = String(camera?.feedType || '')
+    .trim()
+    .toLowerCase();
+  return feedType === 'mp4' || feedType === 'webm' || feedType === 'hls';
+}
+
 export function _calBadgeLabel(badge) {
   switch (badge) {
     case 'calibrated':
@@ -164,7 +171,12 @@ export function _renderCctvState(state) {
     }
   }
 
-  if (this._cctvFrame) {
+  const clipSrc =
+    enabled && viewedMotionClip(activeCamera) ? activeCamera?.mediaUrl : '';
+  if (clipSrc && this._cctvClip) {
+    this._queueCctvClip(clipSrc, activeCamera?.id || '');
+  } else if (this._cctvFrame) {
+    this._clearCctvClip();
     const nextSrc = enabled ? activeCamera?.frameUrl : null;
     const nextCameraId = enabled ? activeCamera?.id || '' : '';
     const cameraChanged = this._cctvFrame.dataset.cameraId !== nextCameraId;

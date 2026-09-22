@@ -304,12 +304,34 @@ export async function loadCaltransSourcesFromOpenData() {
 }
 
 /**
+ * Accept a TfL motion clip only when it is an MP4 on the official JamCam bucket.
+ * @param {string} value
+ * @returns {string} The clip URL, or '' when the camera should stay a still.
+ */
+function officialTflMotionClip(value) {
+  const videoUrl = String(value || '').trim();
+  if (!videoUrl.startsWith(TFL_IMAGE_ORIGIN)) return '';
+  let parsed;
+  try {
+    parsed = new URL(videoUrl);
+  } catch {
+    return '';
+  }
+  if (parsed.protocol !== 'https:') return '';
+  if (parsed.search || parsed.hash) return '';
+  if (!parsed.pathname.toLowerCase().endsWith('.mp4')) return '';
+  return videoUrl;
+}
+
+/**
  * Fetch TfL JamCams (London). Keyless: the optional TFL_APP_KEY only raises the
  * list-endpoint rate limit (frames come from TfL's public S3 bucket, which is not
  * rate-limited); the 15-min source cache keeps list hits far below anonymous
  * limits anyway. Only `available === "true"` cameras with finite coords and an
- * image URL on the official bucket are kept. Attribution: "Powered by TfL Open
- * Data" (registered in src/data/dataCredits.js).
+ * image URL on the official bucket are kept. An MP4 on that same bucket is the
+ * viewed clip (`feedType: 'mp4'`, `url`); the JPEG stays `snapshotUrl` so
+ * ambient cards and the frame proxy keep a still. Anything else stays an image.
+ * Attribution: "Powered by TfL Open Data" (registered in src/data/dataCredits.js).
  *
  * @returns {Promise<Array<object>>} Normalized camera source objects.
  */
@@ -342,6 +364,7 @@ export async function loadTflSourcesFromOpenData() {
       if (!Number.isFinite(lat) || !Number.isFinite(lon)) continue;
       const imageUrl = String(props.imageUrl || '');
       if (!imageUrl.startsWith(TFL_IMAGE_ORIGIN)) continue; // official-bucket pin
+      const motionUrl = officialTflMotionClip(props.videoUrl);
 
       // "JamCams_00002.00865" → "tfl-00002.00865" (provider-stable id).
       const rawId = String(place?.id || '').replace(/^JamCams_/, '');
@@ -365,8 +388,8 @@ export async function loadTflSourcesFromOpenData() {
         rangeM: 145,
         mountHeightM: 8,
         groundElevationM: 15, // Thames-basin prior; one-shot snap corrects.
-        feedType: 'image', // stills-first (owner decision); props.videoUrl deliberately unused
-        url: imageUrl,
+        feedType: motionUrl ? 'mp4' : 'image',
+        url: motionUrl || imageUrl,
         snapshotUrl: imageUrl,
         sourceKind: 'tfl-open-data',
         license: 'Powered by TfL Open Data',
