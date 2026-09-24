@@ -8,21 +8,16 @@ import { runManagedVoiceNavigation } from './shared.js';
 export async function execute({ args, context }) {
   const name = 'fly_route';
   const { styleManager, annotations, floorServices } = context;
-    if (name === 'fly_route') {
-      return flyRoute(
-        annotations?.list?.() || [],
-        args,
-        (lat, lon) => floorServices.cachedGroundFloor(lat, lon),
-        (navigate) =>
-          runManagedVoiceNavigation(
-            styleManager,
-            'route',
-            'fly_route',
-            navigate,
-          ),
-        (cells) => floorServices.warmGroundFloor(cells),
-      );
-    }
+  if (name === 'fly_route') {
+    return flyRoute(
+      annotations?.list?.() || [],
+      args,
+      (lat, lon) => floorServices.cachedGroundFloor(lat, lon),
+      (navigate) =>
+        runManagedVoiceNavigation(styleManager, 'route', 'fly_route', navigate),
+      (cells) => floorServices.warmGroundFloor(cells),
+    );
+  }
 }
 
 /** Voice tool handler for fly_route. */

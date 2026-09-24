@@ -132,9 +132,9 @@ async function frameOverhead(viewer, dataManager, styleManager, args = {}) {
 export async function execute({ args, context }) {
   const name = 'frame_overhead';
   const { viewer, styleManager, dataManager } = context;
-    if (name === 'frame_overhead') {
-      return frameOverhead(viewer, dataManager, styleManager, args);
-    }
+  if (name === 'frame_overhead') {
+    return frameOverhead(viewer, dataManager, styleManager, args);
+  }
 }
 
 /** Voice tool handler for frame_overhead. */

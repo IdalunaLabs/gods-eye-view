@@ -7,13 +7,13 @@ import { normalizeStackId } from './shared.js';
 export async function execute({ args, context }) {
   const name = 'set_map_stack';
   const { styleManager } = context;
-    if (name === 'set_map_stack') {
-      const stackId = normalizeStackId(args.stack);
-      if (!stackId)
-        throw new Error(`Unknown map stack: ${args.stack || 'missing'}`);
-      const result = await styleManager.setMapStack(stackId);
-      return { action: 'set_map_stack', requested: stackId, ...result };
-    }
+  if (name === 'set_map_stack') {
+    const stackId = normalizeStackId(args.stack);
+    if (!stackId)
+      throw new Error(`Unknown map stack: ${args.stack || 'missing'}`);
+    const result = await styleManager.setMapStack(stackId);
+    return { action: 'set_map_stack', requested: stackId, ...result };
+  }
 }
 
 /** Voice tool handler for set_map_stack. */

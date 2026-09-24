@@ -8,11 +8,7 @@ import {
 } from '../../locations.js';
 import { interruptCameraMotion } from '../../cameraVerbs.js';
 import { unavailablePlaceSearch } from '../../search/placeSearch.js';
-import {
-  stopAllTracking,
-  normalizeLocationId,
-  clampNumber,
-} from './shared.js';
+import { stopAllTracking, normalizeLocationId, clampNumber } from './shared.js';
 async function flyToRequestedLocation(
   viewer,
   args,
@@ -186,36 +182,42 @@ async function flyToRequestedLocation(
  */
 export async function execute({ args, context }) {
   const name = 'fly_to_location';
-  const { viewer, styleManager, dataManager, placeSearch, searchNavigation, runOptions } = context;
-    if (name === 'fly_to_location') {
-      return flyToRequestedLocation(viewer, args, {
-        placeSearch,
-        searchNavigation,
-        signal: runOptions.signal,
-        runImmediate:
-          typeof styleManager?.runImmediateLocationNavigation === 'function'
-            ? (navigate) =>
-                styleManager.runImmediateLocationNavigation(navigate)
-            : null,
-        beginDeferred:
-          typeof styleManager?.beginDeferredLocationNavigation === 'function'
-            ? () => styleManager.beginDeferredLocationNavigation()
-            : null,
-        reassertDeferred:
-          typeof styleManager?.reassertDeferredLocationNavigation === 'function'
-            ? (generation) =>
-                styleManager.reassertDeferredLocationNavigation(generation)
-            : null,
-        onStart: () => {
-          if (typeof styleManager?.beginLocationNavigation === 'function') {
-            styleManager.beginLocationNavigation();
-            return;
-          }
-          interruptCameraMotion('nav:fly_to_location');
-          if (viewer.trackedEntity) stopAllTracking(viewer, dataManager);
-        },
-      });
-    }
+  const {
+    viewer,
+    styleManager,
+    dataManager,
+    placeSearch,
+    searchNavigation,
+    runOptions,
+  } = context;
+  if (name === 'fly_to_location') {
+    return flyToRequestedLocation(viewer, args, {
+      placeSearch,
+      searchNavigation,
+      signal: runOptions.signal,
+      runImmediate:
+        typeof styleManager?.runImmediateLocationNavigation === 'function'
+          ? (navigate) => styleManager.runImmediateLocationNavigation(navigate)
+          : null,
+      beginDeferred:
+        typeof styleManager?.beginDeferredLocationNavigation === 'function'
+          ? () => styleManager.beginDeferredLocationNavigation()
+          : null,
+      reassertDeferred:
+        typeof styleManager?.reassertDeferredLocationNavigation === 'function'
+          ? (generation) =>
+              styleManager.reassertDeferredLocationNavigation(generation)
+          : null,
+      onStart: () => {
+        if (typeof styleManager?.beginLocationNavigation === 'function') {
+          styleManager.beginLocationNavigation();
+          return;
+        }
+        interruptCameraMotion('nav:fly_to_location');
+        if (viewer.trackedEntity) stopAllTracking(viewer, dataManager);
+      },
+    });
+  }
 }
 
 /** Voice tool handler for fly_to_location. */

@@ -5,14 +5,8 @@ import {
   getSelectedEntityContext,
   isContextRecordActive,
 } from '../../data/contextStore.js';
-import {
-  normalizeLayerId,
-  clampNumber,
-} from './shared.js';
-import {
-  getBasemapContext,
-  getViewTargetCartographic,
-} from './viewContext.js';
+import { normalizeLayerId, clampNumber } from './shared.js';
+import { getBasemapContext, getViewTargetCartographic } from './viewContext.js';
 const VISIBLE_ENTITY_SHORTLIST = 64;
 
 async function getEntityContext(
@@ -365,15 +359,15 @@ function layerTitle(layerId) {
 export async function execute({ args, context }) {
   const name = 'get_entity_context';
   const { viewer, styleManager, dataManager, placeSearch } = context;
-    if (name === 'get_entity_context') {
-      return getEntityContext(
-        viewer,
-        dataManager,
-        styleManager,
-        args,
-        placeSearch,
-      );
-    }
+  if (name === 'get_entity_context') {
+    return getEntityContext(
+      viewer,
+      dataManager,
+      styleManager,
+      args,
+      placeSearch,
+    );
+  }
 }
 
 /** Voice tool handler for get_entity_context. */

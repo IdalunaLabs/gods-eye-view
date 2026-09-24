@@ -494,12 +494,12 @@ export async function controlRadio(
 export async function execute({ args, context }) {
   const name = 'control_radio';
   const { viewer, dataManager, placeSearch, runOptions } = context;
-    if (name === 'control_radio') {
-      return controlRadio(viewer, dataManager, args, {
-        ...runOptions,
-        placeSearch,
-      });
-    }
+  if (name === 'control_radio') {
+    return controlRadio(viewer, dataManager, args, {
+      ...runOptions,
+      placeSearch,
+    });
+  }
 }
 
 /** Voice tool handler for control_radio. */

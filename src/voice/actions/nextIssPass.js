@@ -74,9 +74,9 @@ function nextIssPass(viewer, dataManager, args) {
 export async function execute({ args, context }) {
   const name = 'next_iss_pass';
   const { viewer, dataManager } = context;
-    if (name === 'next_iss_pass') {
-      return nextIssPass(viewer, dataManager, args);
-    }
+  if (name === 'next_iss_pass') {
+    return nextIssPass(viewer, dataManager, args);
+  }
 }
 
 /** Voice tool handler for next_iss_pass. */

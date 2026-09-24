@@ -70,25 +70,25 @@ function adjustCameraZoom(viewer, args) {
 export async function execute({ args, context }) {
   const name = 'adjust_camera_zoom';
   const { viewer } = context;
-    // Zoom during an active orbit adjusts the orbit RADIUS (spiral in/out) —
-    // a straight camera move would be snapped back by the per-frame lookAt.
-    if (name === 'adjust_camera_zoom') {
-      const zoomOut = String(args.direction || '').toLowerCase() === 'out';
-      const amt = String(args.amount || 'medium').toLowerCase();
-      const factor = { little: 1.25, medium: 1.6, lot: 2.4 }[amt] || 1.6;
-      if (adjustOrbitRange(zoomOut ? factor : 1 / factor)) {
-        return {
-          ok: true,
-          action: 'adjust_camera_zoom',
-          direction: zoomOut ? 'out' : 'in',
-          amount: amt,
-          orbitRadiusAdjusted: true,
-        };
-      }
+  // Zoom during an active orbit adjusts the orbit RADIUS (spiral in/out) —
+  // a straight camera move would be snapped back by the per-frame lookAt.
+  if (name === 'adjust_camera_zoom') {
+    const zoomOut = String(args.direction || '').toLowerCase() === 'out';
+    const amt = String(args.amount || 'medium').toLowerCase();
+    const factor = { little: 1.25, medium: 1.6, lot: 2.4 }[amt] || 1.6;
+    if (adjustOrbitRange(zoomOut ? factor : 1 / factor)) {
+      return {
+        ok: true,
+        action: 'adjust_camera_zoom',
+        direction: zoomOut ? 'out' : 'in',
+        amount: amt,
+        orbitRadiusAdjusted: true,
+      };
     }
-    if (name === 'adjust_camera_zoom') {
-      return adjustCameraZoom(viewer, args);
-    }
+  }
+  if (name === 'adjust_camera_zoom') {
+    return adjustCameraZoom(viewer, args);
+  }
 }
 
 /** Voice tool handler for adjust_camera_zoom. */

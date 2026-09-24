@@ -2,11 +2,7 @@ import * as Cesium from 'cesium';
 import { createAnalystEngine } from '../../data/analystEngine.js';
 import { unavailablePlaceSearch } from '../../search/placeSearch.js';
 import * as defaultAnnotationResolver from '../../annotations/annotationResolver.js';
-import {
-  haversineKm,
-  clampNumber,
-  activeContactsWindow,
-} from './shared.js';
+import { haversineKm, clampNumber, activeContactsWindow } from './shared.js';
 /**
  * Answer an entity-centred "how many aircraft nearby" from the Contacts
  * engine, or null when the question is not that.
@@ -358,15 +354,20 @@ export async function execute({ args, context }) {
   const name = 'analyst_query';
   const { viewer, dataManager, placeSearch, resolveRegionRing } = context;
   const _layerEnabledAt = context.layerEnabledAt;
-    if (name === 'analyst_query') {
-      context.analystEngine ||= createAnalystEngine(
-        analystProviders(viewer, dataManager, {
-          placeSearch,
-          resolveRegionRing,
-        }),
-      );
-      return runAnalystQuery(context.analystEngine, dataManager, args, _layerEnabledAt);
-    }
+  if (name === 'analyst_query') {
+    context.analystEngine ||= createAnalystEngine(
+      analystProviders(viewer, dataManager, {
+        placeSearch,
+        resolveRegionRing,
+      }),
+    );
+    return runAnalystQuery(
+      context.analystEngine,
+      dataManager,
+      args,
+      _layerEnabledAt,
+    );
+  }
 }
 
 /** Voice tool handler for analyst_query. */

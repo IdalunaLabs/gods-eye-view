@@ -80,14 +80,14 @@ function getCurrentViewState(
 export async function execute({ args, context }) {
   const name = 'get_current_view_state';
   const { viewer, styleManager, dataManager, sceneDirector } = context;
-    if (name === 'get_current_view_state') {
-      return getCurrentViewState(
-        viewer,
-        styleManager,
-        dataManager,
-        sceneDirector,
-      );
-    }
+  if (name === 'get_current_view_state') {
+    return getCurrentViewState(
+      viewer,
+      styleManager,
+      dataManager,
+      sceneDirector,
+    );
+  }
 }
 
 /** Voice tool handler for get_current_view_state. */

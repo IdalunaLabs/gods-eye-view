@@ -202,9 +202,9 @@ export function cctvVoiceFocusOutcome(
 export async function execute({ args, context }) {
   const name = 'control_cctv';
   const { styleManager, dataManager } = context;
-    if (name === 'control_cctv') {
-      return controlCctv(dataManager, args, styleManager);
-    }
+  if (name === 'control_cctv') {
+    return controlCctv(dataManager, args, styleManager);
+  }
 }
 
 /** Voice tool handler for control_cctv. */

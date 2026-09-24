@@ -72,9 +72,9 @@ function controlScene(sceneDirector, args = {}) {
 export async function execute({ args, context }) {
   const name = 'control_scene';
   const { sceneDirector } = context;
-    if (name === 'control_scene') {
-      return controlScene(sceneDirector, args);
-    }
+  if (name === 'control_scene') {
+    return controlScene(sceneDirector, args);
+  }
 }
 
 /** Voice tool handler for control_scene. */

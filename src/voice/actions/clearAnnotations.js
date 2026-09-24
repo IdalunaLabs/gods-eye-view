@@ -17,9 +17,9 @@ function clearAnnotations(annotations) {
 export async function execute({ args, context }) {
   const name = 'clear_annotations';
   const { annotations } = context;
-    if (name === 'clear_annotations') {
-      return clearAnnotations(annotations);
-    }
+  if (name === 'clear_annotations') {
+    return clearAnnotations(annotations);
+  }
 }
 
 /** Voice tool handler for clear_annotations. */

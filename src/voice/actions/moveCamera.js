@@ -8,17 +8,17 @@ import { runManagedVoiceNavigation } from './shared.js';
 export async function execute({ args, context }) {
   const name = 'move_camera';
   const { styleManager } = context;
-    if (name === 'move_camera') {
-      return moveCamera(args, (navigate, releaseOptions) =>
-        runManagedVoiceNavigation(
-          styleManager,
-          'camera',
-          'move_camera',
-          navigate,
-          releaseOptions,
-        ),
-      );
-    }
+  if (name === 'move_camera') {
+    return moveCamera(args, (navigate, releaseOptions) =>
+      runManagedVoiceNavigation(
+        styleManager,
+        'camera',
+        'move_camera',
+        navigate,
+        releaseOptions,
+      ),
+    );
+  }
 }
 
 /** Voice tool handler for move_camera. */

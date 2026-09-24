@@ -119,9 +119,9 @@ async function annotateMap(annotations, args = {}) {
 export async function execute({ args, context }) {
   const name = 'annotate_map';
   const { annotations } = context;
-    if (name === 'annotate_map') {
-      return annotateMap(annotations, args);
-    }
+  if (name === 'annotate_map') {
+    return annotateMap(annotations, args);
+  }
 }
 
 /** Voice tool handler for annotate_map. */

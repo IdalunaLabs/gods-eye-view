@@ -1,9 +1,6 @@
 import { getSelectedEntityContext } from '../../data/contextStore.js';
 import { TR3B_CLASS } from '../../data/tr3bRegistry.js';
-import {
-  withContextModeVocabulary,
-  normalizeLayerId,
-} from './shared.js';
+import { withContextModeVocabulary, normalizeLayerId } from './shared.js';
 const COCKPIT_ACTION_ALIASES = new Map([
   ['next', 'next'],
   ['previous', 'previous'],
@@ -131,140 +128,140 @@ export async function execute({ args, context }) {
   const name = 'control_cockpit';
   const { styleManager, dataManager, runOptions } = context;
   const current = context.current;
-    if (name === 'control_cockpit') {
-      if (!styleManager?.controlCockpit) {
+  if (name === 'control_cockpit') {
+    if (!styleManager?.controlCockpit) {
+      return {
+        ok: false,
+        action: 'control_cockpit',
+        error: 'Cockpit control unavailable',
+      };
+    }
+    const rawAction = args.action || args.command;
+    const action = normalizeCockpitAction(rawAction);
+    const notificationToken = args.notificationToken || null;
+    if (!action) {
+      return {
+        ok: false,
+        action: 'control_cockpit',
+        error: `Unknown cockpit action: ${args.action || args.command || 'missing'}`,
+      };
+    }
+    const inferred = normalizeCockpitNavigationHints(rawAction);
+    const targetLayer = normalizeCockpitTargetLayer(
+      args.targetLayer || inferred.targetLayer || args.layer || args.layerId,
+    );
+    const aircraftClass = normalizeAircraftClassFilter(
+      args.aircraftClass ||
+        inferred.aircraftClass ||
+        args.type ||
+        args.filterType,
+    );
+    let contextChangedForEntry = false;
+    let priorContextMode = null;
+    let rollbackTarget = null;
+    if (
+      action === 'enter' &&
+      typeof styleManager.setContextMode === 'function'
+    ) {
+      if (!current()) {
         return {
           ok: false,
           action: 'control_cockpit',
-          error: 'Cockpit control unavailable',
-        };
-      }
-      const rawAction = args.action || args.command;
-      const action = normalizeCockpitAction(rawAction);
-      const notificationToken = args.notificationToken || null;
-      if (!action) {
-        return {
-          ok: false,
-          action: 'control_cockpit',
-          error: `Unknown cockpit action: ${args.action || args.command || 'missing'}`,
-        };
-      }
-      const inferred = normalizeCockpitNavigationHints(rawAction);
-      const targetLayer = normalizeCockpitTargetLayer(
-        args.targetLayer || inferred.targetLayer || args.layer || args.layerId,
-      );
-      const aircraftClass = normalizeAircraftClassFilter(
-        args.aircraftClass ||
-          inferred.aircraftClass ||
-          args.type ||
-          args.filterType,
-      );
-      let contextChangedForEntry = false;
-      let priorContextMode = null;
-      let rollbackTarget = null;
-      if (
-        action === 'enter' &&
-        typeof styleManager.setContextMode === 'function'
-      ) {
-        if (!current()) {
-          return {
-            ok: false,
-            action: 'control_cockpit',
-            cancelled: true,
-            error: 'Cockpit entry was cancelled before it could run',
-            state: styleManager.getCockpitState?.() || null,
-          };
-        }
-        rollbackTarget = styleManager.getAircraftTrackingTarget?.() || null;
-        const contextState =
-          typeof styleManager.getContextModeState === 'function'
-            ? styleManager.getContextModeState()
-            : {};
-        priorContextMode = contextState?.mode || null;
-        const contactsReady =
-          contextState?.mode === 'flights' &&
-          contextState?.active !== false &&
-          contextState?.changing !== true;
-        if (!contactsReady) {
-          const contextResult = await styleManager.setContextMode('flights', {
-            signal: runOptions.signal,
-            isCurrent: runOptions.isCurrent,
-            // Cockpit entry establishes Contacts as its own precondition. That
-            // is internal choreography, not an operator Context request, so it
-            // must stay inert: claiming here would cancel a pending shared
-            // style/detection restore the operator never overrode.
-            claimVisualAuthority: false,
-          });
-          contextChangedForEntry = contextResult?.ok === true;
-          if (contextResult?.ok !== true || !current()) {
-            const contextRollback = contextChangedForEntry
-              ? await styleManager.setContextMode(priorContextMode, {
-                  claimVisualAuthority: false,
-                })
-              : null;
-            return {
-              ok: false,
-              action: 'control_cockpit',
-              cancelled: !current() || Boolean(contextResult?.cancelled),
-              error:
-                contextResult?.error ||
-                'Contacts context could not be established for Cockpit entry',
-              context: contextResult
-                ? withContextModeVocabulary(contextResult)
-                : null,
-              contextRollback: withContextModeVocabulary(contextRollback),
-              state: styleManager.getCockpitState?.() || null,
-            };
-          }
-        }
-      }
-      // Contacts activation can adopt a newer explicit aircraft selection.
-      // Sample only after that transaction settles so an older voice snapshot
-      // cannot overwrite the operator's newer choice.
-      const selectedTarget =
-        action === 'enter' ? selectedCockpitTarget(dataManager) : null;
-      let cockpitResult;
-      try {
-        cockpitResult = await styleManager.controlCockpit(action, {
-          notificationToken,
-          targetLayer,
-          aircraftClass,
-          selectedTarget,
-          rollbackTarget,
-        });
-      } catch (error) {
-        cockpitResult = {
-          ok: false,
-          action: 'control_cockpit',
-          error: error instanceof Error ? error.message : String(error),
+          cancelled: true,
+          error: 'Cockpit entry was cancelled before it could run',
           state: styleManager.getCockpitState?.() || null,
         };
       }
-      if (
-        action === 'enter' &&
-        cockpitResult?.ok !== true &&
-        contextChangedForEntry
-      ) {
-        const contextRollback = await styleManager.setContextMode(
-          priorContextMode,
-          {
-            // Undoing this action's own precondition — still choreography.
-            claimVisualAuthority: false,
-            ...(current()
-              ? {
-                  signal: runOptions.signal,
-                  isCurrent: runOptions.isCurrent,
-                }
-              : {}),
-          },
-        );
-        return {
-          ...cockpitResult,
-          contextRollback: withContextModeVocabulary(contextRollback),
-        };
+      rollbackTarget = styleManager.getAircraftTrackingTarget?.() || null;
+      const contextState =
+        typeof styleManager.getContextModeState === 'function'
+          ? styleManager.getContextModeState()
+          : {};
+      priorContextMode = contextState?.mode || null;
+      const contactsReady =
+        contextState?.mode === 'flights' &&
+        contextState?.active !== false &&
+        contextState?.changing !== true;
+      if (!contactsReady) {
+        const contextResult = await styleManager.setContextMode('flights', {
+          signal: runOptions.signal,
+          isCurrent: runOptions.isCurrent,
+          // Cockpit entry establishes Contacts as its own precondition. That
+          // is internal choreography, not an operator Context request, so it
+          // must stay inert: claiming here would cancel a pending shared
+          // style/detection restore the operator never overrode.
+          claimVisualAuthority: false,
+        });
+        contextChangedForEntry = contextResult?.ok === true;
+        if (contextResult?.ok !== true || !current()) {
+          const contextRollback = contextChangedForEntry
+            ? await styleManager.setContextMode(priorContextMode, {
+                claimVisualAuthority: false,
+              })
+            : null;
+          return {
+            ok: false,
+            action: 'control_cockpit',
+            cancelled: !current() || Boolean(contextResult?.cancelled),
+            error:
+              contextResult?.error ||
+              'Contacts context could not be established for Cockpit entry',
+            context: contextResult
+              ? withContextModeVocabulary(contextResult)
+              : null,
+            contextRollback: withContextModeVocabulary(contextRollback),
+            state: styleManager.getCockpitState?.() || null,
+          };
+        }
       }
-      return cockpitResult;
     }
+    // Contacts activation can adopt a newer explicit aircraft selection.
+    // Sample only after that transaction settles so an older voice snapshot
+    // cannot overwrite the operator's newer choice.
+    const selectedTarget =
+      action === 'enter' ? selectedCockpitTarget(dataManager) : null;
+    let cockpitResult;
+    try {
+      cockpitResult = await styleManager.controlCockpit(action, {
+        notificationToken,
+        targetLayer,
+        aircraftClass,
+        selectedTarget,
+        rollbackTarget,
+      });
+    } catch (error) {
+      cockpitResult = {
+        ok: false,
+        action: 'control_cockpit',
+        error: error instanceof Error ? error.message : String(error),
+        state: styleManager.getCockpitState?.() || null,
+      };
+    }
+    if (
+      action === 'enter' &&
+      cockpitResult?.ok !== true &&
+      contextChangedForEntry
+    ) {
+      const contextRollback = await styleManager.setContextMode(
+        priorContextMode,
+        {
+          // Undoing this action's own precondition — still choreography.
+          claimVisualAuthority: false,
+          ...(current()
+            ? {
+                signal: runOptions.signal,
+                isCurrent: runOptions.isCurrent,
+              }
+            : {}),
+        },
+      );
+      return {
+        ...cockpitResult,
+        contextRollback: withContextModeVocabulary(contextRollback),
+      };
+    }
+    return cockpitResult;
+  }
 }
 
 /** Voice tool handler for control_cockpit. */

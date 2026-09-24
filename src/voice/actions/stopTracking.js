@@ -7,9 +7,9 @@ import { stopAllTracking } from './shared.js';
 export async function execute({ args, context }) {
   const name = 'stop_tracking';
   const { viewer, dataManager } = context;
-    if (name === 'stop_tracking') {
-      return stopAllTracking(viewer, dataManager);
-    }
+  if (name === 'stop_tracking') {
+    return stopAllTracking(viewer, dataManager);
+  }
 }
 
 /** Voice tool handler for stop_tracking. */

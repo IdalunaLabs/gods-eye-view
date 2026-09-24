@@ -7,13 +7,13 @@ import { normalizeStyle } from './shared.js';
 export async function execute({ args, context }) {
   const name = 'set_visual_style';
   const { styleManager } = context;
-    if (name === 'set_visual_style') {
-      const style = normalizeStyle(args.style);
-      if (!style)
-        throw new Error(`Unknown visual style: ${args.style || 'missing'}`);
-      styleManager.setStyle(style);
-      return { ok: true, action: 'set_visual_style', style };
-    }
+  if (name === 'set_visual_style') {
+    const style = normalizeStyle(args.style);
+    if (!style)
+      throw new Error(`Unknown visual style: ${args.style || 'missing'}`);
+    styleManager.setStyle(style);
+    return { ok: true, action: 'set_visual_style', style };
+  }
 }
 
 /** Voice tool handler for set_visual_style. */

@@ -1,7 +1,4 @@
-import {
-  normalizeLayerId,
-  setPanelOpen,
-} from './shared.js';
+import { normalizeLayerId, setPanelOpen } from './shared.js';
 function focusDataLayerRow(layerId) {
   const row = document.querySelector(
     `#data-toggles [data-layer-id="${CSS.escape(layerId)}"]`,
@@ -23,29 +20,29 @@ function focusDataLayerRow(layerId) {
 export async function execute({ args, context }) {
   const name = 'show_data_layers_menu';
   const { styleManager, dataManager } = context;
-    if (name === 'show_data_layers_menu') {
-      const layerId = normalizeLayerId(args.layerId || args.layer);
-      setPanelOpen(styleManager, 'data-panel', true);
-      const focusedLayer =
-        layerId && dataManager.layers.has(layerId)
-          ? focusDataLayerRow(layerId)
-          : null;
-      return {
-        ok: true,
-        action: 'show_data_layers_menu',
-        panelId: 'data-panel',
-        focusedLayer,
-        layers: dataManager
-          .getAll()
-          .filter((layer) => layer.showInTogglePanel !== false)
-          .map((layer) => ({
-            id: layer.id,
-            name: layer.name,
-            enabled: layer.enabled,
-            count: layer.stats?.count || 0,
-          })),
-      };
-    }
+  if (name === 'show_data_layers_menu') {
+    const layerId = normalizeLayerId(args.layerId || args.layer);
+    setPanelOpen(styleManager, 'data-panel', true);
+    const focusedLayer =
+      layerId && dataManager.layers.has(layerId)
+        ? focusDataLayerRow(layerId)
+        : null;
+    return {
+      ok: true,
+      action: 'show_data_layers_menu',
+      panelId: 'data-panel',
+      focusedLayer,
+      layers: dataManager
+        .getAll()
+        .filter((layer) => layer.showInTogglePanel !== false)
+        .map((layer) => ({
+          id: layer.id,
+          name: layer.name,
+          enabled: layer.enabled,
+          count: layer.stats?.count || 0,
+        })),
+    };
+  }
 }
 
 /** Voice tool handler for show_data_layers_menu. */

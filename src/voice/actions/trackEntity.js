@@ -30,7 +30,12 @@ export function formatTrackedEntityLabel(found, query = '') {
 }
 
 /** Finds and tracks/selects an entity by spoken query across layer families. */
-export async function trackEntity(viewer, dataManager, styleManager, args = {}) {
+export async function trackEntity(
+  viewer,
+  dataManager,
+  styleManager,
+  args = {},
+) {
   const query = String(args.query || '').trim();
   if (!query) throw new Error('track_entity needs a query');
 
@@ -180,9 +185,9 @@ export async function trackEntity(viewer, dataManager, styleManager, args = {}) 
 export async function execute({ args, context }) {
   const name = 'track_entity';
   const { viewer, styleManager, dataManager } = context;
-    if (name === 'track_entity') {
-      return trackEntity(viewer, dataManager, styleManager, args);
-    }
+  if (name === 'track_entity') {
+    return trackEntity(viewer, dataManager, styleManager, args);
+  }
 }
 
 /** Voice tool handler for track_entity. */
