@@ -56,6 +56,63 @@ function openskyAdaptiveTtlMs(remaining) {
   if (remaining > 400) return 90_000;
   return 300_000;
 }
+
+/**
+ * Whether another OpenSky credit-bearing request may leave this process.
+ * Track backfill and `/api/opensky` share this cooldown.
+ * @param {number} [now]
+ * @returns {{ok:true}|{ok:false, retryAfterSeconds:number}}
+ */
+export function admitOpenSkyCreditUse(now = Date.now()) {
+  if (now < _openskyCooldownUntil) {
+    return {
+      ok: false,
+      retryAfterSeconds: Math.max(
+        1,
+        Math.ceil((_openskyCooldownUntil - now) / 1000),
+      ),
+    };
+  }
+  return { ok: true };
+}
+
+/**
+ * Apply one OpenSky response to the shared credit governor.
+ * 429 starts the cooldown. A success adapts the TTL from the remaining-credit
+ * header and clears the cooldown. Other statuses leave the governor unchanged.
+ * @param {number} status
+ * @param {{get?:(name:string)=>string|null}|null} [headers]
+ * @param {number} [now]
+ * @returns {{cooldownMs?:number}}
+ */
+export function recordOpenSkyCreditUse(status, headers, now = Date.now()) {
+  if (status === 429) {
+    const retryAfterSec = Number(
+      headers?.get?.('x-rate-limit-retry-after-seconds'),
+    );
+    const cooldownMs = Math.min(
+      Math.max(
+        Number.isFinite(retryAfterSec) ? retryAfterSec * 1000 : 120_000,
+        30_000,
+      ),
+      30 * 60_000,
+    );
+    _openskyCooldownUntil = now + cooldownMs;
+    return { cooldownMs };
+  }
+  if (status >= 200 && status < 300) {
+    const remaining = Number(headers?.get?.('x-rate-limit-remaining'));
+    _openskyTtlMs = openskyAdaptiveTtlMs(remaining);
+    _openskyCooldownUntil = 0;
+  }
+  return {};
+}
+
+/** Clear the shared credit governor. Test-only. */
+export function resetOpenSkyCreditGovernorForTests() {
+  _openskyCooldownUntil = 0;
+  _openskyTtlMs = OPENSKY_CACHE_MS;
+}
 /** @type {boolean} Guards duplicate auth-failure warnings in logs. */
 let _openskyAuthWarned = false;
 /** @type {boolean} Guards duplicate invalid-auth-mode warnings. */
@@ -518,17 +575,11 @@ export function openSkyProxy() {
           reason = 'rate_limited';
           // Credit governor: honor OpenSky's retry-after (bounded 30 s … 30 min;
           // 2 min when the header is absent) — no upstream attempts until then.
-          const retryAfterSec = Number(
-            upstream.headers.get('x-rate-limit-retry-after-seconds'),
+          const { cooldownMs } = recordOpenSkyCreditUse(
+            upstream.status,
+            upstream.headers,
+            now,
           );
-          const cooldownMs = Math.min(
-            Math.max(
-              Number.isFinite(retryAfterSec) ? retryAfterSec * 1000 : 120_000,
-              30_000,
-            ),
-            30 * 60_000,
-          );
-          _openskyCooldownUntil = now + cooldownMs;
           // Serve the last-good body instead of the 429 when we have one —
           // the layer keeps rendering (STALE-cued) instead of dying.
           if (_openskyCacheBody && _openskyCacheStatus === 200) {
@@ -628,11 +679,7 @@ export function openSkyProxy() {
           // Credit governor: adapt the cache TTL to the remaining daily
           // budget so a continuously-open app stretches its polls instead of
           // exhausting the quota mid-day. Success also clears any cooldown.
-          const remaining = Number(
-            upstream.headers.get('x-rate-limit-remaining'),
-          );
-          _openskyTtlMs = openskyAdaptiveTtlMs(remaining);
-          _openskyCooldownUntil = 0;
+          recordOpenSkyCreditUse(upstream.status, upstream.headers, now);
         }
 
         res.writeHead(

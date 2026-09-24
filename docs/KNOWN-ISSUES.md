@@ -90,7 +90,30 @@ Context:
   - Error payloads are sanitized.
   - OpenSky cache stores successful responses only.
   - OpenSky token refresh is coalesced.
-  - GBFS/CCTV memory growth is bounded.
+  - GBFS/CCTV memory growth is bounded. GBFS keeps successful
+    station_information feeds in a 48-entry LRU and rate-limits `/api/gbfs`
+    at 120 requests/minute per IP unless `GEV_RATELIMIT_GBFS_PER_MIN=0`.
+    Live station_status responses are not cached.
+  - `/api/adsbdb` validates callsign, ICAO hex, and registration before
+    cache use, keeps each store to 2048 LRU entries, caps the flushed disk
+    file, and rate-limits at 60 requests/minute per IP unless
+    `GEV_RATELIMIT_ADSBDB_PER_MIN=0`.
+  - `/api/terrain/heights` rejects out-of-range coordinates and oversized
+    batches with a sanitized 400, keeps a 20,000-point LRU, caps the on-disk
+    cache at 8 MiB, and rate-limits at 120 requests/minute per IP unless
+    `GEV_RATELIMIT_TERRAIN_PER_MIN=0`. The browser terrain-height cache is a
+    10,000-entry LRU.
+  - `/api/opensky-track` shares the OpenSky credit governor and caches only
+    successful bodies. An oversized track response is HTTP 502 and is not
+    cached. `/api/adsblol/trace` is rate-limited per IP (60/min unless
+    `GEV_RATELIMIT_ADSBLOL_TRACE_PER_MIN=0`).
+  - CCTV URLs are checked at registration and fetch time against public
+    http(s) destinations. Media bodies abort on the 64 MiB cap or a 15 second
+    idle gap. Street View uses registered camera coordinates and the Google
+    per-IP limiter.
+  - OpenAI cost routes default to 10 requests/minute per IP when `HOST` is
+    not loopback and `GEV_RATELIMIT_OPENAI_PER_MIN` is unset. Loopback stays
+    unlimited. A browser-held `GEV_API_ACCESS_TOKEN` is not used.
 
 Validation target:
 - `vite.config.js`

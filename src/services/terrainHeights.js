@@ -1,7 +1,49 @@
 import { ensureGeoidReady, geoidHeight } from '../data/geoid.js';
 
+/** In-memory ellipsoidal-height entries retained per terrain service. */
+export const TERRAIN_HEIGHT_CACHE_CAPACITY = 10_000;
+
+/**
+ * Insert or refresh a height and evict the least-recently-used key at capacity.
+ * @param {Map<string, object>} cache
+ * @param {string} key
+ * @param {object} value
+ * @param {number} [capacity]
+ */
+export function rememberTerrainHeight(
+  cache,
+  key,
+  value,
+  capacity = TERRAIN_HEIGHT_CACHE_CAPACITY,
+) {
+  if (cache.has(key)) cache.delete(key);
+  else if (cache.size >= capacity) {
+    const oldest = cache.keys().next().value;
+    if (oldest !== undefined) cache.delete(oldest);
+  }
+  cache.set(key, value);
+}
+
+/**
+ * Read a height and mark it most-recently used.
+ * @param {Map<string, object>} cache
+ * @param {string} key
+ * @returns {object|null}
+ */
+export function touchTerrainHeight(cache, key) {
+  if (!cache.has(key)) return null;
+  const value = cache.get(key);
+  cache.delete(key);
+  cache.set(key, value);
+  return value;
+}
+
 /** Construct an instance-owned terrainHeights service with explicit dependencies. */
-export function createTerrainHeights({ source, signal }) {
+export function createTerrainHeights({
+  source,
+  signal,
+  cacheCapacity = TERRAIN_HEIGHT_CACHE_CAPACITY,
+}) {
   if (typeof source?.getHeights !== 'function')
     throw new TypeError('Terrain heights require a source');
   signal?.throwIfAborted();
@@ -74,7 +116,7 @@ export function createTerrainHeights({ source, signal }) {
    * @returns {number|null}
    */
   function cachedEllipsoidalGround(lat, lon) {
-    const entry = cache.get(cacheKey(lat, lon));
+    const entry = touchTerrainHeight(cache, cacheKey(lat, lon));
     return entry ? entry.ellipsoid : null;
   }
 
@@ -91,8 +133,11 @@ export function createTerrainHeights({ source, signal }) {
    * @returns {number|null}
    */
   function cachedRealEllipsoidalGround(lat, lon) {
-    const entry = cache.get(cacheKey(lat, lon));
-    return entry && entry.source === 'reearth' ? entry.ellipsoid : null;
+    const key = cacheKey(lat, lon);
+    const entry = cache.get(key);
+    if (!entry || entry.source !== 'reearth') return null;
+    touchTerrainHeight(cache, key);
+    return entry.ellipsoid;
   }
 
   /**
@@ -230,7 +275,12 @@ export function createTerrainHeights({ source, signal }) {
           // one contact frozen at the geoid while its neighbors resolved).
           // An omitted point now caches nothing and retries on the next warm.
           if (Number.isFinite(ellipsoid)) {
-            cache.set(item.key, { ellipsoid, source: 'reearth' });
+            rememberTerrainHeight(
+              cache,
+              item.key,
+              { ellipsoid, source: 'reearth' },
+              cacheCapacity,
+            );
           }
         }
       } catch {
@@ -247,11 +297,16 @@ export function createTerrainHeights({ source, signal }) {
             item.lon,
             item.sourceOrthometricM,
           );
-          cache.set(item.key, {
-            ellipsoid,
-            source: 'geoid-fallback',
-            retryAt: Date.now() + GEOID_FALLBACK_COOLDOWN_MS,
-          });
+          rememberTerrainHeight(
+            cache,
+            item.key,
+            {
+              ellipsoid,
+              source: 'geoid-fallback',
+              retryAt: Date.now() + GEOID_FALLBACK_COOLDOWN_MS,
+            },
+            cacheCapacity,
+          );
         }
       }
     }

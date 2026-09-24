@@ -2,6 +2,14 @@ import path from 'node:path';
 import { promises as fsp } from 'node:fs';
 
 import {
+  enforceRateLimit,
+  makeDefaultOnRateLimiter,
+} from './common/rate-limit.js';
+import {
+  TERRAIN_DEFAULT_RATE_PER_MIN,
+  TERRAIN_DISK_CACHE_MAX_BYTES,
+  TERRAIN_MEMORY_CACHE_MAX,
+  boundTerrainCache,
   fetchTerrainChunkWithRetry,
   parseTerrainPoints,
   resolveTerrainHeightRequest,
@@ -21,7 +29,9 @@ import {
  * request order. Larger requests are chunked sequentially, and one failing
  * chunk does not discard the chunks that resolved.
  */
-export function terrainHeightsProxy() {
+export function terrainHeightsProxy(options = {}) {
+  const resolvePerMin =
+    options.resolvePerMin || (() => process.env.GEV_RATELIMIT_TERRAIN_PER_MIN);
   const TTL_MS = 30 * 24 * 3600_000;
   const CACHE_DIR = path.join(process.cwd(), '.gev-cache');
   const CACHE_PATH = path.join(CACHE_DIR, 'terrain-heights.json');
@@ -41,12 +51,16 @@ export function terrainHeightsProxy() {
   const inflight = new Map();
   let diskLoaded = false;
   let diskDirty = false;
+  let limiter;
 
   /** Load the on-disk cache into memory once, lazily (first request only). */
   async function loadDiskOnce() {
     if (diskLoaded) return;
     diskLoaded = true;
     try {
+      const info = await fsp.stat(CACHE_PATH);
+      if (info.size > TERRAIN_DISK_CACHE_MAX_BYTES * 4)
+        throw new Error('cache');
       const parsed = JSON.parse(await fsp.readFile(CACHE_PATH, 'utf8'));
       const pointEntries =
         parsed?.version === 2 &&
@@ -87,6 +101,9 @@ export function terrainHeightsProxy() {
         }
         diskDirty = mem.size > 0;
       }
+      const before = mem.size;
+      boundTerrainCache(mem);
+      if (mem.size !== before) diskDirty = true;
     } catch {
       /* no disk cache yet */
     }
@@ -97,8 +114,8 @@ export function terrainHeightsProxy() {
       diskDirty = false;
       try {
         await fsp.mkdir(CACHE_DIR, { recursive: true });
-        const obj = { version: 2, points: Object.fromEntries(mem.entries()) };
-        await fsp.writeFile(CACHE_PATH, JSON.stringify(obj), 'utf8');
+        const body = boundTerrainCache(mem);
+        await fsp.writeFile(CACHE_PATH, body, 'utf8');
       } catch (err) {
         diskDirty = true; // retry next tick
         console.warn('[terrain-heights-proxy] cache write failed');
@@ -163,6 +180,13 @@ export function terrainHeightsProxy() {
         res.end(JSON.stringify(bodyObj));
       };
       try {
+        if (limiter === undefined) {
+          limiter = makeDefaultOnRateLimiter(
+            resolvePerMin(),
+            TERRAIN_DEFAULT_RATE_PER_MIN,
+          );
+        }
+        if (!enforceRateLimit(limiter, req, res)) return;
         await loadDiskOnce();
         const parsedUrl = new URL(req.url || '', 'http://internal');
         const rawPoints = parsedUrl.searchParams.get('points');
@@ -170,12 +194,12 @@ export function terrainHeightsProxy() {
         if (!points) {
           send(400, {
             error:
-              'invalid points parameter — expected "lon,lat;lon,lat;…" with finite numbers',
+              'invalid points parameter — expected "lon,lat;lon,lat;…" with finite coordinates in range',
           });
           return;
         }
         if (points.length > MAX_POINTS) {
-          send(500, {
+          send(400, {
             error: `too many points (${points.length}); max ${MAX_POINTS} per request`,
           });
           return;
@@ -186,6 +210,7 @@ export function terrainHeightsProxy() {
           cache: mem,
           fetchMissing: fetchMissingSingleFlight,
           ttlMs: TTL_MS,
+          maxEntries: TERRAIN_MEMORY_CACHE_MAX,
         });
         if (outcome.cacheChanged) diskDirty = true;
         if (outcome.upstreamError) {

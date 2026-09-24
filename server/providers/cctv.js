@@ -17,7 +17,12 @@ import {
   CCTV_MAX_SOURCES_CEILING,
 } from './cctv/constants.js';
 import { sanitizeCctvRangeHeader } from './cctv/range.js';
-import { googleServerApiKey } from './places/google-key.js';
+import { lookup as dnsLookup } from 'node:dns/promises';
+import { clientKey } from './common/rate-limit.js';
+import {
+  googleOptInRateLimiter,
+  googleServerApiKey,
+} from './places/google-key.js';
 export { CCTV_FRAME_FETCH_TIMEOUT_MS, fetchCctvImageFromUpstream };
 /**
  * Vite plugin: CCTV camera proxy with source registry, frame/media serving,
@@ -32,7 +37,11 @@ export { CCTV_FRAME_FETCH_TIMEOUT_MS, fetchCctvImageFromUpstream };
  *
  * @returns {import('vite').Plugin}
  */
-export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
+export function cctvProxy({
+  sourceRoot = process.cwd(),
+  lookupImpl = dnsLookup,
+  fetchImpl,
+} = {}) {
   const getCctvSources = createCctvCatalog({ sourceRoot });
   /** @type {Map<string,{id:string,status:string,sourceKind:string,label:string,message:string,updatedAt:number}>} */
   const health = new Map();
@@ -85,6 +94,21 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
    * rather than HTTP referrer) and falls back to the browser-exposed
    * GOOGLE_MAPS_API_KEY for setups that haven't split the two yet.
    */
+  const registeredStreetViewPose = (camera) => {
+    if (!camera) return null;
+    const lat = Number(camera.lat);
+    const lon = Number(camera.lon);
+    if (!Number.isFinite(lat) || lat < -90 || lat > 90) return null;
+    if (!Number.isFinite(lon) || lon < -180 || lon > 180) return null;
+    return {
+      lat,
+      lon,
+      heading: Number(camera.headingDeg),
+      fov: Number(camera.fovDeg),
+      pitch: Number(camera.pitchDeg),
+    };
+  };
+
   const streetViewFallback = async ({ lat, lon, heading, fov, pitch }) => {
     const streetViewKey = googleServerApiKey();
     if (!streetViewKey || !Number.isFinite(lat) || !Number.isFinite(lon))
@@ -109,7 +133,7 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
       sv.searchParams.set('return_error_code', 'true');
       sv.searchParams.set('key', streetViewKey);
 
-      const svResp = await fetch(sv.toString(), {
+      const svResp = await (fetchImpl || fetch)(sv.toString(), {
         headers: { 'User-Agent': 'gods-eye-view-cctv-proxy/1.0' },
         signal: AbortSignal.timeout(CCTV_FRAME_FETCH_TIMEOUT_MS),
       });
@@ -235,6 +259,8 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
             const upstream = await fetchCctvMediaUpstream(mediaUrl, {
               headers: upstreamHeaders,
               signal: downstream.signal,
+              lookupImpl,
+              fetchImpl,
             });
             if (downstream.closed) {
               // The headers arrived for a viewer who is no longer there.
@@ -341,13 +367,7 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
         const source = sourceById.get(cameraId);
         const label = url.searchParams.get('label') || source?.name || cameraId;
         const city = url.searchParams.get('city') || source?.city || '';
-        const lat = Number(url.searchParams.get('lat') || source?.lat);
-        const lon = Number(url.searchParams.get('lon') || source?.lon);
-        const heading = Number(
-          url.searchParams.get('heading') || source?.headingDeg,
-        );
-        const fov = Number(url.searchParams.get('fov') || source?.fovDeg);
-        const pitch = Number(url.searchParams.get('pitch') || source?.pitchDeg);
+        const pose = registeredStreetViewPose(source);
 
         // Only use server-registered upstream URLs — never accept client-supplied URLs
         // (prevents SSRF via ?upstream= query parameter)
@@ -359,8 +379,14 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
 
         const upstreamImage =
           source?.sourceKind === 'txdot-its'
-            ? await fetchTxdotSnapshot(upstreamCandidate)
-            : await fetchCctvImageFromUpstream(upstreamCandidate);
+            ? await fetchTxdotSnapshot(upstreamCandidate, {
+                lookupImpl,
+                fetchImpl,
+              })
+            : await fetchCctvImageFromUpstream(upstreamCandidate, {
+                lookupImpl,
+                fetchImpl,
+              });
         if (upstreamImage?.ok) {
           setHealth(cameraId, {
             status: 'ok',
@@ -377,13 +403,11 @@ export function cctvProxy({ sourceRoot = process.cwd() } = {}) {
           return;
         }
 
-        const sv = await streetViewFallback({
-          lat,
-          lon,
-          heading,
-          fov,
-          pitch,
-        });
+        const streetViewLimiter = googleOptInRateLimiter();
+        const sv =
+          pose && (!streetViewLimiter || streetViewLimiter(clientKey(req)))
+            ? await streetViewFallback(pose)
+            : null;
         if (sv?.ok) {
           setHealth(cameraId, {
             status: 'degraded',

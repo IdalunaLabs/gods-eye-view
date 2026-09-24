@@ -1,5 +1,43 @@
 # God's Eye View Current State
 
+CCTV fetches only registered `http:`/`https:` URLs. Registration and fetch both
+reject credentials, non-http schemes, and loopback/private/link-local/multicast
+addresses, including IPv6 and IPv4-mapped forms. DNS is resolved before connect
+and a private answer is not requested. Media streams abort at 64 MiB or after
+15 seconds idle. Street View uses the registered camera coordinates only and
+is metered by `GEV_RATELIMIT_GOOGLE_PER_MIN`.
+
+OpenAI cost routes stay unlimited on a loopback `HOST`. When `HOST` is not
+loopback and `GEV_RATELIMIT_OPENAI_PER_MIN` is unset, `/api/realtime/token`
+and `/api/openai/hud-summary` allow 10 requests/minute/IP (`0` disables).
+`GEV_API_ACCESS_TOKEN` is not enforced: the browser would have to present it,
+which publishes the secret. No new token is added to the client bundle.
+
+`/api/opensky-track` spends the same OpenSky credit governor as `/api/opensky`
+(cooldown and remaining-credit TTL) and keeps using the coalesced token
+refresh. Successful track bodies are cached; failures and oversized payloads
+are not. An oversized body is a sanitized 502. `/api/opensky-track` defaults
+to 30 requests/minute per IP and `/api/adsblol/trace` to 60
+(`GEV_RATELIMIT_OPENSKY_TRACK_PER_MIN` / `GEV_RATELIMIT_ADSBLOL_TRACE_PER_MIN`,
+`0` disables that guard).
+
+`/api/terrain/heights` accepts only finite latitude `[-90, 90]` and longitude
+`[-180, 180]`, rejects batches over 2000 points with 400, and defaults to 120
+requests/minute per IP (`GEV_RATELIMIT_TERRAIN_PER_MIN=0` disables). The server
+cache is a 20,000-point LRU and flush keeps the disk file within 8 MiB. The
+browser height cache is a separate 10,000-entry LRU with the same read API.
+
+`/api/adsbdb` checks callsign (`[A-Z0-9]{1,8}`), ICAO hex (`[0-9a-f]{6}`), and
+registration (`[A-Z0-9-]{1,12}`) before lookup or cache write. Each store is a
+2048-entry LRU; flush evicts until `.gev-cache/adsbdb.json` is within 1 MiB.
+The route defaults to 60 requests/minute per IP (`GEV_RATELIMIT_ADSBDB_PER_MIN=0`
+disables).
+
+`/api/gbfs` rate-limits each client IP (120/minute unless
+`GEV_RATELIMIT_GBFS_PER_MIN=0`) and stores successful station_information
+feeds in a 48-entry LRU. station_status stays uncached. Allowlisting, redirect
+refusal, and the 5 MiB streaming cap are unchanged.
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial

@@ -1,4 +1,23 @@
 import { resolveGoogleServerKey } from '../../../scripts/google-server-key.mjs';
+import { makeOptInRateLimiter } from '../common/rate-limit.js';
+
+let _googleRateLimiter;
+let _googleRateLimiterKey;
+
+/**
+ * Shared opt-in per-IP limiter for Google cost calls (Places and CCTV Street
+ * View). Null when `GEV_RATELIMIT_GOOGLE_PER_MIN` is unset or `0`. Rebuilt
+ * when that value changes so a later `.env` load is visible.
+ * @returns {((key:string)=>boolean)|null}
+ */
+export function googleOptInRateLimiter() {
+  const raw = process.env.GEV_RATELIMIT_GOOGLE_PER_MIN ?? '';
+  if (_googleRateLimiterKey !== raw) {
+    _googleRateLimiterKey = raw;
+    _googleRateLimiter = makeOptInRateLimiter(raw);
+  }
+  return _googleRateLimiter;
+}
 
 /**
  * Optional Google place context is an empty capability when no key is present,

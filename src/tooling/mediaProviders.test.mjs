@@ -7,6 +7,8 @@ import { cctvProxy } from '../../server/providers/cctv.js';
 import { radioBrowserProxy } from '../../server/providers/radio.js';
 import { localProviderPlugins } from '../../server/providers/local.js';
 
+const publicLookup = async () => [{ address: '93.184.216.34', family: 4 }];
+
 function install(plugin, hook = 'configureServer') {
   let handler;
   plugin[hook]({
@@ -71,8 +73,12 @@ function isolate(t) {
 
 test('CCTV instances resolve their own application source root and isolate catalogs and health', async (t) => {
   isolate(t);
-  const first = install(cctvProxy({ sourceRoot: fixture(t, 'first') }));
-  const second = install(cctvProxy({ sourceRoot: fixture(t, 'second') }));
+  const first = install(
+    cctvProxy({ sourceRoot: fixture(t, 'first'), lookupImpl: publicLookup }),
+  );
+  const second = install(
+    cctvProxy({ sourceRoot: fixture(t, 'second'), lookupImpl: publicLookup }),
+  );
   const [a, b] = await Promise.all([first('/sources'), second('/sources')]);
   assert.equal(a.status, 200);
   assert.equal(b.status, 200);
@@ -117,7 +123,7 @@ for (const hook of ['configureServer', 'configurePreviewServer']) {
       },
     ]);
     const request = install(
-      cctvProxy({ sourceRoot: fixture(t, 'unused') }),
+      cctvProxy({ sourceRoot: fixture(t, 'unused'), lookupImpl: publicLookup }),
       hook,
     );
     // Resolve the catalog before substituting transport behavior.

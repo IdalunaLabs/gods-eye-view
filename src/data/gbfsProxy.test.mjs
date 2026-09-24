@@ -1,9 +1,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  GBFS_FEED_CACHE_MAX,
   GBFS_MAX_BODY_BYTES,
   fetchGbfsUpstream,
+  gbfsProxy,
+  readGbfsFeedCache,
+  writeGbfsFeedCache,
 } from '../../server/providers/gbfs.js';
+import { makeDefaultOnRateLimiter } from '../../server/providers/common/rate-limit.js';
 
 const STATION_URL = 'https://gbfs.lyft.com/gbfs/2.3/bay/en/station_status.json';
 const STATION_BODY = '{"data":{"stations":[]}}';
@@ -264,6 +269,120 @@ test('GBFS rejects redirects and caps bodies through both server hooks', async (
         else assert.equal(typeof JSON.parse(body).error, 'string');
       }
     }
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
+});
+
+test('GBFS per-IP limit defaults to 120/min and zero disables it', () => {
+  const limited = makeDefaultOnRateLimiter(undefined, 120);
+  for (let i = 0; i < 120; i += 1) assert.equal(limited('client'), true);
+  assert.equal(limited('client'), false);
+  assert.equal(limited('other'), true);
+  assert.equal(makeDefaultOnRateLimiter('0', 120), null);
+  assert.equal(makeDefaultOnRateLimiter('nope', 120)?.('client'), true);
+});
+
+test('GBFS feed cache is a bounded LRU of successful information feeds', () => {
+  const cache = new Map();
+  for (let i = 0; i < GBFS_FEED_CACHE_MAX + 2; i += 1) {
+    writeGbfsFeedCache(cache, `feed-${i}`, {
+      at: 1_000,
+      ttlMs: 300_000,
+      contentType: 'application/json',
+      body: String(i),
+    });
+  }
+  assert.equal(cache.size, GBFS_FEED_CACHE_MAX);
+  assert.equal(readGbfsFeedCache(cache, 'feed-0', 1_000), null);
+  assert.equal(readGbfsFeedCache(cache, 'feed-2', 1_000)?.body, '2');
+  assert.equal(cache.keys().next().value === 'feed-2', false);
+  const newest = [...cache.keys()].at(-1);
+  assert.equal(newest, 'feed-2');
+  writeGbfsFeedCache(cache, 'status', {
+    at: 1_000,
+    ttlMs: 1,
+    contentType: 'application/json',
+    body: 'stale',
+  });
+  assert.equal(readGbfsFeedCache(cache, 'status', 1_001), null);
+});
+
+function mountGbfs(plugin) {
+  let handler;
+  plugin.configureServer({
+    middlewares: {
+      use(_path, callback) {
+        handler = callback;
+      },
+    },
+  });
+  return (target) =>
+    new Promise((resolve) => {
+      const res = {
+        writeHead(code, headers) {
+          this.status = code;
+          this.headers = headers || {};
+        },
+        end(body) {
+          resolve({ status: this.status, headers: this.headers, body });
+        },
+      };
+      Promise.resolve(
+        handler(
+          {
+            method: 'GET',
+            url: '/' + encodeURIComponent(target),
+            socket: { remoteAddress: '203.0.113.8' },
+          },
+          res,
+        ),
+      ).catch((error) => {
+        resolve({ status: 500, headers: {}, body: error?.message || 'fail' });
+      });
+    });
+}
+
+test('GBFS middleware rate-limits one client and evicts the oldest cached feed', async () => {
+  const originalFetch = globalThis.fetch;
+  const calls = [];
+  globalThis.fetch = async (url) => {
+    calls.push(String(url));
+    return new Response(`{"url":${JSON.stringify(String(url))}}`, {
+      status: 200,
+      headers: { 'Content-Type': 'application/json' },
+    });
+  };
+  try {
+    const limited = mountGbfs(
+      gbfsProxy({ resolvePerMin: () => '1', feedCacheMax: 2 }),
+    );
+    const target = (name) =>
+      `https://${name}.publicbikesystem.net/en/station_information.json`;
+    const first = await limited(target('a'));
+    const second = await limited(target('b'));
+    assert.equal(first.status, 200);
+    assert.equal(first.headers['X-GBFS-Cache'], 'MISS');
+    assert.equal(second.status, 429);
+    assert.equal(JSON.parse(second.body).error, 'Rate limit exceeded');
+    assert.equal(calls.length, 1);
+
+    const cached = mountGbfs(gbfsProxy({ feedCacheMax: 2 }));
+    await cached(target('a'));
+    await cached(target('b'));
+    await cached(target('c'));
+    const before = calls.length;
+    const evicted = await cached(target('a'));
+    assert.equal(evicted.headers['X-GBFS-Cache'], 'MISS');
+    assert.equal(calls.length, before + 1);
+    const warm = await cached(target('c'));
+    assert.equal(warm.headers['X-GBFS-Cache'], 'HIT');
+    assert.equal(calls.length, before + 1);
+    const status = await cached(
+      'https://a.publicbikesystem.net/en/station_status.json',
+    );
+    assert.equal(status.headers['X-GBFS-Cache'], 'MISS');
+    assert.equal(status.headers['Cache-Control'], 'no-store');
   } finally {
     globalThis.fetch = originalFetch;
   }

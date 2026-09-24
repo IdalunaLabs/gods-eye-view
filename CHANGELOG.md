@@ -1,5 +1,36 @@
 # Changelog
 
+- Reject non-public CCTV URLs at registration and again after DNS resolution,
+  including IPv6 and IPv4-mapped addresses. Abort media streams that exceed
+  64 MiB or go idle for 15 seconds. Street View fallback uses registered
+  camera coordinates only and the Google per-IP limiter.
+
+- Default OpenAI cost routes to 10 requests/minute per IP when `HOST` is not
+  loopback and `GEV_RATELIMIT_OPENAI_PER_MIN` is unset. Loopback stays
+  unlimited; `0` still disables the guard. Do not send a shared access token
+  to the browser.
+
+- Route `/api/opensky-track` through the shared OpenSky credit governor and
+  return 502 for oversized track bodies without caching them. Cache only
+  successful track responses. Rate-limit OpenSky track backfill (30/min) and
+  `/api/adsblol/trace` (60/min) per IP unless the matching
+  `GEV_RATELIMIT_*_PER_MIN` value is `0`.
+
+- Validate `/api/terrain/heights` latitude and longitude, reject oversized
+  batches with 400, and cap the server memory cache (20,000-point LRU) and
+  the on-disk cache (8 MiB). Rate-limit the route at 120 requests/minute per
+  IP unless `GEV_RATELIMIT_TERRAIN_PER_MIN=0`. Cap the browser height cache at
+  10,000 LRU entries without changing its read API.
+
+- Validate `/api/adsbdb` callsign, ICAO hex, and registration before any cache
+  use. Cap each in-memory store at 2048 LRU entries and the flushed disk cache
+  at 1 MiB. Rate-limit the route at 60 requests/minute per IP unless
+  `GEV_RATELIMIT_ADSBDB_PER_MIN=0`.
+
+- Rate-limit `/api/gbfs` per IP (120/minute by default; `GEV_RATELIMIT_GBFS_PER_MIN=0`
+  disables) and keep successful station_information feeds in a 48-entry LRU.
+  Live station_status responses stay uncached.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 

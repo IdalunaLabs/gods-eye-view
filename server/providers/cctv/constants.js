@@ -255,3 +255,6 @@ export const CCTV_FRAME_MAX_BODY_BYTES = 16 * 1024 * 1024;
 export const CCTV_MEDIA_FETCH_TIMEOUT_MS = 15 * 1000;
 /** Declared size ceiling for fixed media responses. */
 export const CCTV_MEDIA_MAX_BODY_BYTES = 64 * 1024 * 1024;
+
+/** Abort a media body that sends nothing for this long. */
+export const CCTV_MEDIA_IDLE_MS = 15_000;

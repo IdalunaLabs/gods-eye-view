@@ -36,6 +36,7 @@
       "server/providers/live.js",
       "server/providers/common/http.js",
       "server/providers/common/query.js",
+      "server/providers/common/rate-limit.js",
       "server/providers/aircraft/opensky.js",
       "server/providers/aircraft/adsb-lol.js",
       "server/providers/aircraft/enrichment.js",
@@ -45,7 +46,8 @@
       "src/data/adsbLolFallback.js",
       "src/data/aisStreamAdapter.js",
       "src/data/aisWatchdog.js",
-      "src/sources/httpBody.js"
+      "src/sources/httpBody.js",
+      "src/sources/rateLimit.js"
     ],
     "external": ["ws"]
   },
@@ -101,7 +103,9 @@
     "exports": ["./server/providers/terrain"],
     "modules": [
       "server/providers/terrain.js",
-      "src/data/terrainHeightsProxy.js"
+      "server/providers/common/rate-limit.js",
+      "src/data/terrainHeightsProxy.js",
+      "src/sources/rateLimit.js"
     ],
     "external": []
   },
@@ -138,8 +142,10 @@
     "modules": [
       "server/providers/gbfs.js",
       "server/providers/common/http.js",
+      "server/providers/common/rate-limit.js",
       "src/data/gbfsSource.js",
-      "src/sources/httpBody.js"
+      "src/sources/httpBody.js",
+      "src/sources/rateLimit.js"
     ],
     "external": []
   },
@@ -162,13 +168,18 @@
       "server/providers/cctv/range.js",
       "server/providers/cctv/sources.js",
       "server/providers/common/http.js",
+      "server/providers/common/public-address.js",
+      "server/providers/common/rate-limit.js",
       "src/data/directionText.js",
+      "src/data/radioCountry.js",
       "server/providers/common/geo.js",
       "server/providers/places/google-key.js",
       "scripts/google-server-key.mjs",
       "src/data/cctvFootprint.js",
       "src/sources/cctvTypes.js",
-      "src/sources/httpBody.js"
+      "src/sources/httpBody.js",
+      "src/sources/radioBrowser.js",
+      "src/sources/rateLimit.js"
     ],
     "external": []
   },
@@ -181,6 +192,7 @@
       "server/providers/radio/constants.js",
       "server/providers/radio/stations.js",
       "server/providers/radio/transport.js",
+      "server/providers/common/public-address.js",
       "src/data/radioCountry.js",
       "server/providers/common/http.js",
       "src/sources/radioBrowser.js",
