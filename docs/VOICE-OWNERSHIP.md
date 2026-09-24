@@ -4,6 +4,19 @@
 overall lifetime. It coordinates startup and shutdown. `realtimeFacade.js`
 preserves existing methods and properties by delegation, without copying state.
 The session adapter, action runner and backend interfaces remain unchanged.
+Tool execution is no longer one file. `gevActions.js` builds the shared
+context and dispatches through `actions/registry.js`. Each tool module exports
+`{ name, execute }` and receives `{ args, context }`.
+
+| Owner | State and responsibility |
+| --- | --- |
+| `gevActions.js` | Runner lifetime, nested dispatch, camera-verb install, and the previous public re-exports |
+| `actions/registry.js` | Static map of the 28 tool names; a duplicate name throws while the module loads |
+| `actions/shared.js` | Aliases, context-mode wording, the navigation seam, stop-tracking, and the private haversine |
+| `actions/viewContext.js` | View-target cache, reverse geocode, and basemap label context |
+| `actions/<tool>.js` | That tool's arguments, side effects, and response |
+
+Session owners are unchanged:
 
 | Owner | State and responsibility |
 | --- | --- |

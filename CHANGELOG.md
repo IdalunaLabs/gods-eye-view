@@ -1,5 +1,9 @@
 # Changelog
 
+- Split voice tool execution into one module per command under
+  `src/voice/actions/`, with a static registry. The `gevActions.js` runner,
+  response strings, and `./voice/actions` package export are unchanged.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 
