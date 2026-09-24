@@ -5,6 +5,40 @@
 > tracking work. The AUTOMATED gates live elsewhere: `npm test` (unit),
 > `npm run test:track` (tracking invariants), and the headless harnesses under
 > `scripts/qa-*.mjs` — together these are the full automated test surface.
+> CI also runs `npm run qa:ci-smoke` against the production bundle (see below).
+
+## CI browser smoke
+
+`npm run qa:ci-smoke` is the browser gate. It does not build: run `npm run build`
+first. The script starts `vite preview` on a free port (default search begins at
+4301) with provider credentials blanked, then opens that bundle in headless
+Chromium using the same SwiftShader flags as the other QA harnesses.
+
+Readiness is the loading screen hiding. The DEV-only layer QA hooks
+(`allowQaRegistration`) are not required. The orbit reads the session handle
+`window.__godsEyeView` that the production bundle already publishes.
+
+The run fails on any uncaught page error or console error outside an explicit
+allowlist: Esri/OSM tile hosts, keyless terrain, Cesium ion asset fetches,
+Google Fonts, named keyless provider routes (`/api/opensky`, `/api/celestrak`,
+and the other routes in `scripts/ci-browser-smoke-verdicts.mjs`), and Cesium's
+"Failed to obtain image tile" wording. A bare "Failed to load resource" is not
+ignored. Flights and Satellites must reach a live chip or an honest
+unavailable/degraded state; a blocked network that surfaces that state passes.
+Style keys `1` through `7` must switch styles. After 20 s idle, JS heap must be
+under `--heap-ceiling-mib` (default 600) when `performance.memory` exists.
+The median frame during a 5 s camera orbit is recorded against
+`--frame-budget-ms` (default 1500) and printed as a WARNING when it is over
+that budget. The frame budget is advisory until it is calibrated on a
+GitHub-hosted runner: it fails the run only with `--enforce-frame-budget` or
+`GEV_SMOKE_ENFORCE_FRAMES=1`. Preview also 404s `/api/setup/status`; that
+development-only fetch is allowlisted.
+
+Evidence is `qa-shots/ci-smoke/report.json` plus PNG screenshots. `--teeth`
+removes the first-run launcher and must exit 1; exit 2 means that control did
+not actually fail the launcher assertion. The GitHub `browser-smoke` job runs
+this after `npm run build` and uploads `qa-shots/ci-smoke/**` on failure. Other
+CI jobs still set `PUPPETEER_SKIP_DOWNLOAD=1`.
 
 This guide covers the work hardened over **4 adversarial-review batches** on
 `feat/annotate-hybrid`. Record a voice note + screenshots as you go; each scenario

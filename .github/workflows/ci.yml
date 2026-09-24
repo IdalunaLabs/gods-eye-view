@@ -87,3 +87,37 @@ jobs:
 
       - name: Build production bundle
         run: npm run build
+
+  browser-smoke:
+    name: Browser smoke
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out source
+        uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+
+      - name: Use Node.js
+        uses: actions/setup-node@49933ea5288caeca8642d1e84afbd3f7d6820020 # v4.4.0
+        with:
+          node-version: 24.14.0
+          cache: npm
+
+      - name: Install locked dependencies
+        run: npm ci
+
+      - name: Build production bundle
+        run: npm run build
+
+      # Frame time is advisory. Set GEV_SMOKE_ENFORCE_FRAMES=1 to fail this job once the budget is calibrated on a GitHub-hosted runner.
+      - name: Run browser smoke
+        run: npm run qa:ci-smoke
+
+      - name: Upload smoke evidence
+        if: failure()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: ci-browser-smoke
+          path: qa-shots/ci-smoke/**
+          if-no-files-found: warn

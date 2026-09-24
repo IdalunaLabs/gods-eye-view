@@ -1,5 +1,17 @@
 # God's Eye View Current State
 
+CI runs a production-bundle browser smoke (`npm run qa:ci-smoke`) on Ubuntu
+after `npm run build`. The gate uses headless SwiftShader, a keyless
+`vite preview`, and DOM readiness rather than the DEV-only QA registration
+hooks. It requires a quiet console outside an explicit tile and keyless-upstream
+allowlist, the first-run Explore Manually path, Flights and Satellites in a
+live or honest unavailable state, style keys 1–7, and a JS heap under 600 MiB
+after 20 s idle. The median orbit frame is recorded against a 1500 ms budget
+and warned when over it. That frame budget is advisory until calibrated on a
+GitHub-hosted runner; `--enforce-frame-budget` or `GEV_SMOKE_ENFORCE_FRAMES=1`
+turns it into a failure. Evidence is
+`qa-shots/ci-smoke/report.json`. Other CI jobs still skip the Puppeteer download.
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial
