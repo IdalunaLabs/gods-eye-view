@@ -1,5 +1,6 @@
 import { LayerLifecycle } from '../data/lifecycle.js';
 import { LayerPresentation } from './layerPresentation.js';
+import { startFusionAlerts } from './fusionAlerts.js';
 /** Register the application layer catalog before allowing state restoration. */
 export function createApplicationData({
   scene: { viewer, mapStackController },
@@ -53,6 +54,9 @@ export function createApplicationData({
   }
   presentation.mount(document.getElementById('data-toggles'));
   styleManager.attachDataManager(dataManager);
+  const fusionAlerts = startFusionAlerts({ dataManager, styleManager });
+  defer(() => fusionAlerts.stop());
+  fusionAlerts.start();
 
   return { dataManager, catalog, presentation };
 }

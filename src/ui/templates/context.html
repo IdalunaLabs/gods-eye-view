@@ -1,5 +1,25 @@
   <!-- Global Context is deliberately independent from the left layer accordion. -->
   <aside id="right-context-rail">
+    <div id="alerts-panel" class="panel-collapsible collapsed" data-panel-id="alerts-panel">
+      <div class="panel-glow"></div>
+      <div class="alerts-panel-inner">
+        <div class="panel-header">
+          <span class="panel-title">ALERTS</span>
+          <span id="alerts-panel-count" class="alerts-count" data-alerts-count>0</span>
+          <span class="panel-divider"></span>
+          <button class="panel-collapse-btn" data-collapse-target="alerts-panel" title="Expand panel">&#9654;</button>
+        </div>
+        <div id="alerts-list" class="alerts-list" data-alerts-list>
+          <p class="alerts-empty">No active alerts. Convergence and dark-period checks run on a 5 s cadence; loiter and hotspot proximity stay off until enabled.</p>
+        </div>
+        <div class="alerts-toggles" role="group" aria-label="Fusion detectors">
+          <button type="button" data-detector="convergence" aria-pressed="true">CONVERGENCE</button>
+          <button type="button" data-detector="darkPeriod" aria-pressed="true">DARK PERIOD</button>
+          <button type="button" data-detector="loiter" aria-pressed="false">LOITER</button>
+          <button type="button" data-detector="hotspot" aria-pressed="false">HOTSPOT</button>
+        </div>
+      </div>
+    </div>
     <div id="global-context-panel" class="panel-collapsible collapsed" data-panel-id="global-context-panel">
       <div class="panel-glow"></div>
       <div class="global-context-panel-inner">

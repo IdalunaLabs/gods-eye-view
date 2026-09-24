@@ -159,6 +159,21 @@
   opacity: 0.6;
 }
 
+.hud-fusion-alerts {
+  margin-left: 8px;
+  padding: 0 6px;
+  border: 1px solid currentColor;
+  letter-spacing: 1px;
+}
+
+#hud-fusion-alerts[data-severity='watch'] {
+  color: #ffd27a;
+}
+
+#hud-fusion-alerts[data-severity='warn'] {
+  color: #ff8d6b;
+}
+
 /* Corner blocks */
 .hud-corner {
   position: absolute;

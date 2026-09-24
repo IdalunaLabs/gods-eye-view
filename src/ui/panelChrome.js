@@ -25,6 +25,7 @@ const COCKPIT_ENTRY_COLLAPSE_PANEL_IDS = Object.freeze([
   'pp-toggles',
   'global-context-panel',
   'radio-panel',
+  'alerts-panel',
 ]);
 
 /** Own panel disclosure, docking, persistence and Cockpit rail restoration. */

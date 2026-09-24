@@ -223,6 +223,7 @@ export class PanelLayoutController {
         this._ppToggles,
         this._cctvPanel,
         globalContextPanel,
+        document.getElementById('alerts-panel'),
       ]) {
         if (panel) this._rightStackResizeObserver.observe(panel);
       }

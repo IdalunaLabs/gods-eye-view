@@ -1,5 +1,10 @@
 # Changelog
 
+- Add cross-layer fusion alerts: a portable spatial index, throttled
+  convergence and dark-period detectors (loiter and hotspot proximity off by
+  default), an Alerts panel, a HUD count, and analyst alert intents.
+  Explanations state dead-reckoning and reporting-gap limits.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 

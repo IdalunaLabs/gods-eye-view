@@ -66,6 +66,7 @@ Start with the included data sources, then add your own. Each layer is a separat
 - **🎨 Reskin reality:** GLSL sensor looks over the normal globe — CRT, NVG, FLIR/thermal, Noir, Snow.
 - **🟩 Detection overlay:** Screen-space bounding boxes and IDs on everything in view.
 - **🎖️ Military HUD:** Tactical heads-up display with intelligence-style telemetry.
+- **⚠️ Fusion alerts:** Correlate loaded flights, ships, fires and earthquakes — closing pairs and dark AIS gaps by default, with optional loiter and hotspot proximity. Every alert states its basis, its limit, and a confidence.
 - **🌐 Global Context:** Stage the full situational picture with one switch — and get your exact view back when you leave.
 - **🎥 Scene director:** Capture cinematic camera tours for clips and demos.
 - **🔗 Share Links:** Camera, style, layers, and even one tracked target serialize into a URL — a live target is a handoff, not a bookmark.

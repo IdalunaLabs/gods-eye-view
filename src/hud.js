@@ -181,7 +181,7 @@ export class IntelHUD {
       <div class="hud-top-bar">
         <span class="hud-top-bar-left">TOP SECRET // SI-TK // NOFORN</span>
         <span class="hud-top-bar-center">${this._missionId}</span>
-        <span class="hud-top-bar-right">PAGE 1/1</span>
+        <span class="hud-top-bar-right">PAGE 1/1 <span id="hud-fusion-alerts" class="hud-fusion-alerts" hidden></span></span>
       </div>
 
       <div class="hud-corner hud-top-left">
@@ -894,6 +894,23 @@ export class IntelHUD {
   /** @returns {boolean} Whether the HUD is currently visible. */
   get visible() {
     return this._visible;
+  }
+
+  /**
+   * Paint the active fusion-alert count. Hidden at zero. One discrete update;
+   * the HUD does not poll fusion.
+   * @param {number} count
+   * @param {'info'|'watch'|'warn'} [severity='info']
+   * @returns {void}
+   */
+  setFusionAlertCount(count, severity = 'info') {
+    const total = Math.max(0, Math.floor(Number(count) || 0));
+    const el = this._el?.querySelector?.('#hud-fusion-alerts');
+    if (!el) return;
+    const level = severity === 'warn' || severity === 'watch' ? severity : 'info';
+    el.hidden = total <= 0;
+    el.dataset.severity = level;
+    el.textContent = total === 1 ? '1 ALERT' : `${total} ALERTS`;
   }
 
   attachDataManager(dataManager) {

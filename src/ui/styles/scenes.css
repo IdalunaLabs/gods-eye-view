@@ -402,6 +402,8 @@
 #cctv-panel.collapsed #cctv-meta,
 #cctv-panel.collapsed .cctv-summary-label,
 #cctv-panel.collapsed #cctv-summary,
+#alerts-panel.collapsed .alerts-list,
+#alerts-panel.collapsed .alerts-toggles,
 #scene-panel.collapsed .scene-controls,
 #scene-panel.collapsed .scene-shot-list,
 #scene-panel.collapsed .scene-progress,

@@ -1,5 +1,16 @@
 # God's Eye View Current State
 
+Cross-layer fusion correlates loaded flights, military flights, vessels, FIRMS
+detections and earthquakes. A portable lat/lon grid answers radius, bbox and
+nearest queries. Detectors run off the render loop every 5 s: convergence and
+dark-period are on by default; loiter and hotspot proximity stay off until
+enabled (`godsEyeView.v6.fusionDetectors`). An alert publishes after two
+consecutive passes and drops after three misses. Every explanation states its
+basis and its limit, with a confidence. The Alerts panel on the right rail
+lists them (collapse key `godsEyeView.v6.panelCollapsed.alerts-panel`); the
+intel HUD shows the active count while it is visible. Analyst queries accept
+an alert question, an `intent`, or an `alertKind` filter. See [fusion](FUSION.md).
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial

@@ -1809,7 +1809,17 @@
       "src/director/sharing/lifetime.js",
       "src/director/authoring.js",
       "src/scenes/sharing.js",
-      "src/ui/sceneSharing.js"
+      "src/ui/sceneSharing.js",
+      "src/app/fusionAlerts.js",
+      "src/ui/alertsPanel.js",
+      "src/fusion/index.js",
+      "src/fusion/geo.js",
+      "src/fusion/spatialIndex.js",
+      "src/fusion/fusionEngine.js",
+      "src/fusion/detectors/convergence.js",
+      "src/fusion/detectors/loiter.js",
+      "src/fusion/detectors/darkPeriod.js",
+      "src/fusion/detectors/hotspotProximity.js"
     ],
     "external": [
       "@mapbox/vector-tile",
@@ -2684,6 +2694,20 @@
       "src/sources/rateLimit.js"
     ],
     "external": ["pbf"]
+  },
+  "fusion": {
+    "exports": ["./fusion"],
+    "modules": [
+      "src/fusion/index.js",
+      "src/fusion/geo.js",
+      "src/fusion/spatialIndex.js",
+      "src/fusion/fusionEngine.js",
+      "src/fusion/detectors/convergence.js",
+      "src/fusion/detectors/loiter.js",
+      "src/fusion/detectors/darkPeriod.js",
+      "src/fusion/detectors/hotspotProximity.js"
+    ],
+    "external": []
   },
   "map-feature-source": {
     "exports": ["./sources/map-features"],
