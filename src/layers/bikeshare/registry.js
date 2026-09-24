@@ -1,3 +1,5 @@
+import { CITY_RANGE_BASE_KM } from './policy.js';
+
 function buildBcycleUrls(systemId) {
   return {
     stationInformationUrl: `https://gbfs.bcycle.com/${systemId}/station_information.json`,
@@ -319,7 +321,8 @@ const RAW_GBFS_CITY_REGISTRY = [
     systemId: 'bcycle_santabarbara',
   }),
 ];
-function normalizeRegistryEntry(entry) {
+/** Normalize one GBFS city record, including the shared radius fallback. */
+export function normalizeRegistryEntry(entry) {
   const id = String(entry?.id || '')
     .trim()
     .toLowerCase();
