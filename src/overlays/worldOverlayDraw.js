@@ -5,6 +5,10 @@
  * fetching, Cesium scene queries, or source selection policy belongs here.
  */
 
+import {
+  blitLabelSprite,
+  invalidateLabelSpriteCache,
+} from './labelSpriteCache.js';
 import { WORLD_OVERLAY_STYLE } from './worldOverlayTokens.js';
 
 // Two high-cardinality infrastructure sources share this cache; 1024 avoids
@@ -45,6 +49,7 @@ export function clearWorldOverlayTextMeasureCache() {
   _textMeasureCache.clear();
   _textMeasureCacheSize = 0;
   _textMeasureClock = 0;
+  invalidateLabelSpriteCache();
 }
 
 /** Install the font-loading invalidation hooks once, when the API exists. */
@@ -287,6 +292,22 @@ function clampUnit(value) {
   return Number.isFinite(Number(value))
     ? Math.max(0, Math.min(1, Number(value)))
     : 1;
+}
+
+/**
+ * Draw one overlay string through the sprite cache. Alignment and baseline
+ * match the values the painter just installed on `ctx`.
+ * @param {CanvasRenderingContext2D} ctx
+ * @param {string} text
+ * @param {number} x
+ * @param {number} y
+ * @param {string} fill
+ * @param {string} font
+ * @param {string} baseline
+ * @param {string} align
+ */
+function paintOverlayText(ctx, text, x, y, fill, font, baseline, align) {
+  blitLabelSprite(ctx, text, x, y, fill, font, baseline, align);
 }
 
 function trackDisplayText(entry) {
@@ -646,17 +667,39 @@ function drawCardText(ctx, entry, placement, selected = false, topOffset = 0) {
   const details = Array.isArray(entry.details) ? entry.details : [];
   const x = placement.rect.x + (selected ? 12 : 9);
   let y = placement.rect.y + (selected ? 8 : 6) + topOffset;
-  ctx.fillStyle = WORLD_OVERLAY_STYLE.title;
-  ctx.font = selected
+  const titleFill = WORLD_OVERLAY_STYLE.title;
+  const titleFont = selected
     ? WORLD_OVERLAY_STYLE.fontSelected
     : WORLD_OVERLAY_STYLE.fontTitle;
+  ctx.fillStyle = titleFill;
+  ctx.font = titleFont;
   ctx.textBaseline = 'top';
-  ctx.fillText(String(entry.title || ''), x, y);
+  paintOverlayText(
+    ctx,
+    String(entry.title || ''),
+    x,
+    y,
+    titleFill,
+    titleFont,
+    'top',
+    'start',
+  );
   y += selected ? 15 : 13;
-  ctx.fillStyle = WORLD_OVERLAY_STYLE.detail;
-  ctx.font = WORLD_OVERLAY_STYLE.fontDetail;
+  const detailFill = WORLD_OVERLAY_STYLE.detail;
+  const detailFont = WORLD_OVERLAY_STYLE.fontDetail;
+  ctx.fillStyle = detailFill;
+  ctx.font = detailFont;
   for (let i = 0; i < details.length; i++) {
-    ctx.fillText(String(details[i]), x, y);
+    paintOverlayText(
+      ctx,
+      String(details[i]),
+      x,
+      y,
+      detailFill,
+      detailFont,
+      'top',
+      'start',
+    );
     y += selected ? 15 : 13;
   }
 }
@@ -827,19 +870,37 @@ export function paintTacticalCard(ctx, entry, placement, alpha = 1) {
 
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = WORLD_OVERLAY_STYLE.title;
-  ctx.font = selected
+  const titleFill = WORLD_OVERLAY_STYLE.title;
+  const titleFont = selected
     ? WORLD_OVERLAY_STYLE.fontSelected
     : WORLD_OVERLAY_STYLE.fontTitle;
+  ctx.fillStyle = titleFill;
+  ctx.font = titleFont;
   const titleBaseline = y + layout.padY + layout.titleH - 2;
-  ctx.fillText(String(entry.title || ''), x + layout.padX, titleBaseline);
-  ctx.fillStyle = WORLD_OVERLAY_STYLE.detail;
-  ctx.font = WORLD_OVERLAY_STYLE.fontDetail;
+  paintOverlayText(
+    ctx,
+    String(entry.title || ''),
+    x + layout.padX,
+    titleBaseline,
+    titleFill,
+    titleFont,
+    'alphabetic',
+    'left',
+  );
+  const detailFill = WORLD_OVERLAY_STYLE.detail;
+  const detailFont = WORLD_OVERLAY_STYLE.fontDetail;
+  ctx.fillStyle = detailFill;
+  ctx.font = detailFont;
   for (let i = 0; i < details.length; i++) {
-    ctx.fillText(
+    paintOverlayText(
+      ctx,
       String(details[i]),
       x + layout.padX,
       titleBaseline + (i + 1) * layout.lineH,
+      detailFill,
+      detailFont,
+      'alphabetic',
+      'left',
     );
   }
   ctx.restore();
@@ -851,13 +912,20 @@ export function paintLabel(ctx, entry, placement, alpha = 1) {
   ctx.save();
   ctx.globalAlpha = alpha;
   drawCardChrome(ctx, entry, placement, false);
-  ctx.fillStyle = WORLD_OVERLAY_STYLE.title;
-  ctx.font = WORLD_OVERLAY_STYLE.fontLabel;
+  const titleFill = WORLD_OVERLAY_STYLE.title;
+  const titleFont = WORLD_OVERLAY_STYLE.fontLabel;
+  ctx.fillStyle = titleFill;
+  ctx.font = titleFont;
   ctx.textBaseline = 'top';
-  ctx.fillText(
+  paintOverlayText(
+    ctx,
     String(entry.title || ''),
     placement.rect.x + 6,
     placement.rect.y + 4,
+    titleFill,
+    titleFont,
+    'top',
+    'start',
   );
   ctx.restore();
   return placement.rect;
@@ -868,13 +936,20 @@ export function paintTrack(ctx, entry, placement, alpha = 1) {
   ctx.save();
   ctx.globalAlpha = alpha;
   drawCardChrome(ctx, entry, placement, false);
-  ctx.fillStyle = WORLD_OVERLAY_STYLE.title;
-  ctx.font = WORLD_OVERLAY_STYLE.fontTrack;
+  const titleFill = WORLD_OVERLAY_STYLE.title;
+  const titleFont = WORLD_OVERLAY_STYLE.fontTrack;
+  ctx.fillStyle = titleFill;
+  ctx.font = titleFont;
   ctx.textBaseline = 'top';
-  ctx.fillText(
+  paintOverlayText(
+    ctx,
     trackDisplayText(entry),
     placement.rect.x + 6,
     placement.rect.y + 4,
+    titleFill,
+    titleFont,
+    'top',
+    'start',
   );
   ctx.restore();
   return placement.rect;
@@ -973,15 +1048,22 @@ export function paintThumbnail(
   );
   const title =
     entry._overlayThumbnailTitle || String(entry.title || '').toUpperCase();
+  const titleFill = entry.thumbnailTitleColor || WORLD_OVERLAY_STYLE.title;
+  const titleFont = entry.thumbnailTitleFont || WORLD_OVERLAY_STYLE.fontTitle;
   ctx.textAlign = 'left';
   ctx.textBaseline = 'alphabetic';
-  ctx.fillStyle = entry.thumbnailTitleColor || WORLD_OVERLAY_STYLE.title;
-  ctx.font = entry.thumbnailTitleFont || WORLD_OVERLAY_STYLE.fontTitle;
+  ctx.fillStyle = titleFill;
+  ctx.font = titleFont;
   if (title && titleH > 0) {
-    ctx.fillText(
+    paintOverlayText(
+      ctx,
       titleChars > 0 ? title.slice(0, titleChars) : title,
       imageX,
       imageY + thumbH + titleH - 3,
+      titleFill,
+      titleFont,
+      'alphabetic',
+      'left',
     );
   }
   ctx.restore();
@@ -1020,16 +1102,34 @@ export function paintTracked(ctx, entry, placement, alpha = 1) {
   ctx.textBaseline = 'alphabetic';
   const centerX = x + w / 2;
   const titleBaseline = y + layout.padY + layout.titleH - 2;
-  ctx.fillStyle = WORLD_OVERLAY_STYLE.title;
-  ctx.font = WORLD_OVERLAY_STYLE.fontTrackedTitle;
-  ctx.fillText(String(entry.title || ''), centerX, titleBaseline);
-  ctx.fillStyle = WORLD_OVERLAY_STYLE.detail;
-  ctx.font = WORLD_OVERLAY_STYLE.fontTrackedDetail;
+  const titleFill = WORLD_OVERLAY_STYLE.title;
+  const titleFont = WORLD_OVERLAY_STYLE.fontTrackedTitle;
+  ctx.fillStyle = titleFill;
+  ctx.font = titleFont;
+  paintOverlayText(
+    ctx,
+    String(entry.title || ''),
+    centerX,
+    titleBaseline,
+    titleFill,
+    titleFont,
+    'alphabetic',
+    'center',
+  );
+  const detailFill = WORLD_OVERLAY_STYLE.detail;
+  const detailFont = WORLD_OVERLAY_STYLE.fontTrackedDetail;
+  ctx.fillStyle = detailFill;
+  ctx.font = detailFont;
   for (let i = 0; i < details.length; i++) {
-    ctx.fillText(
+    paintOverlayText(
+      ctx,
       String(details[i]),
       centerX,
       titleBaseline + (i + 1) * layout.lineH,
+      detailFill,
+      detailFont,
+      'alphabetic',
+      'center',
     );
   }
   ctx.restore();
@@ -1103,12 +1203,31 @@ export function paintDetectionCallout(ctx, callout, alpha = 1) {
   ctx.globalAlpha = alpha;
   ctx.fillStyle = callout.label;
   ctx.font = callout.font;
-  if (callout.primary)
-    ctx.fillText(callout.primary, callout.primaryX, callout.baseline);
+  if (callout.primary) {
+    paintOverlayText(
+      ctx,
+      callout.primary,
+      callout.primaryX,
+      callout.baseline,
+      callout.label,
+      callout.font,
+      'alphabetic',
+      'left',
+    );
+  }
   if (callout.micro) {
     ctx.globalAlpha = alpha * 0.8;
     ctx.font = callout.microFont;
-    ctx.fillText(callout.micro, callout.microX, callout.baseline);
+    paintOverlayText(
+      ctx,
+      callout.micro,
+      callout.microX,
+      callout.baseline,
+      callout.label,
+      callout.microFont,
+      'alphabetic',
+      'left',
+    );
   }
 }
 

@@ -38,6 +38,8 @@ const getOpt = (name, fallback) => {
 
 const APP_URL = getOpt('--url', 'http://localhost:4244');
 const TAG = getOpt('--tag', 'after');
+/** `on` or `off` forces the dev sprite-cache toggle before the scenes run. */
+const SPRITE_MODE = getOpt('--sprites', '');
 /** Comma-separated scene-id prefixes. Empty runs the whole set. */
 const SCENE_FILTER = getOpt('--scenes', '')
   .split(',')
@@ -260,6 +262,15 @@ async function main() {
     // flyToAustin arrives ~500 ms after init; let it start and land before any
     // scene sets its own pose, or the arrival overwrites the first camera.
     await new Promise((resolve) => setTimeout(resolve, 2500));
+    if (SPRITE_MODE === 'on' || SPRITE_MODE === 'off') {
+      const applied = await page.evaluate((mode) => {
+        const hook = window.__gevWorldOverlay;
+        if (typeof hook?.setLabelSpritesEnabled !== 'function') return false;
+        hook.setLabelSpritesEnabled(mode === 'on');
+        return true;
+      }, SPRITE_MODE);
+      console.log(`  Sprites : ${applied ? SPRITE_MODE : 'toggle unavailable'}`);
+    }
 
     const selected = SCENE_FILTER.length
       ? SCENES.filter((scene) => SCENE_FILTER.some((prefix) => scene.id.startsWith(prefix)))
@@ -399,11 +410,23 @@ async function main() {
       const diagnostics = await page.evaluate(
         () => window.__godsEyeView.styleManager.getDetectionState?.() || {},
       );
-      results.push({ scene: scene.id, converged, ...stats });
+      const overlay = await page.evaluate(() => {
+        const diag = window.__gevWorldOverlay?.getDiagnostics?.();
+        if (!diag) return null;
+        return {
+          textDraws: diag.textDraws ?? null,
+          spriteBlits: diag.spriteBlits ?? null,
+          spriteRasters: diag.spriteRasters ?? null,
+        };
+      });
+      results.push({ scene: scene.id, converged, overlay, ...stats });
+      const overlayText = overlay
+        ? ` textDraws=${overlay.textDraws} spriteBlits=${overlay.spriteBlits} spriteRasters=${overlay.spriteRasters}`
+        : ' overlay-diagnostics=unavailable';
       console.log(
         `p05=${stats.p05} p25=${stats.p25} p50=${stats.p50} p95=${stats.p95}`
         + `${converged ? '' : '  (tiles did not fully settle)'}`
-        + `  [${diagnostics.detectionMode || '?'}]`,
+        + `  [${diagnostics.detectionMode || '?'}]${overlayText}`,
       );
     }
   } finally {

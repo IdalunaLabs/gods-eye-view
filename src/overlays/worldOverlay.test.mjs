@@ -31,6 +31,14 @@ import {
   setOverlaySourceVisible,
   upsertOverlayEntry,
 } from './worldOverlay.js';
+import {
+  invalidateLabelSpriteCache,
+  setLabelSpriteCanvasFactory,
+  setLabelSpritesEnabled,
+} from './labelSpriteCache.js';
+
+// Call-list traces in this file follow the direct glyph path.
+setLabelSpritesEnabled(false);
 
 class MockEvent {
   constructor() {
@@ -2220,6 +2228,48 @@ test('diagnostics facade preserves the complete binding shape', () => {
     'fadingCount', 'paintedCount', 'hitRectCount', 'projectionMs', 'solveMs',
     'paintMs', 'solveRevision', 'paintItemPoolSize', 'paintRectPoolSize',
     'candidateIndexSize', 'entriesBySource', 'paintedBySource',
+    'textDraws', 'spriteBlits', 'spriteRasters',
   ];
   assert.deepEqual(Object.keys(diagnostics).sort(), fields.sort());
+});
+
+test('overlay diagnostics count sprite blits instead of per-frame text draws', () => {
+  const surfaces = [];
+  setLabelSpriteCanvasFactory((width, height) => {
+    const context = {
+      globalAlpha: 1,
+      measureText(text) { return { width: String(text).length * 6 }; },
+      setTransform() {},
+      fillText() {},
+      strokeText() {},
+    };
+    const canvas = { width, height };
+    surfaces.push(canvas);
+    return { canvas, context };
+  });
+  setLabelSpritesEnabled(true);
+  invalidateLabelSpriteCache();
+  const env = installMockEnvironment();
+  try {
+    initWorldOverlay(env.viewer);
+    setOverlayEntries('sprites', [selectedEntry('SPRITE-1')]);
+    env.postRender.raise();
+    const first = getWorldOverlayDiagnostics();
+    assert.ok(first.spriteBlits >= 1, 'the first frame blits the rasterized label');
+    assert.equal(first.textDraws, 0);
+    assert.ok(first.spriteRasters >= 1);
+    assert.ok(surfaces.length >= 1);
+    const rasters = surfaces.length;
+    env.postRender.raise();
+    const steady = getWorldOverlayDiagnostics();
+    assert.ok(steady.spriteBlits >= 1);
+    assert.equal(steady.spriteRasters, 0, 'a repeated label does not rasterize again');
+    assert.equal(steady.textDraws, 0);
+    assert.equal(surfaces.length, rasters);
+  } finally {
+    env.cleanup();
+    setLabelSpritesEnabled(false);
+    setLabelSpriteCanvasFactory(null);
+    invalidateLabelSpriteCache();
+  }
 });

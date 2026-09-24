@@ -28,6 +28,7 @@ import {
   SKY_PLATE_SCALE,
 } from '../overlays/worldOverlayTokens.js';
 import { skyBackdropFactor } from './iconOrientation.js';
+import { invalidateLabelSpriteCache } from '../overlays/labelSpriteCache.js';
 import { paintDetectionCallout } from '../overlays/worldOverlayDraw.js';
 import { allocateLayerQuotas, LabelArbiter } from './labelArbiter.js';
 import {
@@ -596,6 +597,7 @@ export function setDetectionStyle(styleName) {
   _platePaint = _theme.calloutPlate || THEME_MAP._default.calloutPlate;
   _platePaintSpace = _theme.calloutPlateSpace || _platePaint;
   _applySurfaceTheme();
+  invalidateLabelSpriteCache();
   // Host invalidation is frame-global, so one request repaints both lanes.
   _hostLane?.requestPaint();
 }

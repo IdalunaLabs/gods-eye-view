@@ -33,6 +33,11 @@ import {
   SKY_PLATE_SCALE,
   WORLD_OVERLAY_STYLE,
 } from './worldOverlayTokens.js';
+import { setLabelSpritesEnabled } from './labelSpriteCache.js';
+
+// These traces assert the direct fillText path. Sprite blits are covered
+// beside the cache.
+setLabelSpritesEnabled(false);
 
 function alphaOf(rgba) {
   const match = /rgba\(\s*\d+\s*,\s*\d+\s*,\s*\d+\s*,\s*([0-9.]+)\s*\)/.exec(String(rgba));

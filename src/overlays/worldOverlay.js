@@ -15,6 +15,12 @@ import {
   paintOverlayEntry,
   placementVariants,
 } from './worldOverlayDraw.js';
+import {
+  publishLabelSpriteFrameStats,
+  resetLabelSpriteFrameCounters,
+  setLabelSpriteDpr,
+  setLabelSpritesEnabled,
+} from './labelSpriteCache.js';
 import { WORLD_OVERLAY_STYLE } from './worldOverlayTokens.js';
 
 /**
@@ -276,6 +282,9 @@ const _diagnostics = {
   candidateIndexSize: 0,
   entriesBySource: {},
   paintedBySource: _paintedBySource,
+  textDraws: 0,
+  spriteBlits: 0,
+  spriteRasters: 0,
 };
 
 function nowMs() {
@@ -2507,6 +2516,8 @@ function paintEntryItem(item, keyhole) {
 
 function paintFrame(keyhole) {
   const started = nowMs();
+  setLabelSpriteDpr(_canvasDpr);
+  resetLabelSpriteFrameCounters();
   clearCanvas(true, false);
   _detectionSurfacePrepared = false;
   if (
@@ -2537,6 +2548,7 @@ function paintFrame(keyhole) {
   _diagnostics.paintItemPoolSize = _paintItemPool.length;
   _diagnostics.paintRectPoolSize = _paintRectPool.length;
   _diagnostics.paintMs = nowMs() - started;
+  publishLabelSpriteFrameStats(_diagnostics);
   syncAccessibleActions();
   _canvasNeedsClear =
     _paintRectCount > 0 || activeCustomPaintLaneCount(PAINT_TARGET_SHARED) > 0;
@@ -2574,6 +2586,10 @@ function resetFrameDiagnostics() {
   _diagnostics.projectionMs = 0;
   _diagnostics.solveMs = 0;
   _diagnostics.paintMs = 0;
+  _diagnostics.textDraws = 0;
+  _diagnostics.spriteBlits = 0;
+  _diagnostics.spriteRasters = 0;
+  resetLabelSpriteFrameCounters();
   for (let i = 0; i < _paintedSourceKeys.length; i++) {
     _paintedBySource[_paintedSourceKeys[i]] = 0;
   }
@@ -2628,7 +2644,10 @@ function drawWorldOverlay() {
 
 function createDevFacade() {
   if (typeof window === 'undefined' || import.meta.env?.DEV !== true) return;
-  window.__gevWorldOverlay = { getDiagnostics: getWorldOverlayDiagnostics };
+  window.__gevWorldOverlay = {
+    getDiagnostics: getWorldOverlayDiagnostics,
+    setLabelSpritesEnabled,
+  };
 }
 
 /**
@@ -2813,5 +2832,8 @@ export function destroyWorldOverlay() {
     candidateIndexSize: 0,
     entriesBySource: {},
     paintedBySource: _paintedBySource,
+    textDraws: 0,
+    spriteBlits: 0,
+    spriteRasters: 0,
   });
 }
