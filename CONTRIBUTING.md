@@ -25,7 +25,7 @@ the Keychain; on any platform you can pass them as env vars or use a `.env`.
 People who only want to run the app can instead install the repository directly
 through Pinokio; the terminal path above remains the contributor path.
 
-Open `http://localhost:4173`. Before sending a PR run `npm run build`, `npm test`, and `npm run test:track` (dev server must be up) — **all three must stay green.**
+Open `http://localhost:4173`. Before sending a PR run `npm run build`, `npm test`, and `npm run test:track` (dev server must be up) — **all three must stay green.** CI also runs `npm run qa:ci-smoke` on the production bundle (see [TESTING.md](TESTING.md)); that job is the only one that downloads Puppeteer's Chromium.
 
 ## Checking a built app locally
 
@@ -36,6 +36,13 @@ changing them. Provider Settings and `/api/setup/*` are development-only: edit
 configuration through the development app or environment file. Unknown API
 paths return JSON 404 responses. Vite preview is for checking a local build;
 it is not a production server.
+
+`npm run qa:ci-smoke` is the automated check of that preview. Build first. It
+blanks provider credentials, opens the bundle headless, and writes
+`qa-shots/ci-smoke/report.json`. A blocked tile or keyless upstream is an
+allowlisted console error, not a failure, when the layer chip says the data is
+live or honestly unavailable. `--teeth` is the negative control for the
+first-run assertion.
 
 ## Good first contributions
 

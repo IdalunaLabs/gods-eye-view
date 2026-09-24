@@ -1,5 +1,10 @@
 # Changelog
 
+- Add a CI browser smoke (`npm run qa:ci-smoke`) that previews the production
+  bundle headless and checks the first-run path, Flights and Satellites, style
+  keys, console errors, heap, and a SwiftShader frame budget. Other CI jobs
+  still skip the Puppeteer download.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 
