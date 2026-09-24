@@ -1,3 +1,4 @@
+// @ts-check
 import { normalizeRadioCountryInput } from '../data/radioCountry.js';
 
 export const RADIO_UUID_RE =
@@ -65,7 +66,7 @@ export function publicRadioHttpsUrl(value) {
 
 /**
  * Normalize one Radio Browser station and omit favicons and unsafe streams.
- * @param {object} raw Directory record.
+ * @param {any} raw Directory record.
  * @param {object} [options]
  * @param {(value: unknown) => string|null} [options.normalizeUrl] URL admission
  *   policy, applied to both stream and homepage; returns a safe URL or null.

@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Protocol-independent voice lifetime and action dispatch.
  * An adapter receives { emit, runAction, signal } and supplies start, stop,

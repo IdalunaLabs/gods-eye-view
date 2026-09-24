@@ -1,3 +1,4 @@
+// @ts-check
 import {
   OVERPASS_URL,
   MAX_VIEWPORT_DEGREES,
@@ -7,7 +8,7 @@ import {
 import { buildOverpassQuery, normalizeAlprNode } from './records.js';
 /** Construct the bounded OSM request adapter without starting a request. */
 export function createOverpassAlprSource({
-  fetchImpl = (...args) => globalThis.fetch(...args),
+  fetchImpl = globalThis.fetch,
 } = {}) {
   async function fetchAlprNodes(box, signal) {
     signal?.throwIfAborted();

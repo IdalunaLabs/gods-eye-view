@@ -1,3 +1,4 @@
+// @ts-check
 /** Bounded per-key and aggregate request admission. */
 const RATE_LIMITER_MAX_KEYS = 2000;
 

@@ -1,3 +1,4 @@
+// @ts-check
 import { normalizeOverpassRoads } from '../../sources/overpassRoads.js';
 export { normalizeOverpassRoads } from '../../sources/overpassRoads.js';
 import { createFlowTileSource } from './flowSource.js';
@@ -16,15 +17,17 @@ function buildOverpassQuery(
 }
 
 /** Supply road responses, flow availability and one decoded flow cache. */
-export function createTrafficSource({
-  fetchImpl = (...args) => globalThis.fetch(...args),
-} = {}) {
+export function createTrafficSource({ fetchImpl = globalThis.fetch } = {}) {
   const flow = createFlowTileSource({ fetchImpl });
   return {
     ...flow,
     async requestRoads(
       { south, west, north, east },
-      { majorOnly = false, timeoutSec = 25, signal } = {},
+      {
+        majorOnly = false,
+        timeoutSec = 25,
+        signal,
+      } = /** @type {{ majorOnly?: boolean, timeoutSec?: number, signal?: AbortSignal }} */ ({}),
     ) {
       if (
         ![south, west, north, east].every(Number.isFinite) ||
@@ -66,7 +69,7 @@ export function createTrafficSource({
         },
       };
     },
-    async getStatus({ signal } = {}) {
+    async getStatus({ signal } = /** @type {{ signal?: AbortSignal }} */ ({})) {
       signal?.throwIfAborted();
       const response = await fetchImpl('/api/tomtom/status', { signal });
       if (!response.ok) throw new Error('HTTP ' + response.status);

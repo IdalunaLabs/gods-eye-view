@@ -1,3 +1,4 @@
+// @ts-check
 /** Validate the entire decoded identifier, including UTF-8 length. */
 export function validTransitIdentifier(value) {
   return (

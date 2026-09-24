@@ -1,3 +1,4 @@
+// @ts-check
 /** Semantic candidate operations supplied to search and annotation selection. */
 export const FEATURE_SOURCE_METHODS = Object.freeze([
   'getAdministrativeAreas',

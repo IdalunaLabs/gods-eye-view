@@ -1,3 +1,4 @@
+// @ts-check
 import { createUsgsEarthquakeSource } from '../layers/earthquakes/source.js';
 import { createBundledCableSource } from '../layers/submarineCables/bundledSource.js';
 

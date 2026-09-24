@@ -1,3 +1,4 @@
+// @ts-check
 import {
   ACTIVE_FRAME_REFRESH_MS,
   FRAME_ENDPOINT,
@@ -29,10 +30,12 @@ function mediaUrlFor(camera) {
   return `${MEDIA_ENDPOINT}/${encodeURIComponent(camera.id)}?ts=${Math.floor(Date.now() / 15000)}`;
 }
 /** Supply catalog/health records and the existing registered camera URL families. */
-export function createCctvSource({
-  fetchImpl = (...args) => globalThis.fetch(...args),
-} = {}) {
-  async function read(path, key, { signal } = {}) {
+export function createCctvSource({ fetchImpl = globalThis.fetch } = {}) {
+  async function read(
+    path,
+    key,
+    { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+  ) {
     signal?.throwIfAborted();
     const response = await fetchImpl(path, { cache: 'no-store', signal });
     if (!response.ok) throw new Error('Camera source HTTP ' + response.status);

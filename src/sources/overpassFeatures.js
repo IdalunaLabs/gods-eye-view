@@ -1,3 +1,4 @@
+// @ts-check
 export {
   FEATURE_SOURCE_METHODS,
   requireFeatureSource,
@@ -18,16 +19,22 @@ function validPoint(lat, lon) {
  * Array = definitive response (possibly empty), null = retryable failure,
  * {rateLimited, retryAfterMs} = admission delay.
  */
-export function createOverpassFeatureSource({
-  boundarySource,
-  signal: lifetime,
-} = {}) {
+export function createOverpassFeatureSource(
+  {
+    boundarySource,
+    signal: lifetime,
+  } = /** @type {{ boundarySource?: { query?: Function }, signal?: AbortSignal }} */ ({}),
+) {
   if (typeof boundarySource?.query !== 'function')
     throw new TypeError('A boundary query transport is required');
   async function query(
     text,
     timeoutMs,
-    { signal, focus = false, relationsOnly = false } = {},
+    {
+      signal,
+      focus = false,
+      relationsOnly = false,
+    } = /** @type {{ signal?: AbortSignal, focus?: boolean, relationsOnly?: boolean }} */ ({}),
   ) {
     const controller = new AbortController();
     const signals = [lifetime, signal, controller.signal].filter(Boolean);

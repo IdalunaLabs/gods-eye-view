@@ -1,3 +1,4 @@
+// @ts-check
 import {
   nominatimToGeocodeResult,
   nominatimViewboxFromBounds,
@@ -40,11 +41,13 @@ export function normalizeNominatimReverse(hit) {
  * Nominatim JSONv2 transport for explicitly configured endpoints. Callers own
  * scheduling and request headers; this does not select a public instance.
  */
-export function createNominatimClient({
-  searchEndpoint,
-  reverseEndpoint,
-  fetchImpl = (...args) => fetch(...args),
-} = {}) {
+export function createNominatimClient(
+  {
+    searchEndpoint,
+    reverseEndpoint,
+    fetchImpl = globalThis.fetch,
+  } = /** @type {{ searchEndpoint?: string, reverseEndpoint?: string, fetchImpl?: typeof fetch }} */ ({}),
+) {
   for (const endpoint of [searchEndpoint, reverseEndpoint]) {
     if (endpoint == null) continue;
     if (typeof endpoint !== 'string' || !endpoint || /[?#]/.test(endpoint))
@@ -81,7 +84,13 @@ export function createNominatimClient({
   return {
     ...(searchEndpoint
       ? {
-          async search(query, { bias, signal } = {}) {
+          async search(
+            query,
+            {
+              bias,
+              signal,
+            } = /** @type {{ bias?: string, signal?: AbortSignal }} */ ({}),
+          ) {
             const viewbox = nominatimViewboxFromBounds(bias);
             const rows = await request(
               searchEndpoint,
@@ -102,7 +111,11 @@ export function createNominatimClient({
       : {}),
     ...(reverseEndpoint
       ? {
-          async reverse(latitude, longitude, { signal } = {}) {
+          async reverse(
+            latitude,
+            longitude,
+            { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+          ) {
             if (!validCoordinate([longitude, latitude])) return null;
             const row = await request(
               reverseEndpoint,

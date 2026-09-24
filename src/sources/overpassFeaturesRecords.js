@@ -1,3 +1,4 @@
+// @ts-check
 import { stitchRing } from './featureGeometry.js';
 
 function elementCoordinates(element) {

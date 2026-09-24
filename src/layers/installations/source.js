@@ -1,3 +1,4 @@
+// @ts-check
 import { normalizeMilitaryInstallations } from '../../data/militaryInstallationData.js';
 
 /** Preserve legacy cache admission even when the explicit saturation flag is absent. */
@@ -10,10 +11,16 @@ export function installationResponseSaturated(payload) {
 
 /** Read mapped installations and explicit nearby-place searches through fixed endpoints. */
 export function createInstallationSource({
-  fetchImpl = (...args) => globalThis.fetch(...args),
+  fetchImpl = globalThis.fetch,
 } = {}) {
   return {
-    async getMappedSites(box, { exact = false, signal } = {}) {
+    async getMappedSites(
+      box,
+      {
+        exact = false,
+        signal,
+      } = /** @type {{ exact?: boolean, signal?: AbortSignal }} */ ({}),
+    ) {
       const { south, west, north, east } = box || {};
       if (
         ![south, west, north, east].every(Number.isFinite) ||
@@ -62,7 +69,10 @@ export function createInstallationSource({
         saturated: installationResponseSaturated(body),
       };
     },
-    async searchNearby({ latitude, longitude, radiusM }, { signal } = {}) {
+    async searchNearby(
+      { latitude, longitude, radiusM },
+      { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+    ) {
       if (
         ![latitude, longitude, radiusM].every(Number.isFinite) ||
         Math.abs(latitude) > 90 ||
