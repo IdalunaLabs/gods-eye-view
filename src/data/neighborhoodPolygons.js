@@ -10,6 +10,7 @@
  * touching this module — see `local_data/neighborhoods/SOURCE.md`.
  */
 
+import { loadBundledJson } from './bundledJson.js';
 import { createRetryableLoader } from './retryableLoad.js';
 
 // bbox = [west, south, east, north]; only load a city file when the point falls in its box.
@@ -17,12 +18,30 @@ const CITY_FILES = [
   {
     id: 'san-francisco',
     bbox: [-122.55, 37.7, -122.35, 37.84],
-    loader: () =>
-      import('./local_data/neighborhoods/san-francisco.json', {
-        with: { type: 'json' },
-      }),
+    url: new URL(
+      './local_data/neighborhoods/san-francisco.json',
+      import.meta.url,
+    ),
   },
 ];
+
+/** @type {{id:string,label:string,state:'idle'|'loading'|'ready'|'error',error:string|null,count:number,loadedAt:number|null}} */
+const packStatus = {
+  id: 'neighborhoods',
+  label: 'Neighborhood polygons',
+  state: 'idle',
+  error: null,
+  count: 0,
+  loadedAt: null,
+};
+
+/**
+ * In-memory load state for the shared loading chip. `idle` means not loaded yet.
+ * @returns {{id:string,label:string,state:string,error:string|null,count:number,loadedAt:number|null}}
+ */
+export function neighborhoodDatasetStatus() {
+  return { ...packStatus };
+}
 
 /**
  * city id → memoized loader. Failures are NOT memoized: a transient
@@ -107,11 +126,22 @@ function cityLoader(city) {
   let loader = _cityLoaders.get(city.id);
   if (!loader) {
     loader = createRetryableLoader(async () => {
-      // One path for both runtimes: Vite bundles the JSON as a module, and the
-      // import attribute is what Node needs to load the same file under node:test.
-      const mod = await city.loader();
-      const fc = mod.default || mod;
-      return Array.isArray(fc.features) ? fc.features : [];
+      packStatus.state = 'loading';
+      packStatus.error = null;
+      try {
+        const fc = await loadBundledJson(city.url);
+        const features = Array.isArray(fc.features) ? fc.features : [];
+        packStatus.state = 'ready';
+        packStatus.count = features.length;
+        packStatus.loadedAt = Date.now();
+        packStatus.error = null;
+        return features;
+      } catch (error) {
+        packStatus.state = 'error';
+        packStatus.error = String(error?.message || 'dataset unavailable');
+        packStatus.loadedAt = null;
+        throw error;
+      }
     });
     _cityLoaders.set(city.id, loader);
   }

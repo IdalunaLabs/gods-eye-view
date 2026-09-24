@@ -9,14 +9,40 @@
  * header and DATA_SOURCES.md). Curation kept named features only, outer rings
  * only, Douglas-Peucker simplified (~0.01°) with coords rounded to 3 decimals.
  *
- * PURE data module — no Cesium imports, node-testable. The packs are lazy-
- * loaded on first lookup and cached in module scope (bbox/area computed once
- * at load). In the browser Vite bundles the JSON via dynamic import; under
- * node the same files are read from disk. A failed load is retried on the
- * next lookup rather than cached (see `createRetryableLoader`).
+ * PURE data module — no Cesium imports, node-testable. The packs are fetched
+ * on first lookup (`new URL` assets, not compiled modules) and cached in
+ * module scope (bbox/area computed once at load). A failed load is retried
+ * on the next lookup rather than cached (see `createRetryableLoader`).
  */
 
+import { loadBundledJson } from './bundledJson.js';
 import { createRetryableLoader } from './retryableLoad.js';
+
+const PACK_URLS = {
+  regions: new URL(
+    './local_data/natural_earth/regions.json',
+    import.meta.url,
+  ),
+  marine: new URL('./local_data/natural_earth/marine.json', import.meta.url),
+};
+
+/** @type {{id:string,label:string,state:'idle'|'loading'|'ready'|'error',error:string|null,count:number,loadedAt:number|null}} */
+const packStatus = {
+  id: 'natural-earth',
+  label: 'Natural Earth regions',
+  state: 'idle',
+  error: null,
+  count: 0,
+  loadedAt: null,
+};
+
+/**
+ * In-memory load state for the shared loading chip. `idle` means not loaded yet.
+ * @returns {{id:string,label:string,state:string,error:string|null,count:number,loadedAt:number|null}}
+ */
+export function naturalEarthDatasetStatus() {
+  return { ...packStatus };
+}
 
 const EARTH_RADIUS_KM = 6371;
 const toRad = (d) => (d * Math.PI) / 180;
@@ -121,18 +147,9 @@ function suffixVariants(norm) {
 let _entries = null;
 
 async function loadPackFile(base) {
-  // Vite bundles these JSON files as modules; the import attribute is what Node
-  // needs to load the same files under node:test (same pattern as
-  // neighborhoodPolygons.js). One path, so no node: import reaches the browser.
-  const mod =
-    base === 'regions'
-      ? await import('./local_data/natural_earth/regions.json', {
-          with: { type: 'json' },
-        })
-      : await import('./local_data/natural_earth/marine.json', {
-          with: { type: 'json' },
-        });
-  return mod.default || mod;
+  const url = PACK_URLS[base];
+  if (!url) throw new Error(`dataset unavailable (unknown pack ${base})`);
+  return loadBundledJson(url);
 }
 
 function buildEntries(pack, kind) {
@@ -174,14 +191,17 @@ function buildEntries(pack, kind) {
  * as "no such region" for the rest of the session.
  */
 const loadIndex = createRetryableLoader(async () => {
-  const [regions, marine] = await Promise.all([
-    loadPackFile('regions'),
-    loadPackFile('marine'),
-  ]);
-  _entries = [
-    ...buildEntries(regions, 'natural'),
-    ...buildEntries(marine, 'marine'),
-  ];
+  packStatus.state = 'loading';
+  packStatus.error = null;
+  try {
+    const [regions, marine] = await Promise.all([
+      loadPackFile('regions'),
+      loadPackFile('marine'),
+    ]);
+    _entries = [
+      ...buildEntries(regions, 'natural'),
+      ...buildEntries(marine, 'marine'),
+    ];
   const index = new Map();
   for (const entry of _entries) {
     for (const key of new Set([
@@ -197,7 +217,18 @@ const loadIndex = createRetryableLoader(async () => {
   // duplicate names exist in Natural Earth (e.g. two "Cordillera Oriental",
   // a sliver + real "Canadian Shield") — prefer the largest-area match
   for (const list of index.values()) list.sort((a, b) => b.areaKm2 - a.areaKm2);
-  return index;
+    packStatus.state = 'ready';
+    packStatus.count = _entries.length;
+    packStatus.loadedAt = Date.now();
+    packStatus.error = null;
+    return index;
+  } catch (error) {
+    packStatus.state = 'error';
+    packStatus.error = String(error?.message || 'dataset unavailable');
+    packStatus.loadedAt = null;
+    console.warn('[natural-earth] pack unavailable:', packStatus.error);
+    throw error;
+  }
 });
 
 function toResult(entry) {

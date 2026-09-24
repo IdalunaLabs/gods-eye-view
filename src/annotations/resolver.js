@@ -436,8 +436,9 @@ export function createAnnotationResolver({
       // are excluded — "Texas" must keep resolving as an admin boundary.
       if (!isAdmin && scope !== 'street' && !around) {
         const ne = await lookupNaturalRegionOutline(target, lat, lon).catch(
-          () => null,
+          () => undefined,
         );
+        if (ne === undefined) return undefined;
         if (ne) {
           registerDynamicCredit(viewer, NATURAL_EARTH_CREDIT);
           const neCentroid = ringCentroid(ne.ring);
@@ -481,7 +482,13 @@ export function createAnnotationResolver({
         // Overpass). Covered neighborhoods (e.g. SF: Chinatown/Marina/Mission/Presidio)
         // resolve here instantly to a REAL boundary, sidestepping the slow/flaky live-Overpass
         // path that times out and falls back to points (see docs/field-test-2-analysis.md).
-        const ext = await lookupNeighborhoodRing(lat, lon, matchName);
+        let ext = null;
+        try {
+          ext = await lookupNeighborhoodRing(lat, lon, matchName);
+        } catch {
+          // A missing pack is a transient install failure, not "no polygon".
+          return undefined;
+        }
         if (ext) fp = { ring: ext.ring, kind: 'area', heightM: null };
         // Else fall through to the OSM admin/place → named-landuse → synthesis ladder. Each
         // returns a footprint, null (definitively no polygon), or undefined (transient
