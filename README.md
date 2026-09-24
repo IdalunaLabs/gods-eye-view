@@ -135,6 +135,17 @@ See [docs/PERFORMANCE.md](docs/PERFORMANCE.md).
 **macOS shortcut:** `./scripts/dev-fresh.sh` clears the Vite cache and pulls any
 configured keys straight from the Keychain. It starts keyless too.
 
+### Path 3 — Docker
+
+```bash
+cp .env.example .env
+docker compose up --build
+```
+
+This serves the production build on port 4173. Browser keys are public and must
+be URL-restricted; changing them means rebuilding. See
+[docs/DEPLOYMENT.md](docs/DEPLOYMENT.md).
+
 ### Then power it up — in the app, not in a file
 
 Keys are upgrades, not prerequisites. When you want one, click the **POWER UP**
