@@ -14,7 +14,15 @@ const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const ui = readShellSource();
 const firms = readLayerSource(path.join(ROOT, 'src', 'data', 'firmsHeatmap.js'));
 const vessels = readLayerSource(path.join(ROOT, 'src', 'data', 'aisLiveVessels.js'));
-const voice = fs.readFileSync(path.join(ROOT, 'src', 'voice', 'gevActions.js'), 'utf8');
+const voice = [
+  'src/voice/actions/moveCamera.js',
+  'src/voice/actions/flyRoute.js',
+  'src/voice/actions/trackEntity.js',
+  'src/voice/actions/frameOverhead.js',
+  'src/voice/actions/getCurrentViewState.js',
+]
+  .map((file) => fs.readFileSync(path.join(ROOT, file), 'utf8'))
+  .join('\n');
 const cameraVerbs = fs.readFileSync(path.join(ROOT, 'src', 'cameraVerbs.js'), 'utf8');
 const cockpitTracking = fs.readFileSync(path.join(ROOT, 'src', 'cockpitTracking.js'), 'utf8');
 

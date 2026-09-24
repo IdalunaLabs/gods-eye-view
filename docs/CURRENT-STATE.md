@@ -1,5 +1,14 @@
 # God's Eye View Current State
 
+Voice tool execution is one module per command under `src/voice/actions/`.
+`actions/registry.js` imports those modules statically and throws if two
+handlers claim one name. `src/voice/gevActions.js` remains the runner facade
+and the `./voice/actions` package export: same tool names, arguments, and
+response strings. Handlers receive `{ args, context }` with the viewer, UI
+facade, layer manager, and the runner's enable timestamps and analyst engine.
+The voice module's private haversine stays in `actions/shared.js` for a later
+move to `src/geo/greatCircle.js`.
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial
