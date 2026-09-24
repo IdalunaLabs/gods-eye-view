@@ -44,6 +44,23 @@ test('module analysis parses dependencies and platform references without readin
   );
   assert.throws(() => analyzeModule('import(name)'), /Computed/);
   assert.throws(() => analyzeModule("require('node:fs')"), /ES imports/);
+  assert.deepEqual(
+    analyzeModule(
+      "new Worker(new URL('./propagationWorker.js', import.meta.url), { type: 'module' });",
+    ).imports,
+    ['./propagationWorker.js'],
+  );
+  assert.throws(
+    () =>
+      analyzeModule(
+        "const file = './worker.js'; new Worker(new URL(file, import.meta.url), { type: 'module' });",
+      ),
+    /Computed/,
+  );
+  assert.throws(
+    () => analyzeModule("new Worker('./worker.js')"),
+    /literal new URL/,
+  );
 });
 
 test('portable sources can share records, and standalone can assemble rendering', (t) => {
@@ -181,4 +198,28 @@ test('symlink aliases do not hide renderer ownership', (t) => {
     'junction',
   );
   assert.throws(() => checkImportDirections(root), /rendering|symlinks/);
+});
+
+test('literal module worker URLs are followed as import edges', (t) => {
+  const { root, write } = fixture(t);
+  write(
+    'src/app/demo.js',
+    "new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });",
+  );
+  write('src/app/worker.js', "import 'node:fs';");
+  assert.throws(() => checkImportDirections(root), /Node builtin/);
+});
+
+test('a literal module worker can import a portable sibling', (t) => {
+  const { root, write } = fixture(t);
+  write(
+    'src/layers/demo/rendering.js',
+    "new Worker(new URL('./worker.js', import.meta.url), { type: 'module' });",
+  );
+  write(
+    'src/layers/demo/worker.js',
+    "export { ready } from './propagation.js';",
+  );
+  write('src/layers/demo/propagation.js', 'export const ready = true;');
+  assert.doesNotThrow(() => checkImportDirections(root));
 });
