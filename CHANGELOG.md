@@ -1,5 +1,10 @@
 # Changelog
 
+- Reject non-public CCTV URLs at registration and again after DNS resolution,
+  including IPv6 and IPv4-mapped addresses. Abort media streams that exceed
+  64 MiB or go idle for 15 seconds. Street View fallback uses registered
+  camera coordinates only and the Google per-IP limiter.
+
 - Default OpenAI cost routes to 10 requests/minute per IP when `HOST` is not
   loopback and `GEV_RATELIMIT_OPENAI_PER_MIN` is unset. Loopback stays
   unlimited; `0` still disables the guard. Do not send a shared access token

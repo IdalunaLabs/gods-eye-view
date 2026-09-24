@@ -168,13 +168,18 @@
       "server/providers/cctv/range.js",
       "server/providers/cctv/sources.js",
       "server/providers/common/http.js",
+      "server/providers/common/public-address.js",
+      "server/providers/common/rate-limit.js",
       "src/data/directionText.js",
+      "src/data/radioCountry.js",
       "server/providers/common/geo.js",
       "server/providers/places/google-key.js",
       "scripts/google-server-key.mjs",
       "src/data/cctvFootprint.js",
       "src/sources/cctvTypes.js",
-      "src/sources/httpBody.js"
+      "src/sources/httpBody.js",
+      "src/sources/radioBrowser.js",
+      "src/sources/rateLimit.js"
     ],
     "external": []
   },
@@ -187,6 +192,7 @@
       "server/providers/radio/constants.js",
       "server/providers/radio/stations.js",
       "server/providers/radio/transport.js",
+      "server/providers/common/public-address.js",
       "src/data/radioCountry.js",
       "server/providers/common/http.js",
       "src/sources/radioBrowser.js",

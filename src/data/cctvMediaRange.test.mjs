@@ -200,7 +200,9 @@ function mount(t, respond) {
   });
 
   let handler = null;
-  const plugin = cctvProxy();
+  const plugin = cctvProxy({
+    lookupImpl: async () => [{ address: '93.184.216.34', family: 4 }],
+  });
   plugin.configureServer({
     middlewares: {
       use: (_route, fn) => {

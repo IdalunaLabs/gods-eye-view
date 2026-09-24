@@ -107,6 +107,10 @@ Context:
     successful bodies. An oversized track response is HTTP 502 and is not
     cached. `/api/adsblol/trace` is rate-limited per IP (60/min unless
     `GEV_RATELIMIT_ADSBLOL_TRACE_PER_MIN=0`).
+  - CCTV URLs are checked at registration and fetch time against public
+    http(s) destinations. Media bodies abort on the 64 MiB cap or a 15 second
+    idle gap. Street View uses registered camera coordinates and the Google
+    per-IP limiter.
   - OpenAI cost routes default to 10 requests/minute per IP when `HOST` is
     not loopback and `GEV_RATELIMIT_OPENAI_PER_MIN` is unset. Loopback stays
     unlimited. A browser-held `GEV_API_ACCESS_TOKEN` is not used.

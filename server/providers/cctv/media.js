@@ -1,9 +1,14 @@
-import { Readable } from 'node:stream';
+import { Readable, Transform } from 'node:stream';
 import { hashSeed, escapeXml } from './normalize.js';
+import {
+  publicCctvUrl,
+  resolvePublicAddresses,
+} from '../common/public-address.js';
 import {
   CCTV_FRAME_FETCH_TIMEOUT_MS,
   CCTV_FRAME_MAX_BODY_BYTES,
   CCTV_MEDIA_FETCH_TIMEOUT_MS,
+  CCTV_MEDIA_IDLE_MS,
   CCTV_MEDIA_MAX_BODY_BYTES,
   NSW_IMAGE_ORIGIN,
   NSW_IMAGE_USER_AGENT,
@@ -103,11 +108,17 @@ export function toReadable(body) {
  * @param {Response} upstream - fetch() Response object.
  * @param {object} [opts]
  * @param {string} [opts.sourceHeader='upstream'] - Value for X-CCTV-Source header.
+ * @param {number} [opts.maxBytes] - Running body ceiling. The upstream is aborted past it.
+ * @param {number} [opts.idleMs] - Abort when no body bytes arrive for this long.
  */
 export async function proxyMediaResponse(
   res,
   upstream,
-  { sourceHeader = 'upstream' } = {},
+  {
+    sourceHeader = 'upstream',
+    maxBytes = CCTV_MEDIA_MAX_BODY_BYTES,
+    idleMs = CCTV_MEDIA_IDLE_MS,
+  } = {},
 ) {
   const contentType =
     upstream.headers.get('content-type') || 'application/octet-stream';
@@ -129,7 +140,7 @@ export async function proxyMediaResponse(
   // so they pipe normally (piping streams to the client, never buffering).
   if (
     Number.isFinite(Number(contentLength)) &&
-    Number(contentLength) > CCTV_MEDIA_MAX_BODY_BYTES
+    Number(contentLength) > maxBytes
   ) {
     res.writeHead(502, {
       'Content-Type': 'application/json',
@@ -144,30 +155,39 @@ export async function proxyMediaResponse(
     return;
   }
 
-  res.writeHead(upstream.status, headers);
-
   const stream = toReadable(upstream.body);
   if (!stream) {
     const buf = Buffer.from(await upstream.arrayBuffer());
+    if (buf.length > maxBytes) {
+      res.writeHead(502, {
+        'Content-Type': 'application/json',
+        'Cache-Control': 'no-store',
+      });
+      res.end(JSON.stringify({ error: 'Upstream media exceeds size cap' }));
+      return;
+    }
+    res.writeHead(upstream.status, headers);
     res.end(buf);
     return;
   }
 
-  stream.on('error', () => {
-    if (!res.writableEnded) res.end();
-  });
+  res.writeHead(upstream.status, headers);
 
-  // A live camera feed has no end of its own. When the viewer goes away the
-  // upstream connection must go with it, or every abandoned view leaves a
-  // stream open against the camera host for as long as that host will hold it.
+  // A live camera feed has no end of its own. When the viewer goes away, the
+  // byte cap is crossed, or the body goes idle, the upstream connection must
+  // stop. Chunks are forwarded as they arrive; the body is not buffered.
   let released = false;
+  let received = 0;
+  let idleTimer = null;
+  const clearIdle = () => {
+    if (idleTimer) clearTimeout(idleTimer);
+    idleTimer = null;
+  };
   const releaseUpstream = () => {
     if (released) return;
     released = true;
-    stream.unpipe(res);
-    // Destroying the Node stream cancels the web body it wraps; the direct
-    // cancel covers a body that was never wrapped, and rejects harmlessly when
-    // the reader is already held.
+    clearIdle();
+    stream.unpipe?.(guard);
     stream.destroy();
     try {
       const cancelled = upstream.body?.cancel?.();
@@ -176,14 +196,38 @@ export async function proxyMediaResponse(
       /* already closed */
     }
   };
-  res.once('close', () => {
+  const stop = () => {
+    releaseUpstream();
+    if (!res.writableEnded && typeof res.destroy === 'function') res.destroy();
+  };
+  const armIdle = () => {
+    clearIdle();
+    idleTimer = setTimeout(stop, idleMs);
+    idleTimer.unref?.();
+  };
+  const guard = new Transform({
+    transform(chunk, _encoding, callback) {
+      received += chunk.length;
+      if (received > maxBytes) {
+        callback(new Error('CCTV media byte cap'));
+        stop();
+        return;
+      }
+      armIdle();
+      callback(null, chunk);
+    },
+  });
+  armIdle();
+  stream.on('error', stop);
+  guard.on('error', () => {
+    if (!released) stop();
+  });
+  stream.once('end', clearIdle);
+  res.once?.('close', () => {
     if (!res.writableEnded) releaseUpstream();
   });
-  res.once('error', releaseUpstream);
-  stream.once('end', () => {
-    released = true;
-  });
-  stream.pipe(res);
+  res.once?.('error', releaseUpstream);
+  stream.pipe(guard).pipe(res);
 }
 
 /**
@@ -284,10 +328,27 @@ export async function fetchCctvMediaUpstream(
   {
     headers = {},
     fetchImpl = fetch,
+    lookupImpl = null,
     timeoutMs = CCTV_MEDIA_FETCH_TIMEOUT_MS,
     signal: downstream = null,
   } = {},
 ) {
+  if (!publicCctvUrl(url)) {
+    const error = new Error('CCTV upstream destination rejected');
+    error.code = 'CCTV_DESTINATION_REJECTED';
+    throw error;
+  }
+  if (lookupImpl) {
+    const addresses = await resolvePublicAddresses(
+      new URL(url).hostname,
+      lookupImpl,
+    );
+    if (!addresses) {
+      const error = new Error('CCTV upstream destination rejected');
+      error.code = 'CCTV_DESTINATION_REJECTED';
+      throw error;
+    }
+  }
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeoutMs);
   // The client going away cancels the upstream request, not just the response
@@ -313,11 +374,19 @@ export async function fetchTxdotSnapshot(
   url,
   {
     fetchImpl = fetch,
+    lookupImpl = null,
     timeoutMs = CCTV_FRAME_FETCH_TIMEOUT_MS,
     maxBytes = CCTV_FRAME_MAX_BODY_BYTES,
   } = {},
 ) {
-  if (!url) return null;
+  if (!publicCctvUrl(url)) return null;
+  if (lookupImpl) {
+    const addresses = await resolvePublicAddresses(
+      new URL(url).hostname,
+      lookupImpl,
+    );
+    if (!addresses) return null;
+  }
   let parsed;
   try {
     parsed = new URL(url);
@@ -398,6 +467,7 @@ const MAX_SAME_HOST_REDIRECTS = 2;
  *   over-long redirect chain.
  */
 export async function fetchWithinHost(url, init, fetchImpl = fetch) {
+  if (!publicCctvUrl(url)) return null;
   let current;
   try {
     current = new URL(url);
@@ -427,7 +497,7 @@ export async function fetchWithinHost(url, init, fetchImpl = fetch) {
     } catch {
       return null;
     }
-    if (next.origin !== origin) return null;
+    if (next.origin !== origin || !publicCctvUrl(next.toString())) return null;
     current = next;
   }
   return null;
@@ -478,11 +548,19 @@ export async function fetchCctvImageFromUpstream(
   url,
   {
     fetchImpl = fetch,
+    lookupImpl = null,
     timeoutMs = CCTV_FRAME_FETCH_TIMEOUT_MS,
     maxBytes = CCTV_FRAME_MAX_BODY_BYTES,
   } = {},
 ) {
-  if (!url || !/^https?:\/\//i.test(url)) return null;
+  if (!publicCctvUrl(url)) return null;
+  if (lookupImpl) {
+    const addresses = await resolvePublicAddresses(
+      new URL(url).hostname,
+      lookupImpl,
+    );
+    if (!addresses) return null;
+  }
   const controller = new AbortController();
   const timeoutId = setTimeout(() => {
     controller.abort(

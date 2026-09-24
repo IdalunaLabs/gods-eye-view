@@ -1,5 +1,12 @@
 # God's Eye View Current State
 
+CCTV fetches only registered `http:`/`https:` URLs. Registration and fetch both
+reject credentials, non-http schemes, and loopback/private/link-local/multicast
+addresses, including IPv6 and IPv4-mapped forms. DNS is resolved before connect
+and a private answer is not requested. Media streams abort at 64 MiB or after
+15 seconds idle. Street View uses the registered camera coordinates only and
+is metered by `GEV_RATELIMIT_GOOGLE_PER_MIN`.
+
 OpenAI cost routes stay unlimited on a loopback `HOST`. When `HOST` is not
 loopback and `GEV_RATELIMIT_OPENAI_PER_MIN` is unset, `/api/realtime/token`
 and `/api/openai/hud-summary` allow 10 requests/minute/IP (`0` disables).
