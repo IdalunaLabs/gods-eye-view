@@ -110,6 +110,7 @@ jobs:
       - name: Build production bundle
         run: npm run build
 
+      # Frame time is advisory. Set GEV_SMOKE_ENFORCE_FRAMES=1 to fail this job once the budget is calibrated on a GitHub-hosted runner.
       - name: Run browser smoke
         run: npm run qa:ci-smoke
 

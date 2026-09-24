@@ -41,8 +41,9 @@ it is not a production server.
 blanks provider credentials, opens the bundle headless, and writes
 `qa-shots/ci-smoke/report.json`. A blocked tile or keyless upstream is an
 allowlisted console error, not a failure, when the layer chip says the data is
-live or honestly unavailable. `--teeth` is the negative control for the
-first-run assertion.
+live or honestly unavailable. The orbit frame budget is advisory until it is
+calibrated on a GitHub-hosted runner; `--enforce-frame-budget` makes it a
+failure. `--teeth` is the negative control for the first-run assertion.
 
 ## Good first contributions
 

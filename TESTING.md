@@ -26,11 +26,12 @@ and the other routes in `scripts/ci-browser-smoke-verdicts.mjs`), and Cesium's
 ignored. Flights and Satellites must reach a live chip or an honest
 unavailable/degraded state; a blocked network that surfaces that state passes.
 Style keys `1` through `7` must switch styles. After 20 s idle, JS heap must be
-under `--heap-ceiling-mib` (default 600) when `performance.memory` exists, and
-the median frame during a 5 s camera orbit must be under `--frame-budget-ms`
-(default 1500). That default sits above a measured Chrome SwiftShader orbit of
-this bundle (about 620 ms median on the keyless globe, about 720 ms with
-Flights, Satellites, and snow). Preview also 404s `/api/setup/status`; that
+under `--heap-ceiling-mib` (default 600) when `performance.memory` exists.
+The median frame during a 5 s camera orbit is recorded against
+`--frame-budget-ms` (default 1500) and printed as a WARNING when it is over
+that budget. The frame budget is advisory until it is calibrated on a
+GitHub-hosted runner: it fails the run only with `--enforce-frame-budget` or
+`GEV_SMOKE_ENFORCE_FRAMES=1`. Preview also 404s `/api/setup/status`; that
 development-only fetch is allowlisted.
 
 Evidence is `qa-shots/ci-smoke/report.json` plus PNG screenshots. `--teeth`

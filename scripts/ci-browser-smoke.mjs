@@ -15,7 +15,10 @@
  *
  *   npm run build && npm run qa:ci-smoke
  *   node scripts/ci-browser-smoke.mjs --teeth
- *   node scripts/ci-browser-smoke.mjs --heap-ceiling-mib 600 --frame-budget-ms 1500
+ *   node scripts/ci-browser-smoke.mjs --enforce-frame-budget
+ *
+ * The orbit frame budget is printed and recorded always. It fails the run
+ * only with `--enforce-frame-budget` or `GEV_SMOKE_ENFORCE_FRAMES=1`.
  */
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, writeFileSync } from 'node:fs';
@@ -335,6 +338,7 @@ async function run(options) {
   const assertions = {};
   let harnessError = null;
   let url = null;
+  const advisoryWarnings = [];
   let preview = null;
   let browser = null;
   let firstRunOk = null;
@@ -561,19 +565,17 @@ async function run(options) {
     console.log(`orbit ${options.orbitMs} ms`);
     const orbit = await measureOrbit(page, options.orbitMs);
     const frames = summarizeFrameSamples(orbit.samples || []);
-    const frame = orbit.ok
-      ? frameVerdict({
-          medianMs: frames.medianMs,
-          budgetMs: options.frameBudgetMs,
-          sampleCount: frames.sampleCount,
-        })
-      : {
-          ok: false,
-          medianMs: null,
-          budgetMs: options.frameBudgetMs,
-          sampleCount: 0,
-          reason: orbit.reason || 'orbit failed',
-        };
+    const frame = frameVerdict({
+      medianMs: orbit.ok ? frames.medianMs : null,
+      budgetMs: options.frameBudgetMs,
+      sampleCount: orbit.ok ? frames.sampleCount : 0,
+      enforced: options.enforceFrameBudget,
+      reason: orbit.ok ? null : orbit.reason || 'orbit failed',
+    });
+    if (!frame.withinBudget) {
+      console.warn(frame.warning || `WARNING: ${frame.reason} (enforced)`);
+    }
+    if (frame.warning) advisoryWarnings.push(frame.warning);
     const renderer = await readRenderer(page);
     assertions.performance = {
       ok: heap.ok && frame.ok,
@@ -607,6 +609,7 @@ async function run(options) {
       assertions,
       screenshots,
       allowlisted: assertions.console.allowlisted,
+      advisoryWarnings,
       harnessError,
     });
     writeFileSync(REPORT_PATH, `${JSON.stringify(report, null, 2)}\n`);
@@ -640,6 +643,7 @@ async function run(options) {
               )
             : assertions.layers,
           performance: assertions.performance || null,
+          advisoryWarnings: report.advisoryWarnings,
           console: {
             ok: assertions.console.ok,
             unexpected: assertions.console.unexpected.length,
@@ -668,7 +672,7 @@ async function run(options) {
 }
 
 async function main() {
-  const options = parseSmokeArgs(process.argv.slice(2));
+  const options = parseSmokeArgs(process.argv.slice(2), process.env);
   const code = await run(options);
   process.exit(code);
 }

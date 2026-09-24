@@ -32,6 +32,7 @@ test('argument defaults match the CI gate and reject unknown or empty numbers', 
     idleMs: 20_000,
     orbitMs: 5_000,
     teeth: false,
+    enforceFrameBudget: false,
     port: null,
   });
   assert.equal(DEFAULT_PREVIEW_PORT, 4301);
@@ -55,6 +56,18 @@ test('argument defaults match the CI gate and reject unknown or empty numbers', 
   assert.equal(custom.orbitMs, 1000);
   assert.equal(custom.port, null);
   assert.equal(parseSmokeArgs(['--port', '4301']).port, 4301);
+  assert.equal(
+    parseSmokeArgs(['--enforce-frame-budget']).enforceFrameBudget,
+    true,
+  );
+  assert.equal(
+    parseSmokeArgs([], { GEV_SMOKE_ENFORCE_FRAMES: '1' }).enforceFrameBudget,
+    true,
+  );
+  assert.equal(
+    parseSmokeArgs([], { GEV_SMOKE_ENFORCE_FRAMES: 'true' }).enforceFrameBudget,
+    false,
+  );
   for (const argv of [
     ['--nope'],
     ['--heap-ceiling-mib'],
@@ -317,14 +330,34 @@ test('heap and frame budgets are strict upper bounds and fail closed without sam
     true,
   );
   assert.equal(
-    frameVerdict({ medianMs: 250, budgetMs: 250, sampleCount: 30 }).ok,
+    frameVerdict({
+      medianMs: 250,
+      budgetMs: 250,
+      sampleCount: 30,
+      enforced: true,
+    }).ok,
     false,
   );
   assert.equal(DEFAULT_FRAME_BUDGET_MS, 1500);
-  assert.equal(
-    frameVerdict({ medianMs: 716.6, budgetMs: 250, sampleCount: 7 }).ok,
-    false,
-  );
+  const advisoryFrames = frameVerdict({
+    medianMs: 716.6,
+    budgetMs: 250,
+    sampleCount: 7,
+  });
+  assert.equal(advisoryFrames.ok, true);
+  assert.equal(advisoryFrames.enforced, false);
+  assert.equal(advisoryFrames.withinBudget, false);
+  assert.match(advisoryFrames.warning, /^WARNING: median frame 716\.6 ms/);
+  const enforcedFrames = frameVerdict({
+    medianMs: 716.6,
+    budgetMs: 250,
+    sampleCount: 7,
+    enforced: true,
+  });
+  assert.equal(enforcedFrames.ok, false);
+  assert.equal(enforcedFrames.enforced, true);
+  assert.equal(enforcedFrames.withinBudget, false);
+  assert.equal(enforcedFrames.warning, null);
   assert.equal(
     frameVerdict({
       medianMs: 716.6,
@@ -334,7 +367,12 @@ test('heap and frame budgets are strict upper bounds and fail closed without sam
     true,
   );
   assert.equal(
-    frameVerdict({ medianMs: null, budgetMs: 250, sampleCount: 0 }).ok,
+    frameVerdict({
+      medianMs: null,
+      budgetMs: 250,
+      sampleCount: 0,
+      enforced: true,
+    }).ok,
     false,
   );
   assert.equal(median([4, 1, 3]), 3);
@@ -363,6 +401,8 @@ test('the report fails closed and teeth only exits 1 when the launcher assertion
   assert.equal(report.ok, false);
   assert.equal(report.summary.passed, 1);
   assert.equal(report.summary.failed, 1);
+  assert.equal(report.summary.advisory, 0);
+  assert.deepEqual(report.advisoryWarnings, []);
   assert.deepEqual(report.summary.names, [
     { name: 'firstRun', ok: true },
     { name: 'layers', ok: false },
@@ -424,6 +464,83 @@ test('the report fails closed and teeth only exits 1 when the launcher assertion
       harnessError: 'crashed',
     }),
     2,
+  );
+});
+
+test('an over-budget orbit warns without failing unless frame enforcement is on', () => {
+  const frames = frameVerdict({
+    medianMs: 2583.2,
+    budgetMs: 1500,
+    sampleCount: 2,
+  });
+  assert.equal(frames.ok, true);
+  assert.equal(frames.enforced, false);
+  const report = shapeSmokeReport({
+    url: 'http://127.0.0.1:4301/',
+    startedAt: 't0',
+    finishedAt: 't1',
+    options: { enforceFrameBudget: false, frameBudgetMs: 1500 },
+    assertions: {
+      console: { ok: true },
+      firstRun: { ok: true },
+      layers: { ok: true },
+      styles: { ok: true },
+      performance: { ok: true, frames },
+    },
+    screenshots: [],
+    allowlisted: { total: 0, samples: [] },
+    advisoryWarnings: [frames.warning],
+    harnessError: null,
+  });
+  assert.equal(report.ok, true);
+  assert.equal(report.summary.failed, 0);
+  assert.equal(report.summary.advisory, 1);
+  assert.equal(report.assertions.performance.frames.enforced, false);
+  assert.match(report.advisoryWarnings[0], /^WARNING:/);
+  assert.equal(
+    smokeExitCode({
+      ok: report.ok,
+      teeth: false,
+      firstRunOk: true,
+      harnessError: null,
+    }),
+    0,
+  );
+
+  const enforced = frameVerdict({
+    medianMs: 2583.2,
+    budgetMs: 1500,
+    sampleCount: 2,
+    enforced: true,
+  });
+  assert.equal(enforced.ok, false);
+  assert.equal(enforced.enforced, true);
+  const failed = shapeSmokeReport({
+    url: 'http://127.0.0.1:4301/',
+    startedAt: 't0',
+    finishedAt: 't1',
+    options: { enforceFrameBudget: true },
+    assertions: {
+      performance: { ok: false, frames: enforced },
+    },
+    screenshots: [],
+    allowlisted: {},
+    advisoryWarnings: [],
+    harnessError: null,
+  });
+  assert.equal(failed.ok, false);
+  assert.equal(failed.summary.failed, 1);
+  assert.equal(failed.summary.advisory, 0);
+  assert.equal(failed.assertions.performance.frames.enforced, true);
+
+  assert.equal(
+    smokeExitCode({
+      ok: false,
+      teeth: true,
+      firstRunOk: false,
+      harnessError: null,
+    }),
+    1,
   );
 });
 

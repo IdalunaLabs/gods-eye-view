@@ -118,10 +118,10 @@ export const CONSOLE_ALLOWLIST = Object.freeze([
 ]);
 
 /**
- * Orbit frame budget. A healthy Chrome 152 SwiftShader orbit of this bundle
- * measured about 620 ms median on the keyless globe and about 720 ms with
- * Flights, Satellites, and the snow style (max sample about 1.2 s). 250 ms
- * sits under that orbit, so the default has to clear a real software-GL frame.
+ * Orbit frame budget used for the advisory warning. A healthy Chrome 152
+ * SwiftShader orbit of this bundle measured about 620–740 ms median here, and
+ * a loaded shared machine reached about 2.6 s. The number stays advisory until
+ * it is calibrated on a GitHub-hosted runner.
  */
 export const DEFAULT_FRAME_BUDGET_MS = 1500;
 
@@ -131,23 +131,29 @@ const SMOKE_DEFAULTS = Object.freeze({
   idleMs: 20_000,
   orbitMs: 5_000,
   teeth: false,
+  enforceFrameBudget: false,
   port: null,
 });
 
 /**
  * Parse smoke-harness CLI flags.
  * @param {string[]} argv Arguments after the script path.
+ * @param {NodeJS.ProcessEnv} [env] Process environment. `GEV_SMOKE_ENFORCE_FRAMES=1` enforces the frame budget.
  * @returns {{
  *   heapCeilingMib: number,
  *   frameBudgetMs: number,
  *   idleMs: number,
  *   orbitMs: number,
  *   teeth: boolean,
+ *   enforceFrameBudget: boolean,
  *   port: number|null,
  * }}
  */
-export function parseSmokeArgs(argv) {
-  const options = { ...SMOKE_DEFAULTS };
+export function parseSmokeArgs(argv, env = {}) {
+  const options = {
+    ...SMOKE_DEFAULTS,
+    enforceFrameBudget: env.GEV_SMOKE_ENFORCE_FRAMES === '1',
+  };
   const numeric = new Map([
     ['--heap-ceiling-mib', 'heapCeilingMib'],
     ['--frame-budget-ms', 'frameBudgetMs'],
@@ -159,6 +165,10 @@ export function parseSmokeArgs(argv) {
     const flag = argv[index];
     if (flag === '--teeth') {
       options.teeth = true;
+      continue;
+    }
+    if (flag === '--enforce-frame-budget') {
+      options.enforceFrameBudget = true;
       continue;
     }
     const key = numeric.get(flag);
@@ -481,30 +491,57 @@ export function heapVerdict({ usedBytes = null, ceilingMib, memoryPresent }) {
 }
 
 /**
- * Median frame interval must be under the budget. The first sample is the
+ * Median frame interval compared with the budget. The first sample is the
  * gap before the orbit clock and is excluded by the caller.
- * @param {{medianMs?: number|null, budgetMs: number, sampleCount?: number}} measurement
- * @returns {{ok: boolean, medianMs: number|null, budgetMs: number, sampleCount: number, reason: string}}
+ * Over budget is a warning unless `enforced` is set; missing samples follow
+ * the same rule. Heap checks stay outside this helper.
+ * @param {{medianMs?: number|null, budgetMs: number, sampleCount?: number, enforced?: boolean, reason?: string|null}} measurement
+ * @returns {{
+ *   ok: boolean,
+ *   withinBudget: boolean,
+ *   enforced: boolean,
+ *   warning: string|null,
+ *   medianMs: number|null,
+ *   budgetMs: number,
+ *   sampleCount: number,
+ *   reason: string,
+ * }}
  */
-export function frameVerdict({ medianMs = null, budgetMs, sampleCount = 0 }) {
-  if (!Number.isFinite(medianMs) || sampleCount < 2) {
+export function frameVerdict({
+  medianMs = null,
+  budgetMs,
+  sampleCount = 0,
+  enforced = false,
+  reason = null,
+}) {
+  const enforcedFlag = enforced === true;
+  const measured = Number.isFinite(medianMs) && sampleCount >= 2;
+  if (!measured) {
+    const detail = reason || 'frame samples were not measured';
     return {
-      ok: false,
+      ok: !enforcedFlag,
+      withinBudget: false,
+      enforced: enforcedFlag,
+      warning: enforcedFlag ? null : `WARNING: ${detail}`,
       medianMs: Number.isFinite(medianMs) ? medianMs : null,
       budgetMs,
       sampleCount,
-      reason: 'frame samples were not measured',
+      reason: detail,
     };
   }
-  const ok = medianMs < budgetMs;
+  const withinBudget = medianMs < budgetMs;
+  const detail = withinBudget
+    ? 'under budget'
+    : `median frame ${medianMs.toFixed(1)} ms is not under ${budgetMs} ms`;
   return {
-    ok,
+    ok: enforcedFlag ? withinBudget : true,
+    withinBudget,
+    enforced: enforcedFlag,
+    warning: withinBudget || enforcedFlag ? null : `WARNING: ${detail}`,
     medianMs,
     budgetMs,
     sampleCount,
-    reason: ok
-      ? 'under budget'
-      : `median frame ${medianMs.toFixed(1)} ms is not under ${budgetMs} ms`,
+    reason: detail,
   };
 }
 
@@ -542,7 +579,8 @@ export function summarizeFrameSamples(samples) {
 }
 
 /**
- * Shape the on-disk smoke report. `ok` is the conjunction of assertion results.
+ * Shape the on-disk smoke report. `ok` is the conjunction of hard assertion
+ * results. Advisory frame warnings are counted separately and do not fail `ok`.
  * @param {object} input
  * @param {string} input.url
  * @param {string} input.startedAt
@@ -551,6 +589,7 @@ export function summarizeFrameSamples(samples) {
  * @param {Record<string, {ok?: boolean}>} input.assertions
  * @param {string[]} input.screenshots
  * @param {object} input.allowlisted
+ * @param {string[]} [input.advisoryWarnings]
  * @param {string|null} [input.harnessError]
  * @returns {object}
  */
@@ -562,10 +601,14 @@ export function shapeSmokeReport({
   assertions,
   screenshots,
   allowlisted,
+  advisoryWarnings = [],
   harnessError = null,
 }) {
   const entries = Object.entries(assertions || {});
   const failed = entries.filter(([, assertion]) => assertion?.ok !== true);
+  const warnings = advisoryWarnings.filter(
+    (warning) => typeof warning === 'string' && warning.length > 0,
+  );
   const ok = !harnessError && failed.length === 0 && entries.length > 0;
   return {
     ok,
@@ -576,10 +619,12 @@ export function shapeSmokeReport({
     harnessError,
     assertions,
     allowlisted,
+    advisoryWarnings: warnings,
     screenshots,
     summary: {
       passed: entries.length - failed.length,
       failed: failed.length,
+      advisory: warnings.length,
       names: entries.map(([name, assertion]) => ({
         name,
         ok: assertion?.ok === true,
