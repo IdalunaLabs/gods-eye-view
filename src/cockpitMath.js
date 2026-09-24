@@ -1,4 +1,5 @@
 export { resolveHudRailLayout } from './ui/panelRailGeometry.js';
+import { haversineMeters, initialBearingDeg } from './geo/greatCircle.js';
 
 /** Normalize a heading into the [0, 360) range. */
 export function normalizeHeading(value) {
@@ -221,14 +222,8 @@ export function formatSpeedRulerTick(valueKt) {
 /** Return the initial great-circle bearing between two latitude/longitude points. */
 export function bearingBetweenCoordinates(fromLat, fromLon, toLat, toLon) {
   if (![fromLat, fromLon, toLat, toLon].every(Number.isFinite)) return null;
-  const φ1 = (fromLat * Math.PI) / 180;
-  const φ2 = (toLat * Math.PI) / 180;
-  const Δλ = ((toLon - fromLon) * Math.PI) / 180;
-  const y = Math.sin(Δλ) * Math.cos(φ2);
-  const x =
-    Math.cos(φ1) * Math.sin(φ2) - Math.sin(φ1) * Math.cos(φ2) * Math.cos(Δλ);
-  if (Math.abs(x) < 1e-12 && Math.abs(y) < 1e-12) return null;
-  return normalizeHeading((Math.atan2(y, x) * 180) / Math.PI);
+  if (haversineMeters(fromLat, fromLon, toLat, toLon) === 0) return null;
+  return normalizeHeading(initialBearingDeg(fromLat, fromLon, toLat, toLon));
 }
 
 /** Return a target bearing relative to the current heading in the [-180, 180) range. */

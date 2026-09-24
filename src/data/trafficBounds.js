@@ -13,11 +13,11 @@
  * @module data/trafficBounds
  */
 
-/** @const {number} Mean Earth radius in km (spherical approximation). */
-const EARTH_RADIUS_KM = 6371;
-
-const toRad = (deg) => (deg * Math.PI) / 180;
-const toDeg = (rad) => (rad * 180) / Math.PI;
+import {
+  destinationPoint,
+  haversineKm,
+  initialBearingDeg,
+} from '../geo/greatCircle.js';
 
 /**
  * Great-circle distance between two lat/lon points (haversine).
@@ -29,58 +29,7 @@ const toDeg = (rad) => (rad * 180) / Math.PI;
  * @returns {number} Distance in kilometres.
  */
 export function greatCircleKm(lat1, lon1, lat2, lon2) {
-  const p1 = toRad(lat1);
-  const p2 = toRad(lat2);
-  const dp = toRad(lat2 - lat1);
-  const dl = toRad(lon2 - lon1);
-  const a =
-    Math.sin(dp / 2) ** 2 + Math.cos(p1) * Math.cos(p2) * Math.sin(dl / 2) ** 2;
-  return 2 * EARTH_RADIUS_KM * Math.asin(Math.min(1, Math.sqrt(a)));
-}
-
-/**
- * Initial bearing (radians) from point 1 toward point 2 along the great circle.
- *
- * @param {number} lat1 @param {number} lon1 @param {number} lat2 @param {number} lon2
- * @returns {number} Bearing in radians (0 = north, clockwise).
- */
-function initialBearingRad(lat1, lon1, lat2, lon2) {
-  const p1 = toRad(lat1);
-  const p2 = toRad(lat2);
-  const dl = toRad(lon2 - lon1);
-  const y = Math.sin(dl) * Math.cos(p2);
-  const x =
-    Math.cos(p1) * Math.sin(p2) - Math.sin(p1) * Math.cos(p2) * Math.cos(dl);
-  return Math.atan2(y, x);
-}
-
-/**
- * Destination point given a start, an initial bearing, and a distance
- * (spherical direct geodesic).
- *
- * @param {number} lat - Start latitude (degrees).
- * @param {number} lon - Start longitude (degrees).
- * @param {number} bearingRad - Initial bearing (radians, 0 = north).
- * @param {number} distKm - Distance to travel (km).
- * @returns {{lat:number, lon:number}} Destination in degrees.
- */
-function destinationPoint(lat, lon, bearingRad, distKm) {
-  const delta = distKm / EARTH_RADIUS_KM;
-  const p1 = toRad(lat);
-  const l1 = toRad(lon);
-  const p2 = Math.asin(
-    Math.sin(p1) * Math.cos(delta) +
-      Math.cos(p1) * Math.sin(delta) * Math.cos(bearingRad),
-  );
-  const l2 =
-    l1 +
-    Math.atan2(
-      Math.sin(bearingRad) * Math.sin(delta) * Math.cos(p1),
-      Math.cos(delta) - Math.sin(p1) * Math.sin(p2),
-    );
-  // Normalize longitude to [-180, 180)
-  const lonDeg = ((toDeg(l2) + 540) % 360) - 180;
-  return { lat: toDeg(p2), lon: lonDeg };
+  return haversineKm(lat1, lon1, lat2, lon2);
 }
 
 /**
@@ -118,7 +67,7 @@ export function deriveFetchCenter({
   if (distKm <= maxPullKm) {
     return { lat: hitLat, lon: hitLon, source: 'hit' };
   }
-  const bearing = initialBearingRad(nadirLat, nadirLon, hitLat, hitLon);
+  const bearing = initialBearingDeg(nadirLat, nadirLon, hitLat, hitLon);
   const pulled = destinationPoint(nadirLat, nadirLon, bearing, maxPullKm);
   return { lat: pulled.lat, lon: pulled.lon, source: 'pulled' };
 }

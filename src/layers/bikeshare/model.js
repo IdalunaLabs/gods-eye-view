@@ -1,3 +1,5 @@
+import { haversineKm as sharedHaversineKm } from '../../geo/greatCircle.js';
+
 export function createModel({
   state: _layerState,
   services: _services,
@@ -57,15 +59,7 @@ export function createModel({
    */
 
   function haversineKm(aLat, aLon, bLat, bLon) {
-    const toRad = (value) => (value * Math.PI) / 180;
-    const dLat = toRad(bLat - aLat);
-    const dLon = toRad(bLon - aLon);
-    const p1 = toRad(aLat);
-    const p2 = toRad(bLat);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(p1) * Math.cos(p2) * Math.sin(dLon / 2) ** 2;
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return sharedHaversineKm(aLat, aLon, bLat, bLon);
   }
 
   /**

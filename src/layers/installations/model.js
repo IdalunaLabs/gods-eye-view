@@ -1,10 +1,7 @@
 import { installationResponseSaturated } from './source.js';
 import * as Cesium from 'cesium';
-import {
-  EARTH_MEAN_RADIUS_M,
-  COLOR_BY_CLASS,
-  GOOGLE_MILITARY_PLACE_TYPES,
-} from './policy.js';
+import { haversineMeters } from '../../geo/greatCircle.js';
+import { COLOR_BY_CLASS, GOOGLE_MILITARY_PLACE_TYPES } from './policy.js';
 
 export function createModel({
   state: _layerState,
@@ -23,23 +20,11 @@ export function createModel({
     latitudeBDeg,
     longitudeBDeg,
   ) {
-    const latitudeBRad = Cesium.Math.toRadians(latitudeBDeg);
-    const longitudeBRad = Cesium.Math.toRadians(longitudeBDeg);
-    const latitudeDelta = latitudeBRad - latitudeARad;
-    const longitudeDelta = Math.atan2(
-      Math.sin(longitudeBRad - longitudeARad),
-      Math.cos(longitudeBRad - longitudeARad),
-    );
-    const sinLatitude = Math.sin(latitudeDelta / 2);
-    const sinLongitude = Math.sin(longitudeDelta / 2);
-    const haversine =
-      sinLatitude * sinLatitude +
-      Math.cos(latitudeARad) *
-        Math.cos(latitudeBRad) *
-        sinLongitude *
-        sinLongitude;
-    return (
-      2 * EARTH_MEAN_RADIUS_M * Math.asin(Math.min(1, Math.sqrt(haversine)))
+    return haversineMeters(
+      (latitudeARad * 180) / Math.PI,
+      (longitudeARad * 180) / Math.PI,
+      latitudeBDeg,
+      longitudeBDeg,
     );
   }
 

@@ -169,6 +169,7 @@
     "./layers/radio": "./src/layers/radio/index.js",
     "./layers/submarine-cables": "./src/layers/submarineCables/index.js",
     "./sources/bundled-cables": "./src/layers/submarineCables/bundledSource.js",
+    "./geo": "./src/geo/greatCircle.js",
     "./geography/natural-earth": "./src/data/naturalEarthRegions.js",
     "./geography/neighborhoods": "./src/data/neighborhoodPolygons.js",
     "./maps/controller": "./src/maps/controller.js",

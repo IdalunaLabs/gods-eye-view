@@ -248,7 +248,8 @@
       "src/data/regionalModel.js",
       "src/nominatimGeocode.js",
       "src/sources/httpBody.js",
-      "src/sources/rateLimit.js"
+      "src/sources/rateLimit.js",
+      "src/geo/greatCircle.js"
     ],
     "external": []
   },
@@ -304,7 +305,8 @@
       "src/nominatimGeocode.js",
       "src/data/regionalModel.js",
       "src/sources/httpBody.js",
-      "src/sources/nominatim.js"
+      "src/sources/nominatim.js",
+      "src/geo/greatCircle.js"
     ],
     "external": []
   },
@@ -458,7 +460,8 @@
       "src/cockpitMath.js",
       "src/cockpitUtilityLayout.js",
       "src/cockpitVisionPolicy.js",
-      "src/ui/panelRailGeometry.js"
+      "src/ui/panelRailGeometry.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -580,7 +583,8 @@
       "src/ui/aircraftDisplay.js",
       "src/ui/layerBindings.js",
       "src/ui/displayBindings.js",
-      "src/ui/shellFacade.js"
+      "src/ui/shellFacade.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -731,7 +735,8 @@
       "src/layers/flights/records.js",
       "src/layers/flights/recordPolicy.js",
       "src/layers/flights/snapshotRenderer.js",
-      "src/data/inputOwnership.js"
+      "src/data/inputOwnership.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -790,7 +795,8 @@
       "src/data/trackingClickGesture.js",
       "src/layers/aircraft/classification.js",
       "src/layers/aircraft/index.js",
-      "src/data/inputOwnership.js"
+      "src/data/inputOwnership.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -916,7 +922,8 @@
       "src/layers/installations/source.js",
       "src/layers/installations/state.js",
       "src/layers/installations/viewport.js",
-      "src/data/inputOwnership.js"
+      "src/data/inputOwnership.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -942,7 +949,8 @@
       "src/layers/awareness/state.js",
       "src/layers/awareness/subject.js",
       "src/layers/awareness/testing.js",
-      "src/ui/panelRailGeometry.js"
+      "src/ui/panelRailGeometry.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -972,7 +980,8 @@
       "src/layers/traffic/style.js",
       "src/layers/traffic/timing.js",
       "src/layers/traffic/viewport.js",
-      "src/sources/overpassRoads.js"
+      "src/sources/overpassRoads.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium", "pbf", "@mapbox/vector-tile"]
   },
@@ -994,7 +1003,8 @@
       "src/layers/bikeshare/testing.js",
       "src/layers/bikeshare/viewport.js",
       "src/data/inputOwnership.js",
-      "src/data/cameraSensitivity.js"
+      "src/data/cameraSensitivity.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -1033,7 +1043,8 @@
       "src/overlays/worldOverlayTokens.js",
       "src/data/cctvFootprint.js",
       "src/data/inputOwnership.js",
-      "src/layers/cctv/sourcePolicy.js"
+      "src/layers/cctv/sourcePolicy.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -1081,7 +1092,8 @@
       "src/layers/radio/tuningNoise.js",
       "src/layers/radio/volume.js",
       "src/ui/radioTunerModel.js",
-      "src/data/inputOwnership.js"
+      "src/data/inputOwnership.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium"]
   },
@@ -1111,6 +1123,11 @@
     ],
     "external": []
   },
+  "geo": {
+    "exports": ["./geo"],
+    "modules": ["src/geo/greatCircle.js"],
+    "external": []
+  },
   "geography": {
     "exports": ["./geography/natural-earth", "./geography/neighborhoods"],
     "modules": [
@@ -1119,7 +1136,8 @@
       "src/data/retryableLoad.js",
       "src/data/local_data/neighborhoods/san-francisco.json",
       "src/data/local_data/natural_earth/regions.json",
-      "src/data/local_data/natural_earth/marine.json"
+      "src/data/local_data/natural_earth/marine.json",
+      "src/geo/greatCircle.js"
     ],
     "external": []
   },
@@ -1809,7 +1827,8 @@
       "src/director/sharing/lifetime.js",
       "src/director/authoring.js",
       "src/scenes/sharing.js",
-      "src/ui/sceneSharing.js"
+      "src/ui/sceneSharing.js",
+      "src/geo/greatCircle.js"
     ],
     "external": [
       "@mapbox/vector-tile",
@@ -2203,7 +2222,8 @@
       "src/sources/overpassFeaturesRecords.js",
       "src/sources/overpassFeatures.js",
       "src/sources/featureSource.js",
-      "src/sources/overpassRoads.js"
+      "src/sources/overpassRoads.js",
+      "src/geo/greatCircle.js"
     ],
     "external": [
       "cesium",
@@ -2256,7 +2276,8 @@
       "src/sources/featureGeometry.js",
       "src/sources/overpassFeaturesRecords.js",
       "src/sources/overpassFeatures.js",
-      "src/sources/featureSource.js"
+      "src/sources/featureSource.js",
+      "src/geo/greatCircle.js"
     ],
     "external": [
       "cesium",
@@ -2405,7 +2426,7 @@
   },
   "regional-source": {
     "exports": ["./sources/regional"],
-    "modules": ["src/data/regionalModel.js"],
+    "modules": ["src/data/regionalModel.js", "src/geo/greatCircle.js"],
     "external": []
   },
   "voice-action-schemas": {
@@ -2512,7 +2533,8 @@
       "src/search/geospatial.js",
       "src/data/regionalModel.js",
       "src/sources/httpBody.js",
-      "src/sources/nominatim.js"
+      "src/sources/nominatim.js",
+      "src/geo/greatCircle.js"
     ],
     "external": []
   },
@@ -2533,7 +2555,8 @@
       "src/nominatimGeocode.js",
       "src/search/geospatial.js",
       "src/data/regionalModel.js",
-      "src/sources/httpBody.js"
+      "src/sources/httpBody.js",
+      "src/geo/greatCircle.js"
     ],
     "external": []
   },
@@ -2552,7 +2575,8 @@
       "src/sources/transitHistory.js",
       "src/sources/transitService.js",
       "src/sources/transitHistoryStore.js",
-      "src/sources/rateLimit.js"
+      "src/sources/rateLimit.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["pbf"]
   },
@@ -2562,7 +2586,8 @@
       "src/data/gtfsRealtime.js",
       "src/data/transitFeeds.js",
       "src/data/transitProxy.js",
-      "src/sources/transitHistory.js"
+      "src/sources/transitHistory.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["pbf"]
   },
@@ -2622,7 +2647,8 @@
       "src/sources/featureGeometry.js",
       "src/sources/overpassFeaturesRecords.js",
       "src/sources/overpassFeatures.js",
-      "src/sources/featureSource.js"
+      "src/sources/featureSource.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium", "egm96-universal", "pbf"]
   },
@@ -2659,7 +2685,8 @@
       "scripts/qa-transit-controls.mjs",
       "scripts/qa-transit-browser.mjs",
       "src/layers/transit/source.js",
-      "src/sources/transitHistory.js"
+      "src/sources/transitHistory.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["cesium", "pbf"]
   },
@@ -2681,7 +2708,8 @@
       "src/sources/transitHistory.js",
       "src/sources/transitService.js",
       "src/sources/transitHistoryStore.js",
-      "src/sources/rateLimit.js"
+      "src/sources/rateLimit.js",
+      "src/geo/greatCircle.js"
     ],
     "external": ["pbf"]
   },
