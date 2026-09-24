@@ -1,5 +1,9 @@
 # Changelog
 
+- Cache screen-space overlay label glyphs and blit them, so repeated `fillText`
+  calls become sprite blits. Diagnostics report `textDraws` and `spriteBlits`;
+  dev builds can toggle the cache. Very long strings still draw directly.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 

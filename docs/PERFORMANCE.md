@@ -95,6 +95,10 @@ The combined static scene rendered 11,575 objects, used 872.2 MiB of JavaScript
 heap, and issued 48,665 text draws during motion and 54,106 at rest. The combined
 operational sample contained 3,909 observations and two selected labels, but its
 live aircraft and traffic rows were empty, so it remains a limited stress case.
+Later captures can compare those text-draw totals with
+`getWorldOverlayDiagnostics()` fields `textDraws` and `spriteBlits`, which count
+direct glyph draws and cached label blits on the screen-space overlay. This
+August capture predates that cache.
 
 Snow, Noir, dense detection, and text-heavy combined layers are the clearest
 controlled comparison points for later optimization work.
