@@ -745,5 +745,6 @@
   "src/director/sharing/sharing.test.mjs",
   "scripts/qa-director-sharing.mjs",
   "scripts/ci-browser-smoke-verdicts.mjs",
-  "scripts/ci-browser-smoke.mjs"
+  "scripts/ci-browser-smoke.mjs",
+  "src/tooling/ciBrowserSmoke.test.mjs"
 ]
