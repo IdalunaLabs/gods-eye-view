@@ -1,5 +1,14 @@
 # God's Eye View Current State
 
+`npm start` serves the built app from `dist/` and mounts the same local
+data-provider middleware as Vite preview. `/healthz` reports process health,
+unknown `/api` routes return JSON 404, and Provider Settings stays
+development-only. Hashed `assets/` and Cesium static files are cached
+immutably; `index.html` is not. `GEV_CACHE_DIR` collects the providers'
+`.gev-cache` disk files. Docker, Compose, Render, and Fly packaging are
+described in [deployment](DEPLOYMENT.md). Vite preview remains a local build
+check, not the production server.
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial

@@ -1,0 +1,17 @@
+.git
+.github
+node_modules
+dist
+.env
+.env.*
+.gev-cache
+.gev-logs
+screenshots
+qa-shots
+output
+coverage
+*.log
+.DS_Store
+**/*.test.mjs
+pinokio/ENVIRONMENT
+pinokio/.installed

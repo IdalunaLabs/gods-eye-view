@@ -1,0 +1,27 @@
+# Copy .env.example to .env before `docker compose up --build`.
+# Set GEV_RATELIMIT_OPENAI_PER_MIN and GEV_RATELIMIT_GOOGLE_PER_MIN in that
+# file before publishing port 4173. Browser keys in .env are passed as build
+# args and baked into the bundle; change them by rebuilding.
+
+services:
+  gods-eye-view:
+    build:
+      context: .
+      args:
+        GOOGLE_MAPS_API_KEY: ${GOOGLE_MAPS_API_KEY:-}
+        CESIUM_ION_TOKEN: ${CESIUM_ION_TOKEN:-}
+    image: gods-eye-view:local
+    env_file:
+      - .env
+    environment:
+      NODE_ENV: production
+      GEV_IN_CONTAINER: "1"
+      GEV_CACHE_DIR: /var/cache/gev
+    ports:
+      - "4173:4173"
+    volumes:
+      - gev-cache:/var/cache/gev
+    restart: unless-stopped
+
+volumes:
+  gev-cache:

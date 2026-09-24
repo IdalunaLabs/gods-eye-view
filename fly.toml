@@ -1,0 +1,38 @@
+# Replace the app name, then:
+#   fly volumes create gev_cache --size 1
+#   fly secrets set OPENAI_API_KEY=... AISSTREAM_API_KEY=...
+#   fly deploy --build-arg GOOGLE_MAPS_API_KEY=... --build-arg CESIUM_ION_TOKEN=...
+# Browser build args are public. Restrict them by URL and redeploy to change them.
+
+app = "gods-eye-view"
+primary_region = "iad"
+
+[build]
+  dockerfile = "Dockerfile"
+
+[env]
+  NODE_ENV = "production"
+  GEV_IN_CONTAINER = "1"
+  GEV_CACHE_DIR = "/data/gev-cache"
+  PORT = "4173"
+  GEV_RATELIMIT_OPENAI_PER_MIN = "30"
+  GEV_RATELIMIT_GOOGLE_PER_MIN = "60"
+
+[http_service]
+  internal_port = 4173
+  force_https = true
+  auto_stop_machines = "stop"
+  auto_start_machines = true
+  min_machines_running = 1
+  processes = ["app"]
+
+  [[http_service.checks]]
+    grace_period = "20s"
+    interval = "30s"
+    method = "GET"
+    path = "/healthz"
+    timeout = "5s"
+
+[[mounts]]
+  source = "gev_cache"
+  destination = "/data/gev-cache"

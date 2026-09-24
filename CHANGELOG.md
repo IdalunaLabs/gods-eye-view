@@ -1,5 +1,11 @@
 # Changelog
 
+- Add a Node production server (`npm start`) that serves the built app and the
+  existing data-provider routes, plus Docker, Compose, Render, and Fly
+  packaging. Provider Settings stays development-only. Hashed assets and Cesium
+  static files are cached immutably, and `GEV_CACHE_DIR` collects provider disk
+  caches.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 

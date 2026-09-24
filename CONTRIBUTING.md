@@ -29,13 +29,15 @@ Open `http://localhost:4173`. Before sending a PR run `npm run build`, `npm test
 
 ## Checking a built app locally
 
-Run `npm run build` followed by `npm run preview`. Preview serves the built
-frontend and local data-provider APIs. Keep optional server credentials in the
-ignored `.env`; browser keys are embedded during the build, so rebuild after
-changing them. Provider Settings and `/api/setup/*` are development-only: edit
-configuration through the development app or environment file. Unknown API
-paths return JSON 404 responses. Vite preview is for checking a local build;
-it is not a production server.
+Run `npm run build` followed by `npm start` to serve `dist/` and the local
+data-provider APIs with the production server. `npm run preview` still serves
+that build through Vite for a quick check; Vite preview is not a production
+server. Keep optional server credentials in the ignored `.env`; browser keys
+are embedded during the build, so rebuild after changing them. Provider
+Settings and `/api/setup/*` are development-only: edit configuration through
+the development app or environment file. Unknown API paths return JSON 404
+responses. See [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md) for Docker and hosted
+deployment.
 
 ## Good first contributions
 
