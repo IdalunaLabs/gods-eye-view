@@ -1,6 +1,7 @@
 [
   ".prettierrc.json",
   "package.json",
+  "eslint.config.js",
   "scripts/format-scope.json",
   "scripts/package-boundaries.json",
   "scripts/format.mjs",

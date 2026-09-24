@@ -45,6 +45,9 @@ jobs:
       - name: Check adopted formatting
         run: npm run format:check
 
+      - name: Lint
+        run: npm run lint
+
       - name: Check package boundaries
         run: npm run check:boundaries
 
