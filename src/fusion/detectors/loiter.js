@@ -30,7 +30,10 @@ export function detectLoiter(snapshot, options = {}) {
   for (const craft of snapshot?.aircraft || []) {
     if (!craft || craft.onGround === true) continue;
     if (!Number.isFinite(craft.lat) || !Number.isFinite(craft.lon)) continue;
-    if (!Number.isFinite(craft.speedMps) || craft.speedMps <= settings.minSpeedMps) {
+    if (
+      !Number.isFinite(craft.speedMps) ||
+      craft.speedMps <= settings.minSpeedMps
+    ) {
       continue;
     }
     const track = Array.isArray(craft.positions)
@@ -39,7 +42,9 @@ export function detectLoiter(snapshot, options = {}) {
         ? craft.track
         : [];
     const points = track
-      .filter((point) => Number.isFinite(point?.lat) && Number.isFinite(point?.lon))
+      .filter(
+        (point) => Number.isFinite(point?.lat) && Number.isFinite(point?.lon),
+      )
       .slice(-need);
     if (points.length < need) continue;
     let latSum = 0;
@@ -48,11 +53,19 @@ export function detectLoiter(snapshot, options = {}) {
       latSum += point.lat;
       lonSum += point.lon;
     }
-    const centroid = { lat: latSum / points.length, lon: lonSum / points.length };
+    const centroid = {
+      lat: latSum / points.length,
+      lon: lonSum / points.length,
+    };
     let farthest = 0;
     let inside = true;
     for (const point of points) {
-      const distance = haversineKm(centroid.lat, centroid.lon, point.lat, point.lon);
+      const distance = haversineKm(
+        centroid.lat,
+        centroid.lon,
+        point.lat,
+        point.lon,
+      );
       if (distance > farthest) farthest = distance;
       if (distance > settings.radiusKm) {
         inside = false;

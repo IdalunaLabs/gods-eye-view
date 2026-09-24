@@ -16,8 +16,9 @@ A radius query that reaches a pole scans every longitude. `queryBbox` treats
 `west > east` as an antimeridian span, and a span of 360° or more as the full
 circle.
 
-On this machine a 10k-point insert plus 1k radius queries is about 6 ms + 6 ms
-at a 1° cell. The unit test prints the measured times.
+The spatial-index test inserts 10k points and runs 1k radius queries, and
+prints both times. A quiet run on this machine was about 6 ms to insert and
+about 6 ms to query at a 1° cell; a loaded machine is slower.
 
 ## Engine
 

@@ -34,7 +34,7 @@ function alert(overrides) {
   };
 }
 
-function engine(alerts) {
+function makeEngine(alerts) {
   const stop = registerAnalystAlertSource(() => alerts);
   const created = createAnalystEngine({
     getRecords: () => [],
@@ -63,7 +63,7 @@ test('analyst answers active alerts, convergences, and circling near a place', a
       entities: [{ layer: 'flights', id: 'far', label: 'FAR1' }],
     }),
   ];
-  const { engine, stop } = engine(alerts);
+  const { engine, stop } = makeEngine(alerts);
   try {
     const active = await engine.query({ question: 'what alerts are active?' });
     assert.equal(active.ok, true);
@@ -108,7 +108,7 @@ test('analyst alert questions fail honestly when fusion is not running or the pl
   assert.equal(missing.ok, false);
   assert.match(missing.error, /not running/);
 
-  const { engine, stop } = engine([alert({})]);
+  const { engine, stop } = makeEngine([alert({})]);
   try {
     const unresolved = await engine.query({
       question: 'is anything circling near Atlantis?',
@@ -121,7 +121,7 @@ test('analyst alert questions fail honestly when fusion is not running or the pl
 });
 
 test('an ordinary flight question is not captured as an alert intent', async () => {
-  const { engine, stop } = engine([alert({})]);
+  const { engine, stop } = makeEngine([alert({})]);
   try {
     const result = await engine.query({
       layers: ['flights'],

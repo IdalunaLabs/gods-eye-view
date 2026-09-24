@@ -907,7 +907,8 @@ export class IntelHUD {
     const total = Math.max(0, Math.floor(Number(count) || 0));
     const el = this._el?.querySelector?.('#hud-fusion-alerts');
     if (!el) return;
-    const level = severity === 'warn' || severity === 'watch' ? severity : 'info';
+    const level =
+      severity === 'warn' || severity === 'watch' ? severity : 'info';
     el.hidden = total <= 0;
     el.dataset.severity = level;
     el.textContent = total === 1 ? '1 ALERT' : `${total} ALERTS`;

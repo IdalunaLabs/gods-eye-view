@@ -1444,8 +1444,6 @@
   box-sizing: border-box;
   overflow: hidden;
 }
-#right-context-rail.layout-focus
-  > #alerts-panel:not(.collapsed)
-  .alerts-list {
+#right-context-rail.layout-focus > #alerts-panel:not(.collapsed) .alerts-list {
   min-height: 0;
 }

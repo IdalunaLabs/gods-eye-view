@@ -12,6 +12,8 @@ const LAYER_KEYS = Object.freeze([
   'earthquakes',
 ]);
 
+const FUSION_STORAGE_PROBE = 'godsEyeView.v6.fusionDetectors';
+
 /**
  * Read localStorage without throwing when the platform storage port is closed.
  * @param {Storage|null|undefined} storage
@@ -29,12 +31,13 @@ function usableStorage(storage) {
   }
 }
 
-const FUSION_STORAGE_PROBE = 'godsEyeView.v6.fusionDetectors';
-
 function recordsFor(dataManager, layerKey) {
   if (!dataManager) return [];
   try {
-    if (typeof dataManager.isEnabled === 'function' && !dataManager.isEnabled(layerKey)) {
+    if (
+      typeof dataManager.isEnabled === 'function' &&
+      !dataManager.isEnabled(layerKey)
+    ) {
       return [];
     }
     const layer = dataManager.layers?.get?.(layerKey);
@@ -118,8 +121,7 @@ export function startFusionAlerts({
   requestRender = governorRequestRender,
   storage = null,
 } = {}) {
-  const root =
-    globalThis.document?.getElementById?.('alerts-panel') || null;
+  const root = globalThis.document?.getElementById?.('alerts-panel') || null;
   const engine = createFusionEngine({
     getRecords: (layerKey) => recordsFor(dataManager, layerKey),
     storage: usableStorage(storage),

@@ -221,13 +221,17 @@ export function createSpatialIndex({
       for (let index = west; index <= east; index += 1) covered.push(index);
       return covered;
     }
-    for (let index = west; index <= maxLonIndex; index += 1) covered.push(index);
-    for (let index = minLonIndex; index <= east; index += 1) covered.push(index);
+    for (let index = west; index <= maxLonIndex; index += 1)
+      covered.push(index);
+    for (let index = minLonIndex; index <= east; index += 1)
+      covered.push(index);
     return covered;
   }
 
   function byDistanceThenId(a, b) {
-    return a.distanceKm - b.distanceKm || String(a.id).localeCompare(String(b.id));
+    return (
+      a.distanceKm - b.distanceKm || String(a.id).localeCompare(String(b.id))
+    );
   }
 
   /**
@@ -250,19 +254,31 @@ export function createSpatialIndex({
     const cosine = Math.cos((poleward * Math.PI) / 180);
     const lonPad = coversPole
       ? 180
-      : Math.min(180, km / (111.32 * Math.max(Math.abs(cosine), 1e-6)) + cellDegrees);
+      : Math.min(
+          180,
+          km / (111.32 * Math.max(Math.abs(cosine), 1e-6)) + cellDegrees,
+        );
     const hits = [];
-    visitCells(latCellsCovering(centerLat, latPad), lonCellsCovering(centerLon, lonPad), (slot) => {
-      const distanceKm = haversineKm(centerLat, centerLon, lat[slot], lon[slot]);
-      if (distanceKm <= km) {
-        hits.push({
-          id: ids[slot],
-          lat: lat[slot],
-          lon: lon[slot],
-          distanceKm,
-        });
-      }
-    });
+    visitCells(
+      latCellsCovering(centerLat, latPad),
+      lonCellsCovering(centerLon, lonPad),
+      (slot) => {
+        const distanceKm = haversineKm(
+          centerLat,
+          centerLon,
+          lat[slot],
+          lon[slot],
+        );
+        if (distanceKm <= km) {
+          hits.push({
+            id: ids[slot],
+            lat: lat[slot],
+            lon: lon[slot],
+            distanceKm,
+          });
+        }
+      },
+    );
     hits.sort(byDistanceThenId);
     return hits;
   }
@@ -311,10 +327,18 @@ export function createSpatialIndex({
         lonCells.push(index);
       }
     } else {
-      for (let index = lonIndex(westWrapped); index <= maxLonIndex; index += 1) {
+      for (
+        let index = lonIndex(westWrapped);
+        index <= maxLonIndex;
+        index += 1
+      ) {
         lonCells.push(index);
       }
-      for (let index = minLonIndex; index <= lonIndex(eastWrapped); index += 1) {
+      for (
+        let index = minLonIndex;
+        index <= lonIndex(eastWrapped);
+        index += 1
+      ) {
         lonCells.push(index);
       }
     }
@@ -342,7 +366,11 @@ export function createSpatialIndex({
    */
   function nearestK(latitude, longitude, k) {
     const count = Math.floor(Number(k));
-    if (!Number.isFinite(latitude) || !Number.isFinite(longitude) || count < 1) {
+    if (
+      !Number.isFinite(latitude) ||
+      !Number.isFinite(longitude) ||
+      count < 1
+    ) {
       return [];
     }
     let radius = Math.max(cellDegrees * 111, 1);

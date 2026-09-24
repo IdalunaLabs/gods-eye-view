@@ -110,7 +110,7 @@ export function horizontalCpa(a, b, speedBMps, headingB, horizonSec) {
   const ce = re + ve * tSec;
   const cn = rn + vn * tSec;
   const distanceKm = Math.hypot(ce, cn) / 1000;
-  const lat = originLat + ((va.north * tSec) / pb.metresPerDegLat);
+  const lat = originLat + (va.north * tSec) / pb.metresPerDegLat;
   const lon = originLon + (va.east * tSec) / pb.metresPerDegLon;
   return { tSec, distanceKm, lat, lon };
 }
@@ -159,8 +159,7 @@ export function detectConvergence(snapshot, options = {}) {
   for (const craft of aircraft) {
     const self = entityKey(craft);
     const searchKm =
-      settings.thresholdKm +
-      ((craft.speedMps + 300) * horizonSec) / 1000;
+      settings.thresholdKm + ((craft.speedMps + 300) * horizonSec) / 1000;
     const nearby = index.queryRadiusKm(craft.lat, craft.lon, searchKm);
     for (const hit of nearby) {
       if (hit.id === self) continue;
@@ -169,21 +168,26 @@ export function detectConvergence(snapshot, options = {}) {
       const pairKey = [self, hit.id].sort().join('|');
       if (seen.has(pairKey)) continue;
       seen.add(pairKey);
-      const alert = other.kind === 'aircraft'
-        ? aircraftPair(craft, other.body, settings, horizonSec, nowMs)
-        : vesselPair(craft, other.body, settings, horizonSec, nowMs);
+      const alert =
+        other.kind === 'aircraft'
+          ? aircraftPair(craft, other.body, settings, horizonSec, nowMs)
+          : vesselPair(craft, other.body, settings, horizonSec, nowMs);
       if (alert) alerts.push(alert);
     }
   }
   alerts.sort(
     (a, b) =>
-      a.cpaKm - b.cpaKm || a.tSec - b.tSec || String(a.id).localeCompare(String(b.id)),
+      a.cpaKm - b.cpaKm ||
+      a.tSec - b.tSec ||
+      String(a.id).localeCompare(String(b.id)),
   );
-  return alerts.slice(0, settings.maxAlerts).map(({ cpaKm, tSec, ...alert }) => {
-    void cpaKm;
-    void tSec;
-    return alert;
-  });
+  return alerts
+    .slice(0, settings.maxAlerts)
+    .map(({ cpaKm, tSec, ...alert }) => {
+      void cpaKm;
+      void tSec;
+      return alert;
+    });
 }
 
 function aircraftPair(a, b, settings, horizonSec, nowMs) {
@@ -247,10 +251,11 @@ function finishPair(a, b, cpa, settings, nowMs, altitudeKnown, otherKind) {
       ? ` Vertical separation now is ${Math.round(Math.abs(a.altitudeM - b.altitudeM))} m.`
       : ` Aircraft altitude is ${Math.round(a.altitudeM)} m; the vessel is on the surface, so this is a horizontal closure only.`
     : ' Altitude was missing, so vertical separation was not applied.';
-  const severity =
-    cpa.distanceKm < 0.5 || cpa.tSec < 120 ? 'warn' : 'watch';
+  const severity = cpa.distanceKm < 0.5 || cpa.tSec < 120 ? 'warn' : 'watch';
   const confidence = clampConfidence(
-    0.55 + (cpa.tSec < settings.horizonMin * 30 ? 0.1 : 0) + (altitudeKnown ? 0.1 : 0),
+    0.55 +
+      (cpa.tSec < settings.horizonMin * 30 ? 0.1 : 0) +
+      (altitudeKnown ? 0.1 : 0),
   );
   return {
     id: pairId(a, { layer: b.layer, id: b.id }),

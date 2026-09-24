@@ -52,7 +52,9 @@ function alertIdFrom(target) {
 function detectorFrom(target) {
   const button = target?.closest?.('[data-detector]');
   if (!button) return '';
-  return button.getAttribute?.('data-detector') || button.dataset?.detector || '';
+  return (
+    button.getAttribute?.('data-detector') || button.dataset?.detector || ''
+  );
 }
 
 /**
@@ -125,7 +127,8 @@ export function createAlertsPanel({
     list.innerHTML = rows
       .map((alert) => {
         const age = formatAge(
-          stamp - (Number(alert.lastSeenMs) || Number(alert.firstSeenMs) || stamp),
+          stamp -
+            (Number(alert.lastSeenMs) || Number(alert.firstSeenMs) || stamp),
         );
         const entities = (alert.entities || [])
           .map((entity) => escapeHtml(entity.label || entity.id))

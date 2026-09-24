@@ -33,7 +33,8 @@ function showedMotion(vessel, settings) {
   if (
     samples.some(
       (sample) =>
-        Number.isFinite(sample?.speedKts) && sample.speedKts >= settings.minSpeedKts,
+        Number.isFinite(sample?.speedKts) &&
+        sample.speedKts >= settings.minSpeedKts,
     )
   ) {
     return true;
@@ -50,7 +51,9 @@ function showedMotion(vessel, settings) {
   if (located.length < 2) return false;
   const first = located[0];
   const last = located[located.length - 1];
-  return haversineKm(first.lat, first.lon, last.lat, last.lon) >= settings.minMoveKm;
+  return (
+    haversineKm(first.lat, first.lon, last.lat, last.lon) >= settings.minMoveKm
+  );
 }
 
 /**
@@ -99,7 +102,8 @@ export function detectDarkPeriod(snapshot, options = {}) {
     });
   }
   alerts.sort(
-    (a, b) => b.quietMin - a.quietMin || String(a.id).localeCompare(String(b.id)),
+    (a, b) =>
+      b.quietMin - a.quietMin || String(a.id).localeCompare(String(b.id)),
   );
   return alerts.slice(0, settings.maxAlerts).map(({ quietMin, ...alert }) => {
     void quietMin;

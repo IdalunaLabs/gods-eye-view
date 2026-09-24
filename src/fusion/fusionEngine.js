@@ -30,7 +30,9 @@ export function readDetectorFlags(storage) {
   const flags = { ...DEFAULT_DETECTOR_FLAGS };
   if (!storage || typeof storage.getItem !== 'function') return flags;
   try {
-    const parsed = JSON.parse(storage.getItem(FUSION_DETECTOR_STORAGE_KEY) || '');
+    const parsed = JSON.parse(
+      storage.getItem(FUSION_DETECTOR_STORAGE_KEY) || '',
+    );
     if (!parsed || typeof parsed !== 'object') return flags;
     for (const name of FLAG_NAMES) {
       if (typeof parsed[name] === 'boolean') flags[name] = parsed[name];
@@ -61,7 +63,8 @@ function readRows(getRecords, layerKey) {
 
 function asAircraft(row, layer) {
   const id = String(row?.icao24 || row?.id || '').trim();
-  if (!id || !Number.isFinite(row?.lat) || !Number.isFinite(row?.lon)) return null;
+  if (!id || !Number.isFinite(row?.lat) || !Number.isFinite(row?.lon))
+    return null;
   const positions = Array.isArray(row.positions)
     ? row.positions
     : Array.isArray(row.track)
@@ -83,7 +86,8 @@ function asAircraft(row, layer) {
 
 function asVessel(row) {
   const id = String(row?.mmsi || row?.id || '').trim();
-  if (!id || !Number.isFinite(row?.lat) || !Number.isFinite(row?.lon)) return null;
+  if (!id || !Number.isFinite(row?.lat) || !Number.isFinite(row?.lon))
+    return null;
   return {
     layer: 'ais-live-vessels',
     id,
@@ -98,10 +102,19 @@ function asVessel(row) {
 }
 
 function asFirm(row) {
-  if (!Number.isFinite(row?.lat) || !Number.isFinite(row?.lon) || row.id == null) {
+  if (
+    !Number.isFinite(row?.lat) ||
+    !Number.isFinite(row?.lon) ||
+    row.id == null
+  ) {
     return null;
   }
-  return { id: String(row.id), lat: row.lat, lon: row.lon, acqTime: row.acqTime ?? null };
+  return {
+    id: String(row.id),
+    lat: row.lat,
+    lon: row.lon,
+    acqTime: row.acqTime ?? null,
+  };
 }
 
 function asQuake(row) {
@@ -302,7 +315,10 @@ export function createFusionEngine({
     const alerts = [];
     for (const slot of slots.values()) {
       if (!slot.published || slot.misses >= 3) continue;
-      alerts.push({ ...slot.alert, entities: slot.alert.entities.map((entity) => ({ ...entity })) });
+      alerts.push({
+        ...slot.alert,
+        entities: slot.alert.entities.map((entity) => ({ ...entity })),
+      });
     }
     alerts.sort(
       (a, b) =>
@@ -315,7 +331,10 @@ export function createFusionEngine({
 
   function signature(alerts) {
     return alerts
-      .map((alert) => `${alert.id}:${alert.lastSeenMs}:${alert.severity}:${alert.explanation}`)
+      .map(
+        (alert) =>
+          `${alert.id}:${alert.lastSeenMs}:${alert.severity}:${alert.explanation}`,
+      )
       .join('|');
   }
 
@@ -351,7 +370,9 @@ export function createFusionEngine({
     let detected = [];
     try {
       const view = snapshot(nowMs);
-      detected = detect ? detect(view, { ...flags }) : defaultDetect(view, flags);
+      detected = detect
+        ? detect(view, { ...flags })
+        : defaultDetect(view, flags);
     } catch {
       detected = [];
     }
@@ -387,10 +408,19 @@ export function createFusionEngine({
   }
 
   function setDetectorEnabled(name, enabled) {
-    if (!FLAG_NAMES.includes(name) || typeof enabled !== 'boolean') return flags;
+    if (!FLAG_NAMES.includes(name) || typeof enabled !== 'boolean')
+      return flags;
     flags[name] = enabled;
     writeDetectorFlags(storage, flags);
-    if (!kindEnabled(name === 'darkPeriod' ? 'dark-period' : name === 'hotspot' ? 'hotspot-proximity' : name)) {
+    if (
+      !kindEnabled(
+        name === 'darkPeriod'
+          ? 'dark-period'
+          : name === 'hotspot'
+            ? 'hotspot-proximity'
+            : name,
+      )
+    ) {
       for (const [id, slot] of slots) {
         if (!kindEnabled(slot.alert.kind)) slots.delete(id);
       }

@@ -83,14 +83,22 @@ export function detectHotspotProximity(snapshot, options = {}) {
   const alerts = [];
 
   const firms = (snapshot?.firms || []).filter(
-    (fire) => Number.isFinite(fire?.lat) && Number.isFinite(fire?.lon) && fire.id != null,
+    (fire) =>
+      Number.isFinite(fire?.lat) &&
+      Number.isFinite(fire?.lon) &&
+      fire.id != null,
   );
   const groups = clusterPoints(firms, settings.clusterKm, settings.minCluster);
   for (const craft of aircraft) {
     for (const members of groups) {
       let nearest = Infinity;
       for (const member of members) {
-        const distance = haversineKm(craft.lat, craft.lon, member.lat, member.lon);
+        const distance = haversineKm(
+          craft.lat,
+          craft.lon,
+          member.lat,
+          member.lon,
+        );
         if (distance < nearest) nearest = distance;
       }
       if (nearest > settings.radiusKm) continue;
@@ -130,8 +138,12 @@ export function detectHotspotProximity(snapshot, options = {}) {
   }
 
   const quakes = (snapshot?.earthquakes || []).filter((quake) => {
-    if (!Number.isFinite(quake?.lat) || !Number.isFinite(quake?.lon)) return false;
-    if (!Number.isFinite(quake.magnitude) || quake.magnitude < settings.minMagnitude) {
+    if (!Number.isFinite(quake?.lat) || !Number.isFinite(quake?.lon))
+      return false;
+    if (
+      !Number.isFinite(quake.magnitude) ||
+      quake.magnitude < settings.minMagnitude
+    ) {
       return false;
     }
     if (!Number.isFinite(quake.timeMs)) return false;

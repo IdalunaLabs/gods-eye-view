@@ -111,7 +111,8 @@ export function resolveAlertIntent(spec = {}) {
     const kind = ALERT_KIND_ALIAS[spec.intent.trim().toLowerCase()];
     if (kind) return { kind, place: textPlace(spec.place) };
   }
-  const question = typeof spec.question === 'string' ? spec.question.trim() : '';
+  const question =
+    typeof spec.question === 'string' ? spec.question.trim() : '';
   if (question) {
     const place = placeFromQuestion(question);
     if (/\bconverg/i.test(question)) return { kind: 'convergence', place };
@@ -133,10 +134,17 @@ export function resolveAlertIntent(spec = {}) {
       entry.op === 'eq',
   );
   if (!filter) return null;
-  const kind = ALERT_KIND_ALIAS[String(filter.value ?? '').trim().toLowerCase()];
+  const kind =
+    ALERT_KIND_ALIAS[
+      String(filter.value ?? '')
+        .trim()
+        .toLowerCase()
+    ];
   if (!kind) return null;
   const place =
-    spec.scope?.kind === 'region' ? textPlace(spec.scope.name) : textPlace(spec.place);
+    spec.scope?.kind === 'region'
+      ? textPlace(spec.scope.name)
+      : textPlace(spec.place);
   return { kind, place };
 }
 
@@ -199,7 +207,9 @@ async function queryAlerts(providers, intent, spec) {
         ok: false,
         error: `I couldn't resolve a boundary for "${scope.name}" — try a state, country, or a named natural region.`,
         coverage: {
-          layersQueried: [{ layerKey: 'fusion-alerts', records: records.length }],
+          layersQueried: [
+            { layerKey: 'fusion-alerts', records: records.length },
+          ],
           scope: `region:${scope.name}:unresolved`,
         },
       };
@@ -216,7 +226,8 @@ async function queryAlerts(providers, intent, spec) {
     const km =
       scope.kind === 'radius' ? Number(scope.km) || 100 : view.viewRadiusKm;
     resolvedScope = { center, km };
-    scopeNote = scope.kind === 'view' ? `view:${Math.round(km)}km` : `radius:${km}km`;
+    scopeNote =
+      scope.kind === 'view' ? `view:${Math.round(km)}km` : `radius:${km}km`;
     scopeLabel = scope.kind === 'view' ? 'in view' : `within ${km} km`;
   }
   let items = applyScope(records, scope, resolvedScope);
