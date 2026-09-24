@@ -45,6 +45,7 @@
     "qa:map-source-tray": "node scripts/qa-map-source-tray.mjs",
     "check:boundaries": "node scripts/check-import-directions.mjs && node scripts/check-package-boundaries.mjs",
     "lint": "eslint src scripts vite.config.js --max-warnings 0 && eslint server",
+    "typecheck": "tsc -p tsconfig.json",
     "qa:transit": "node scripts/qa-transit.mjs"
   },
   "dependencies": {
@@ -61,6 +62,7 @@
     "prettier": "3.9.6",
     "puppeteer": "^25.10.0",
     "sharp": "^0.35.4",
+    "typescript": "7.0.2",
     "vite": "^6.0.0",
     "vite-plugin-cesium": "^1.2.23",
     "ws": "^8.21.0"

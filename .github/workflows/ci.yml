@@ -48,6 +48,9 @@ jobs:
       - name: Lint
         run: npm run lint
 
+      - name: Typecheck portable graphs
+        run: npm run typecheck
+
       - name: Check package boundaries
         run: npm run check:boundaries
 
