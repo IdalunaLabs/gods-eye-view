@@ -11,8 +11,8 @@ export function createTracking({
   vesselState,
   services,
   parts: components,
-  layer,
-  options,
+  layer: _layer,
+  options: _options,
 }) {
   const { state } = vesselState;
   const { geoidHeight } = services.geoid;

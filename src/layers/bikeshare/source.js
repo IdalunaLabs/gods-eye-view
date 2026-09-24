@@ -1,9 +1,13 @@
+// @ts-check
 /** Read a GBFS station document through the existing bounded server proxy. */
 export function createBikeshareSource({
-  fetchImpl = (...args) => globalThis.fetch(...args),
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
 } = {}) {
   return {
-    async getStations(upstreamUrl, { signal } = {}) {
+    async getStations(
+      upstreamUrl,
+      { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+    ) {
       const url = new URL(upstreamUrl);
       if (url.protocol !== 'https:' || url.username || url.password || url.hash)
         throw new TypeError('A public HTTPS GBFS URL is required');

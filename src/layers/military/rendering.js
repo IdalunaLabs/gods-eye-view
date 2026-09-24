@@ -54,7 +54,7 @@ export function createRendering({
   flightState,
   services,
   parts,
-  layer,
+  layer: _layer,
   resolveAsset,
 }) {
   const { tr3bIconKind, isTr3b } = services.aircraftPresentation;

@@ -145,7 +145,7 @@ export function createDataPackSession({
         clearTimeout(run.timer);
         run.status = 'ready';
         return true;
-      } catch (error) {
+      } catch (_error) {
         const superseded = active !== run || signal?.aborted || disposed;
         if (active === run) clear();
         if (superseded) return false;

@@ -7,7 +7,7 @@ export function createSelection({
   services,
   parts: components,
   layer,
-  options,
+  options: _options,
 }) {
   const { state } = vesselState;
   const { resolvePickId, isOwnedByOtherLayer } = services.picking;

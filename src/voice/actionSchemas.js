@@ -1,3 +1,4 @@
+// @ts-check
 // Canonical action arguments. Descriptive wording is supplied separately.
 const schemas = [
   {

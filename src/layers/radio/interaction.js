@@ -11,7 +11,7 @@ export function createInteraction({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const {
     resolvePickId,

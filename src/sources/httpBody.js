@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Read a fetch() Response body as text with a hard byte cap. Rejects early on an
  * oversized Content-Length, then streams with a running cap so a chunked or
@@ -60,7 +61,9 @@ export async function readResponseJsonCapped(response, maxBytes, signal) {
  */
 export async function readResponseBytesCapped(response, maxBytes) {
   const tooLarge = () => {
-    const err = new Error('Upstream response too large');
+    const err = /** @type {Error & { code: string }} */ (
+      new Error('Upstream response too large')
+    );
     err.code = 'RESPONSE_TOO_LARGE';
     return err;
   };
@@ -104,8 +107,7 @@ export async function readResponseBytesCapped(response, maxBytes) {
 export function coalesceProxyRequest(inFlight, key, create) {
   const existing = inFlight.get(key);
   if (existing) return { promise: existing, shared: true };
-  let promise;
-  promise = Promise.resolve()
+  const promise = Promise.resolve()
     .then(create)
     .finally(() => {
       if (inFlight.get(key) === promise) inFlight.delete(key);

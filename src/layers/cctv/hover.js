@@ -5,7 +5,12 @@ import {
 import { staticFrameRefreshMs } from '../../data/cctvLod.js';
 import { HOVER_PICK_THROTTLE_MS, HOVER_RELEASE_MS } from './policy.js';
 
-export function createHover({ state: layerState, services, parts, source }) {
+export function createHover({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /**
    * Throttled MOUSE_MOVE hover pass (owner round 2, item B): pointing at a
    * camera icon that has no card summons its card immediately. This is

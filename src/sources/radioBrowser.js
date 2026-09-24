@@ -1,14 +1,18 @@
+// @ts-check
 import { normalizeRadioCountryInput } from '../data/radioCountry.js';
 
 export const RADIO_UUID_RE =
   /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 export function cleanRadioText(value, maxLength) {
-  return String(value ?? '')
-    .replace(/[\u0000-\u001f\u007f]/g, ' ')
-    .replace(/\s+/g, ' ')
-    .trim()
-    .slice(0, maxLength)
-    .trim();
+  return (
+    String(value ?? '')
+      // eslint-disable-next-line no-control-regex -- replace C0 controls before collapsing whitespace
+      .replace(/[\u0000-\u001f\u007f]/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .slice(0, maxLength)
+      .trim()
+  );
 }
 
 export function isNonGlobalIpv4(hostname) {
@@ -62,7 +66,7 @@ export function publicRadioHttpsUrl(value) {
 
 /**
  * Normalize one Radio Browser station and omit favicons and unsafe streams.
- * @param {object} raw Directory record.
+ * @param {any} raw Directory record.
  * @param {object} [options]
  * @param {(value: unknown) => string|null} [options.normalizeUrl] URL admission
  *   policy, applied to both stream and homepage; returns a safe URL or null.

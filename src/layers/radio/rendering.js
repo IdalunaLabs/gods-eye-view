@@ -15,7 +15,7 @@ export function createRendering({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { cachedGroundFloor } = services.ground;
   const { clearOverlaySource, setOverlaySourceVisible, setOverlayEntries } =
@@ -259,7 +259,7 @@ export function createRendering({
     layerState._horizonScanCount += 1;
     const occluder = horizonOccluder(layerState._viewer.camera);
     let visibilityChanged = false;
-    for (const [id, record] of layerState._renderById) {
+    for (const [_id, record] of layerState._renderById) {
       const matches = parts.categories.stationMatchesRadioCategory(
         record.station,
         layerState._filter,

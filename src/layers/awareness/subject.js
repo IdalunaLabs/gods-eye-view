@@ -10,7 +10,12 @@ import {
   AWARENESS_PAGE_SIZE,
 } from './policy.js';
 
-export function createSubject({ state: layerState, services, parts, source }) {
+export function createSubject({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const aisLiveVesselsLayer = services.vessels;
   const militaryInstallationsLayer = services.installations;
   const flightsLayer = services.flights;

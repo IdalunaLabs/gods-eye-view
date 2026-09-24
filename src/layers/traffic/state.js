@@ -1,7 +1,10 @@
 import * as Cesium from 'cesium';
-import { FLOW_BUCKET_COLORS, TRAFFIC_TIMING_ENABLED } from './policy.js';
+import {
+  FLOW_BUCKET_COLORS,
+  TRAFFIC_TIMING_ENABLED as _TRAFFIC_TIMING_ENABLED,
+} from './policy.js';
 
-export function createState({ services }) {
+export function createState({ services: _services }) {
   const layerState = {};
 
   // ─── Module State ──────────────────────────────────────────

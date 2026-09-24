@@ -4,15 +4,20 @@ import {
   PROJECTION_CANVAS_WIDTH,
   PROJECTION_CANVAS_HEIGHT,
   PROJECTION_TEXTURE_SWAP_MS,
-  ACTIVE_FRAME_REFRESH_MS,
-  FRAME_ENDPOINT,
-  MEDIA_ENDPOINT,
+  ACTIVE_FRAME_REFRESH_MS as _ACTIVE_FRAME_REFRESH_MS,
+  FRAME_ENDPOINT as _FRAME_ENDPOINT,
+  MEDIA_ENDPOINT as _MEDIA_ENDPOINT,
   PROJECTION_ACTIVE_REFRESH_MS,
   PROJECTION_IDLE_REFRESH_MS,
   PLACEHOLDER_REPAINT_MS,
 } from './policy.js';
 
-export function createFrames({ state: layerState, services, parts, source }) {
+export function createFrames({
+  state: layerState,
+  services: _services,
+  parts,
+  source,
+}) {
   /**
    * FNV-1a over the RGB channels of a downsampled frame. Pure (takes the raw
    * pixel buffer, no DOM) so it is unit-testable.

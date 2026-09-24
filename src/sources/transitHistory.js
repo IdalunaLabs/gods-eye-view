@@ -1,8 +1,10 @@
+// @ts-check
 /** Validate the entire decoded identifier, including UTF-8 length. */
 export function validTransitIdentifier(value) {
   return (
     typeof value === 'string' &&
     value.length > 0 &&
+    // eslint-disable-next-line no-control-regex -- reject C0 controls in transit identifiers
     !/[\u0000-\u001f\u007f/\\]/u.test(value) &&
     value !== '.' &&
     value !== '..' &&

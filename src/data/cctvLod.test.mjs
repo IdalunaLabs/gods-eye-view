@@ -285,7 +285,7 @@ test('selectCctvLod with viewport dims routes the fill through screen distributi
   );
   // Without screen info the original nearest-first cap applies unchanged.
   const plain = selectCctvLod(
-    [...clustered, periphery].map(({ sx, sy, ...rest }) => rest),
+    [...clustered, periphery].map(({ sx: _sx, sy: _sy, ...rest }) => rest),
     { cameraHeightM: 500 },
   );
   assert.equal(plain.cardIds.includes('periphery'), false);
@@ -392,7 +392,7 @@ test('center weighting deterministically favors center without starving peripher
   );
 
   const legacy = selectCctvLod(
-    [...edge, ...center].map(({ sx, sy, ...candidate }) => candidate),
+    [...edge, ...center].map(({ sx: _sx2, sy: _sy2, ...candidate }) => candidate),
     { cameraHeightM: 500 },
   );
   assert.equal(

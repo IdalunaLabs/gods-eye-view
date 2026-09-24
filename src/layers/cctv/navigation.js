@@ -3,9 +3,9 @@ import { CCTV_FOCUS_RESULT } from './policy.js';
 
 export function createNavigation({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /**
    * Finds the camera closest to the Cesium viewer's current position.

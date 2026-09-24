@@ -12,7 +12,12 @@ import {
   FETCH_DEBOUNCE,
 } from './policy.js';
 
-export function createViewport({ state: layerState, services, parts, source }) {
+export function createViewport({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   // ─── Camera Monitoring ─────────────────────────────────────
 
   /**

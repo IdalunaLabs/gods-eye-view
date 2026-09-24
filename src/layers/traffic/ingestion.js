@@ -1,13 +1,13 @@
 import {
   TRAFFIC_TIMING_ENABLED,
-  OVERPASS_URL,
+  OVERPASS_URL as _OVERPASS_URL,
   TILE_CACHE_MAX_ENTRIES,
   FAST_FETCH_ALTITUDE,
 } from './policy.js';
 
 export function createIngestion({
   state: layerState,
-  services,
+  services: _services,
   parts,
   source,
 }) {

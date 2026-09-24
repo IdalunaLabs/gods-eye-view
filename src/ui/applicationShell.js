@@ -574,25 +574,25 @@ export class StyleManager extends ShellFacade {
 
   /** Advance camera authority and settle any older search UI immediately. */
   _stampNavigation({
-    cancelPendingSelection = true,
-    clearSearchedLocation = true,
+    cancelPendingSelection: _cancelPendingSelection = true,
+    clearSearchedLocation: _clearSearchedLocation = true,
   } = {}) {
     return this._navigation._stampNavigation(...arguments);
   }
 
   /** Release every follow owner while preserving Contact and vessel selection. */
   _releaseFollowCamera({
-    preserveVesselSelection = true,
-    preserveCameraFlight = false,
-    trackingOrigin = 'tool',
+    preserveVesselSelection: _preserveVesselSelection = true,
+    preserveCameraFlight: _preserveCameraFlight = false,
+    trackingOrigin: _trackingOrigin = 'tool',
   } = {}) {
     return this._navigation._releaseFollowCamera(...arguments);
   }
 
   /** Accept a delayed lookup without releasing its current camera owner. */
   _beginDeferredNavigation(
-    noun = 'location',
-    { cancelPendingSelection = true } = {},
+    _noun = 'location',
+    { cancelPendingSelection: _cancelPendingSelection2 = true } = {},
   ) {
     return this._navigation._beginDeferredNavigation(...arguments);
   }
@@ -633,12 +633,16 @@ export class StyleManager extends ShellFacade {
   }
 
   /** Apply a temporary cockpit-only CRT/NVG/FLIR/NOIR post-process override. */
-  _setCockpitVision(mode, active, { revealParameters = false } = {}) {
+  _setCockpitVision(
+    mode,
+    active,
+    { revealParameters: _revealParameters = false } = {},
+  ) {
     return this._visualSettings._setCockpitVision(...arguments);
   }
 
   /** Reveal shared style parameters, optionally opening Cockpit Display first. */
-  _revealCockpitStyleParameters({ openDisplay = false } = {}) {
+  _revealCockpitStyleParameters({ openDisplay: _openDisplay = false } = {}) {
     return this._visualSettings._revealCockpitStyleParameters(...arguments);
   }
 
@@ -649,7 +653,7 @@ export class StyleManager extends ShellFacade {
    * @param {boolean} [options.syncShare=true] - Whether to push state to the share link.
    * @returns {void}
    */
-  _setBloomIntensity(intensity, { syncShare = true } = {}) {
+  _setBloomIntensity(intensity, { syncShare: _syncShare = true } = {}) {
     return this._visualSettings._setBloomIntensity(...arguments);
   }
 
@@ -711,7 +715,10 @@ export class StyleManager extends ShellFacade {
     this._mapSourceControls?.render(state);
   }
 
-  _setDetectionAllocation(strategy, { syncShare = true, persist = true } = {}) {
+  _setDetectionAllocation(
+    strategy,
+    { syncShare: _syncShare2 = true, persist: _persist = true } = {},
+  ) {
     return this._visualSettings._setDetectionAllocation(...arguments);
   }
 
@@ -729,7 +736,11 @@ export class StyleManager extends ShellFacade {
   _setCommandDockPanelPinState(
     panelId,
     pin,
-    { restore = false, persist = true, syncShare = true } = {},
+    {
+      restore: _restore = false,
+      persist: _persist2 = true,
+      syncShare: _syncShare3 = true,
+    } = {},
   ) {
     return this._panelChrome._setCommandDockPanelPinState(...arguments);
   }
@@ -747,7 +758,10 @@ export class StyleManager extends ShellFacade {
    */
   _initAutoHoverPanel(
     panelId,
-    { openDelayMs = 850, closeDelayMs = 1000 } = {},
+    {
+      openDelayMs: _openDelayMs = 850,
+      closeDelayMs: _closeDelayMs = 1000,
+    } = {},
   ) {
     return this._panelChrome._initAutoHoverPanel(...arguments);
   }
@@ -984,10 +998,10 @@ export class StyleManager extends ShellFacade {
     panelId,
     collapsed,
     {
-      explicit = false,
-      restore = false,
-      persist = true,
-      syncShare = true,
+      explicit: _explicit = false,
+      restore: _restore2 = false,
+      persist: _persist3 = true,
+      syncShare: _syncShare4 = true,
     } = {},
   ) {
     return this._panelChrome.setPanelCollapsed(...arguments);
@@ -1070,12 +1084,12 @@ export class StyleManager extends ShellFacade {
    * @returns {{ok: boolean, detectionMode?: string, densityPct?: number|null, error?: string}}
    */
   setDetection({
-    enabled,
-    mode,
-    densityPct,
-    allocationStrategy,
-    fadePct,
-    outsideOpacityPct,
+    enabled: _enabled,
+    mode: _mode,
+    densityPct: _densityPct,
+    allocationStrategy: _allocationStrategy,
+    fadePct: _fadePct,
+    outsideOpacityPct: _outsideOpacityPct,
   } = {}) {
     return this._visualSettings.setDetection(...arguments);
   }
@@ -1122,7 +1136,7 @@ export class StyleManager extends ShellFacade {
    * @param {number} [options.intensityPct] - 0-200.
    * @returns {{ok: boolean, bloom: {enabled: boolean, intensityPct: number|null}}}
    */
-  setBloom({ enabled, intensityPct } = {}) {
+  setBloom({ enabled: _enabled2, intensityPct: _intensityPct } = {}) {
     return this._visualSettings.setBloom(...arguments);
   }
 
@@ -1133,7 +1147,7 @@ export class StyleManager extends ShellFacade {
    * @param {number} [options.intensityPct] - 0-100.
    * @returns {{ok: boolean, sharpen: {enabled: boolean, intensityPct: number|null}}}
    */
-  setSharpen({ enabled, intensityPct } = {}) {
+  setSharpen({ enabled: _enabled3, intensityPct: _intensityPct2 } = {}) {
     return this._visualSettings.setSharpen(...arguments);
   }
 
@@ -1147,7 +1161,10 @@ export class StyleManager extends ShellFacade {
    * @param {boolean} [options.focus=false]
    * @returns {{ok:boolean, celestialRing:{enabled:boolean,visible:boolean}, cameraFocused:boolean, error?:string}}
    */
-  setCelestialRingEnabled(enabled, { syncShare = true, focus = false } = {}) {
+  setCelestialRingEnabled(
+    enabled,
+    { syncShare: _syncShare5 = true, focus: _focus = false } = {},
+  ) {
     return this._visualSettings.setCelestialRingEnabled(...arguments);
   }
 
@@ -1261,7 +1278,7 @@ export class StyleManager extends ShellFacade {
    *   Omit it and the method behaves as it always has.
    * @returns {Promise<boolean>} Whether the state was committed.
    */
-  async applyVisualState(state = {}, { isCurrent = null } = {}) {
+  async applyVisualState(_state = {}, { isCurrent: _isCurrent = null } = {}) {
     return this._visualSettings.applyVisualState(...arguments);
   }
 
@@ -1269,7 +1286,7 @@ export class StyleManager extends ShellFacade {
    * Applies recording-friendly post-processing and shader uniform overrides.
    * @param {object} preset
    */
-  applyCinematicPreset(preset = {}) {
+  applyCinematicPreset(_preset = {}) {
     return this._visualSettings.applyCinematicPreset(...arguments);
   }
 
@@ -1282,7 +1299,7 @@ export class StyleManager extends ShellFacade {
    * @param {string} styleName - Style name whose uniforms to display.
    * @returns {void}
    */
-  _updateSliderPanel(styleName, { reveal = false } = {}) {
+  _updateSliderPanel(styleName, { reveal: _reveal = false } = {}) {
     return this._visualSettings._updateSliderPanel(...arguments);
   }
 
@@ -1303,8 +1320,8 @@ export class StyleManager extends ShellFacade {
     styleName,
     {
       applyPreset = true,
-      revealParameters = applyPreset,
-      restore = false,
+      revealParameters: _revealParameters2 = applyPreset,
+      restore: _restore3 = false,
     } = {},
   ) {
     return this._visualSettings.setStyle(...arguments);

@@ -6,6 +6,7 @@ import {
   placesNearViewRecovery,
 } from './annotations/annotationResolver.js';
 import { unavailablePlaceSearch } from './search/placeSearch.js';
+import { haversineKm } from './geo/greatCircle.js';
 
 /**
  * Points of Interest per city.
@@ -1105,14 +1106,7 @@ const PLACE_FALLBACK_HALF_SPAN_KM = 20;
 
 /** Great-circle distance in km (small enough here that the spherical model is fine). */
 function greatCircleKm(lat1, lng1, lat2, lng2) {
-  const dLat = Cesium.Math.toRadians(lat2 - lat1);
-  const dLng = Cesium.Math.toRadians(lng2 - lng1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(Cesium.Math.toRadians(lat1)) *
-      Math.cos(Cesium.Math.toRadians(lat2)) *
-      Math.sin(dLng / 2) ** 2;
-  return 6371 * 2 * Math.asin(Math.min(1, Math.sqrt(a)));
+  return haversineKm(lat1, lng1, lat2, lng2);
 }
 
 /**
@@ -1411,7 +1405,7 @@ function selectBuildingBounds(elements, targetLat, targetLon, query) {
   }
   if (!candidates.length) return null;
   candidates.sort((a, b) => b.score - a.score);
-  const { score, ...best } = candidates[0];
+  const { score: _score, ...best } = candidates[0];
   return best;
 }
 

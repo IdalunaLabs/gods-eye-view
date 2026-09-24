@@ -5,7 +5,7 @@ import {
   DEFAULT_RADIO_VOLUME,
 } from './policy.js';
 
-export function createState({ services }) {
+export function createState({ services: _services }) {
   const layerState = {};
 
   layerState._radioEarthScreenCenter = new Cesium.Cartesian2();

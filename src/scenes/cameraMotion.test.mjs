@@ -66,6 +66,7 @@ test('abort and replacement settle immediately and revoke already queued callbac
   assert.equal(await h.owner.play(move, {}), false);
 });
 test('synchronous cancellation from pose application schedules no abandoned frame', async () => {
+  // eslint-disable-next-line prefer-const -- closed over before the single assignment
   let owner;
   const h = harness(() => owner.cancel());
   owner = h.owner;

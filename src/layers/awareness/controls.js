@@ -1,6 +1,11 @@
 import { AWARENESS_RADIUS_M } from '../../data/militaryAwarenessEngine.js';
 
-export function createControls({ state: layerState, services, parts, source }) {
+export function createControls({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const flightsLayer = services.flights;
   const militaryFlightsLayer = services.military;
   const aisLiveVesselsLayer = services.vessels;

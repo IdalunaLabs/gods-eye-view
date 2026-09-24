@@ -243,7 +243,7 @@ const _iconCache = new Map();
 const _b64 = (s) =>
   typeof btoa === 'function'
     ? btoa(s)
-    : Buffer.from(s, 'utf8').toString('base64');
+    : globalThis.Buffer.from(s, 'utf8').toString('base64');
 
 /** Fleet raster: billboards render at ~40–58 DEVICE px (width 20–24 CSS ×
  *  Retina × class scale). Cesium's billboard atlas has no mipmaps, so a big

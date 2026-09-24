@@ -46,8 +46,8 @@ import {
   reduceScenario,
   reduceSensorContrast,
   reduceScriptedMotion,
-  reduceMotion,
-  reduceFleet,
+  reduceMotion as _reduceMotion,
+  reduceFleet as _reduceFleet,
 } from '../src/layers/transit/qaMetrics.js';
 
 const BASE = process.env.QA_BASE_URL || 'http://localhost:4173';
@@ -1330,6 +1330,7 @@ try {
           const words = Object.fromEntries(keys.map((k) => [k, []]));
           const t0 = performance.now();
           let lastWordAt = -1e9;
+          // eslint-disable-next-line prefer-const -- closed over before the single assignment
           let remove;
           const timer = setTimeout(() => {
             remove?.();
@@ -1672,6 +1673,7 @@ try {
               }
               if (performance.now() - t0 >= durationMs) finish();
             };
+            // eslint-disable-next-line prefer-const -- closed over before the single assignment
             let remove;
             const finish = () => {
               clearTimeout(timer);

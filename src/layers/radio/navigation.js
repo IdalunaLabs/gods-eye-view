@@ -8,8 +8,8 @@ import {
 export function createNavigation({
   state: layerState,
   services,
-  parts,
-  source,
+  parts: _parts,
+  source: _source,
 }) {
   const {
     isFullGlobeInsideKeyhole,

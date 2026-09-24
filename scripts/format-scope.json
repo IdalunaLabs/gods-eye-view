@@ -1,6 +1,8 @@
 [
   ".prettierrc.json",
   "package.json",
+  "eslint.config.js",
+  "tsconfig.json",
   "scripts/format-scope.json",
   "scripts/package-boundaries.json",
   "scripts/format.mjs",
@@ -452,6 +454,8 @@
   "src/data/flowTiles.js",
   "src/layers/traffic/source.test.mjs",
   "src/layers/bikeshare/source.test.mjs",
+  "src/layers/bikeshare/registry.test.mjs",
+  "src/geo/greatCircle.test.mjs",
   "src/layers/bikeshare/proxyRoute.test.mjs",
   "scripts/traffic-fixtures.mjs",
   "src/layers/traffic/navigation.test.mjs",

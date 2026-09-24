@@ -71,7 +71,7 @@ export const TRANSIT_BACKOFF_LADDER_MS = Object.freeze([
  * registered feed. Anything else — a different route, an unknown id, path
  * tricks, a query string — resolves to null and the caller 404s.
  * @param {string} url Request URL relative to the mount point.
- * @returns {{ route: 'feeds' } | { route: 'vehicles', feed: object } | null}
+ * @returns {{ route: 'feeds' } | { route: 'vehicles', feed: object } | { route: 'trail', feed: object, vehicleId: string } | null}
  */
 export function resolveTransitRoute(url) {
   const pathname = String(url || '').split('?')[0];
@@ -282,7 +282,7 @@ export function transitCacheState(entry, now) {
 /**
  * Response headers for a snapshot. `X-GEV-Cache` mirrors the other proxies
  * (HIT / MISS / INFLIGHT / STALE-ERROR) so the layer can surface staleness.
- * @param {'HIT'|'MISS'|'INFLIGHT'|'STALE-ERROR'} cacheState
+ * @param {'HIT'|'MISS'|'INFLIGHT'|'STALE-ERROR'|'NONE'} cacheState
  * @param {string} [upstreamHost]
  * @returns {Record<string, string>}
  */

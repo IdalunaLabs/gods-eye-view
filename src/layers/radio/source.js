@@ -1,11 +1,14 @@
+// @ts-check
 import { DIRECTORY_ENDPOINT, RADIO_UUID_RE } from './policy.js';
 
 /** Supply directory metadata and click reporting; audio stays with the broadcaster. */
 export function createRadioSource({
-  fetchImpl = (...args) => globalThis.fetch(...args),
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
 } = {}) {
   return {
-    async getDirectory({ signal } = {}) {
+    async getDirectory(
+      { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+    ) {
       signal?.throwIfAborted();
       const response = await fetchImpl(DIRECTORY_ENDPOINT, { signal });
       if (!response.ok)
@@ -14,7 +17,10 @@ export function createRadioSource({
       signal?.throwIfAborted();
       return body;
     },
-    async recordClick(id, { signal } = {}) {
+    async recordClick(
+      id,
+      { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+    ) {
       if (typeof id !== 'string' || !RADIO_UUID_RE.test(id))
         throw new Error('Invalid radio station id');
       signal?.throwIfAborted();

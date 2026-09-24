@@ -18,6 +18,7 @@ import * as Cesium from 'cesium';
 import { forward as toMGRS } from 'mgrs';
 import { CITY_POIS } from './locations.js';
 import { composeLocalityTag } from './hudLocality.js';
+import { haversineKm } from './geo/greatCircle.js';
 import {
   ellipsoidalToMslDisplayM,
   ensureGeoidReady,
@@ -563,8 +564,8 @@ export class IntelHUD {
     if (!rect) return null;
     const north = Cesium.Math.toDegrees(rect.north);
     const south = Cesium.Math.toDegrees(rect.south);
-    let east = Cesium.Math.toDegrees(rect.east);
-    let west = Cesium.Math.toDegrees(rect.west);
+    const east = Cesium.Math.toDegrees(rect.east);
+    const west = Cesium.Math.toDegrees(rect.west);
     let lonSpan = Math.abs(east - west);
     // Handle antimeridian wrap: if span exceeds 180 deg, take the shorter arc
     if (lonSpan > 180) lonSpan = 360 - lonSpan;
@@ -580,25 +581,6 @@ export class IntelHUD {
   }
 
   /**
-   * Compute the great-circle distance between two geographic points
-   * using the Haversine formula.
-   * @param {number} lat1 - Start latitude (decimal degrees).
-   * @param {number} lon1 - Start longitude (decimal degrees).
-   * @param {number} lat2 - End latitude (decimal degrees).
-   * @param {number} lon2 - End longitude (decimal degrees).
-   * @returns {number} Distance in kilometers.
-   */
-  _haversineKm(lat1, lon1, lat2, lon2) {
-    const toRad = (deg) => Cesium.Math.toRadians(deg);
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-  }
-
-  /**
    * Find the closest known POI to the given coordinates.
    * @param {number} latDeg - Latitude in decimal degrees.
    * @param {number} lonDeg - Longitude in decimal degrees.
@@ -608,7 +590,7 @@ export class IntelHUD {
   _nearestKnownPoint(latDeg, lonDeg) {
     let best = null;
     for (const point of NEARBY_POINTS) {
-      const distKm = this._haversineKm(latDeg, lonDeg, point.lat, point.lon);
+      const distKm = haversineKm(latDeg, lonDeg, point.lat, point.lon);
       if (!best || distKm < best.distKm) {
         best = { ...point, distKm };
       }

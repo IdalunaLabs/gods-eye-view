@@ -1,3 +1,4 @@
+// @ts-check
 /** Decode OSM ways into portable road coordinates, classes and travel direction. */
 export function normalizeOverpassRoads(payload) {
   const roads = [];

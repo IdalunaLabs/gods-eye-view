@@ -148,7 +148,7 @@ function trackingIdOption(key, token, defaultValue = null) {
   });
 }
 
-function stringOption(key, token, defaultValue) {
+function _stringOption(key, token, defaultValue) {
   return Object.freeze({
     key,
     token,

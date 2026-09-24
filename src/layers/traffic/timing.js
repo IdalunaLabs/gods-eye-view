@@ -5,7 +5,12 @@ import {
   DOT_HEIGHT_OFFSET,
 } from './policy.js';
 
-export function createTiming({ state: layerState, services, parts, source }) {
+export function createTiming({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /**
    * Return development timing counters for the capture harness and inertness test.
    * This named export is unused by the application and removed from production.

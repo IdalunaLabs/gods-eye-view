@@ -6,7 +6,12 @@ import {
   CALIBRATION_RANGE_FLOOR_M,
 } from './policy.js';
 
-export function createControls({ state: layerState, services, parts, source }) {
+export function createControls({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const { holdContinuousRender, releaseContinuousRender } = services.render;
   const { CCTV_ACTIVATION_RESULT } = services.activation;
 

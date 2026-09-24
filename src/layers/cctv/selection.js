@@ -8,7 +8,7 @@ export function createSelection({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { CCTV_ACTIVATION_RESULT } = services.activation;
   const { resolvePickId } = services.picking;

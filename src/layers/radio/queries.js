@@ -1,20 +1,21 @@
 import * as Cesium from 'cesium';
 import { normalizeRadioCountryInput } from '../../data/radioCountry.js';
+import { EARTH_RADIUS_KM, haversineKm } from '../../geo/greatCircle.js';
 
-export function createQueries({ state: layerState, services, parts, source }) {
+export function createQueries({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   function radioAngularDistance(station, anchor) {
-    const lat1 = Cesium.Math.toRadians(Number(anchor?.lat));
-    const lon1 = Cesium.Math.toRadians(Number(anchor?.lon));
-    const lat2 = Cesium.Math.toRadians(Number(station?.lat));
-    const lon2 = Cesium.Math.toRadians(Number(station?.lon));
+    const lat1 = Number(anchor?.lat);
+    const lon1 = Number(anchor?.lon);
+    const lat2 = Number(station?.lat);
+    const lon2 = Number(station?.lon);
     if (![lat1, lon1, lat2, lon2].every(Number.isFinite))
       return Number.POSITIVE_INFINITY;
-    const deltaLat = lat2 - lat1;
-    const deltaLon = lon2 - lon1;
-    const haversine =
-      Math.sin(deltaLat / 2) ** 2 +
-      Math.cos(lat1) * Math.cos(lat2) * Math.sin(deltaLon / 2) ** 2;
-    return 2 * Math.asin(Math.min(1, Math.sqrt(Math.max(0, haversine))));
+    return haversineKm(lat1, lon1, lat2, lon2) / EARTH_RADIUS_KM;
   }
 
   /** Rank a copied station list by viewport distance, with an optional English-first tier. */

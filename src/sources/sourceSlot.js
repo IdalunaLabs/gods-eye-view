@@ -1,3 +1,4 @@
+// @ts-check
 /** Bind a source contract once for the application without replacing its layer instance. */
 export function createSourceSlot(
   initial,

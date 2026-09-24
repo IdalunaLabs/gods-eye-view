@@ -5,12 +5,12 @@ import {
 
 export function createCards({
   vesselState,
-  services,
+  services: _services,
   parts: components,
-  layer,
-  options,
+  layer: _layer,
+  options: _options,
 }) {
-  const { state } = vesselState;
+  const { state: _state } = vesselState;
 
   function updateSelectedVesselHud(record) {
     const el = document.getElementById('hud-ais-vessel');

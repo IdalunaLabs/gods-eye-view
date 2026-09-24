@@ -2,9 +2,9 @@ import { DEPENDENCIES, AIRCRAFT_DEPENDENCIES } from './policy.js';
 
 export function createDependencies({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   function refreshAfterDeferredDependency(activationId) {
     if (

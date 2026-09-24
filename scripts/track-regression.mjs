@@ -1122,7 +1122,11 @@ async function main() {
       );
       // Leave Contacts as the vocabulary group expects to find it.
       await evalPage(async () => {
-        try { await window.__gevVoiceCommands.runner('set_context_mode', { mode: 'off' }); } catch {}
+        try {
+          await window.__gevVoiceCommands.runner('set_context_mode', { mode: 'off' });
+        } catch {
+          /* Contacts may already be off. */
+        }
       });
 
       // ============================================================
@@ -4121,7 +4125,7 @@ async function sampleFrames(page, count, sampleFn, ...args) {
         resolve();
       };
       const remove = v.scene.postRender.addEventListener(() => {
-        try { out.push(fn(...extra)); } catch (e) { out.push(null); }
+        try { out.push(fn(...extra)); } catch (_e) { out.push(null); }
         if (++i >= n) {
           finish();
           return;

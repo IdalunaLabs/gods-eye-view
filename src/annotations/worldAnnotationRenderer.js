@@ -306,7 +306,7 @@ export function createWorldAnnotationRenderer(viewer) {
     });
   }
 
-  function labelGraphic(anno, base) {
+  function labelGraphic(anno, _base) {
     return {
       text: anno.label,
       font: '600 14px "Inter", system-ui, sans-serif',

@@ -12,10 +12,10 @@ import {
 
 export function createEnrichment({
   flightState,
-  services,
+  services: _services,
   parts,
-  layer,
-  resolveAsset,
+  layer: _layer,
+  resolveAsset: _resolveAsset,
 }) {
   function _enqueueEnrich(key, query, onData, priority = false) {
     if (flightState.lifetime.signal.aborted) return;

@@ -345,7 +345,7 @@ test('Bhote Koshi flood path draws a solid cyan sourced route after the place sh
 test('Bhote Koshi path-overview presentation keeps the route settled without Nepal border', async () => {
   const viewer = viewerFixture();
   const overlayHost = overlayHostFixture();
-  let nowMs = 0;
+  const nowMs = 0;
   const layer = createBhoteKoshiLocatorLayer({
     boundaryResolver: async () => ({
       name: 'Nepal',

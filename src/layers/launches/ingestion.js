@@ -2,7 +2,7 @@ import { MAX_POST_TLE_RETRIES, POST_TLE_RETRY_DELAY_MS } from './policy.js';
 
 export function createIngestion({
   state: layerState,
-  services,
+  services: _services,
   parts,
   source,
 }) {
@@ -228,8 +228,7 @@ export function createIngestion({
     layerState._updateDirty = true;
     if (layerState._updatePromise && layerState._updatePromiseToken === token)
       return layerState._updatePromise;
-    let request;
-    request = (async () => {
+    const request = (async () => {
       while (
         layerState._enabled &&
         token === layerState._lifecycleToken &&

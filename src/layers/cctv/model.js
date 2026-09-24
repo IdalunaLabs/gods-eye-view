@@ -1,9 +1,15 @@
 import * as Cesium from 'cesium';
+import { haversineKm as sharedHaversineKm } from '../../geo/greatCircle.js';
 import { staticFrameRefreshMs } from '../../data/cctvLod.js';
 import { frameFetchDue, cardFetchPolicy } from '../../data/cctvCards.js';
 import { DEFAULT_CAMERA_CALIBRATION } from './policy.js';
 
-export function createModel({ state: layerState, services, parts, source }) {
+export function createModel({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const { focusPassIsNeeded, getFocusTarget } = services.focus;
 
   /**
@@ -298,12 +304,7 @@ export function createModel({ state: layerState, services, parts, source }) {
    */
 
   function haversineKm(lat1, lon1, lat2, lon2) {
-    const dLat = toRad(lat2 - lat1);
-    const dLon = toRad(lon2 - lon1);
-    const a =
-      Math.sin(dLat / 2) ** 2 +
-      Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon / 2) ** 2;
-    return 6371 * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return sharedHaversineKm(lat1, lon1, lat2, lon2);
   }
 
   /**

@@ -93,7 +93,7 @@ test('deferred terminal notices lose ownership to newer acquisition epochs and d
 });
 
 test('share-follow failures use the universal top-center status instead of the bottom toast', () => {
-  const ui = readShellSource();
+  const _ui = readShellSource();
   const handler = shellMethod('_handleShareTrackingRestoreStatus').toString();
   assert.match(handler, /this\.showStatus\(message\)/);
   assert.match(handler, /this\.initialRestorePromise\.then\(showAfterStartupCover\)/);

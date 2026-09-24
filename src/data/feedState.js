@@ -1,8 +1,29 @@
+// @ts-check
 import { GUIDANCE_STATUSES } from '../loadingFeedback.js';
 
 /**
+ * @typedef {object} LayerStats
+ * @property {string} [status]
+ * @property {string} [source]
+ * @property {string} [coverage]
+ * @property {boolean} [fallback]
+ * @property {number} [count]
+ * @property {number|string} [lastUpdate]
+ * @property {unknown} [error]
+ * @property {unknown} [lastError]
+ * @property {unknown} [managerRefreshError]
+ * @property {boolean} [unavailable]
+ * @property {boolean} [available]
+ * @property {boolean} [loading]
+ * @property {boolean} [stale]
+ * @property {string} [mode]
+ * @property {boolean} [degraded]
+ * @property {boolean} [partial]
+ */
+
+/**
  * Normalize heterogeneous layer stats into one honest control-chip state.
- * @param {object|null} stats Layer getStats() result.
+ * @param {LayerStats|null} [stats] Layer getStats() result.
  * @returns {'nominal'|'loading'|'degraded'|'stale'|'partial'|'fallback'|'unavailable'} Feed state.
  */
 export function layerFeedState(stats = {}) {

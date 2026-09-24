@@ -57,7 +57,7 @@ export function projectNearbyPlaces(data, latitude, longitude) {
           (a, b) =>
             b.contextPriority - a.contextPriority || a.distanceM - b.distanceM,
         )
-        .map(({ contextPriority, ...place }) => place)
+        .map(({ contextPriority: _contextPriority, ...place }) => place)
         .slice(0, 20)
     : [];
   return places;

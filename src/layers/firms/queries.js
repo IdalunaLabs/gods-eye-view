@@ -3,10 +3,10 @@ import { REFRESH_INTERVAL_MS } from './policy.js';
 
 export function createQueries({
   layerState,
-  services,
+  services: _services,
   components,
   config,
-  feed,
+  feed: _feed,
 }) {
   const { id, name, icon, source } = config;
 

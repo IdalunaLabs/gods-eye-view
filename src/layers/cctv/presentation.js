@@ -3,9 +3,9 @@ import { ACTIVE_FRAME_REFRESH_MS, IDLE_FRAME_REFRESH_MS } from './policy.js';
 
 export function createPresentation({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /**
    * Builds a single-line summary string for the active camera, including city,

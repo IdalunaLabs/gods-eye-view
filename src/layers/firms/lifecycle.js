@@ -6,7 +6,7 @@ export function createLifecycle({
   services,
   components,
   config,
-  feed,
+  feed: _feed,
 }) {
   const { registerPickOwner, unregisterPickOwner } = services.picking;
   const { restoreSpriteOrderOnEnable } = services.sprites;

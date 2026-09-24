@@ -1,4 +1,9 @@
-export function createTesting({ state: layerState, services, parts, source }) {
+export function createTesting({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /** Test seam for real layer lifecycle coverage with a recording host. */
 
   function _setRocketMissionOverlayHostForTest(host = null) {

@@ -12,8 +12,8 @@ export function createQueries({
   vesselState,
   services,
   parts: components,
-  layer,
-  options,
+  layer: _layer,
+  options: _options,
 }) {
   const { state } = vesselState;
   const { formatKnots } = services.labels;

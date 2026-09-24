@@ -7,8 +7,8 @@ import {
 export function createOrbitRendering({
   state: layerState,
   services,
-  parts,
-  source,
+  parts: _parts,
+  source: _source,
 }) {
   const { orbitFrameModelMatrix } = services.satellites;
 

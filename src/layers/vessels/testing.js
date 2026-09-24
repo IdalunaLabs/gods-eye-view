@@ -2,10 +2,10 @@ import { DEFAULT_AIS_RUNTIME } from './policy.js';
 
 export function createTesting({
   vesselState,
-  services,
+  services: _services,
   parts: components,
   layer,
-  options,
+  options: _options,
 }) {
   const { state } = vesselState;
   const aisLiveVesselsLayer = layer;

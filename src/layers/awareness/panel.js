@@ -5,7 +5,12 @@ import {
 } from '../../data/militaryAwarenessEngine.js';
 import { AWARENESS_PAGE_SIZE, AWARENESS_PAGE_ROTATE_MS } from './policy.js';
 
-export function createPanel({ state: layerState, services, parts, source }) {
+export function createPanel({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   function ensurePanel() {
     if (layerState.panel) return layerState.panel;
     const existing = document.getElementById('military-awareness-panel');

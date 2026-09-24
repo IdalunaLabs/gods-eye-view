@@ -1,3 +1,4 @@
+// @ts-check
 import { validTransitIdentifier } from './transitHistory.js';
 export { validTransitIdentifier } from './transitHistory.js';
 /** Bounded, process-local operator position history. No upstream or scene access. */

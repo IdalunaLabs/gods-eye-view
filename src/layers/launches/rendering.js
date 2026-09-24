@@ -10,7 +10,7 @@ export function createRendering({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { getSatelliteOrbitTrack, findSatelliteOrbitTrackInTle } =
     services.satellites;
@@ -109,7 +109,7 @@ export function createRendering({
       );
     });
     if (satelliteTrack) layerState._orbitMatches++;
-    const entity = layerState._dataSource.entities.add({
+    const _entity = layerState._dataSource.entities.add({
       id: `rocket-launch:${launch.id}`,
       position,
       point: {

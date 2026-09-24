@@ -176,7 +176,7 @@ test('transit bracket backing and colour use source-over under every inherited s
   const {paintTransitBracket}=await import('./detectionDraw.js');
   for(const theme of ['normal','thermal','surveillance','noir','retro']) {
     const strokes=[];
-    const ctx={globalCompositeOperation:'screen',globalAlpha:0.3,stroke(p){strokes.push([this.globalCompositeOperation,this.lineWidth,this.strokeStyle]);},save(){this.saved=[this.globalCompositeOperation,this.globalAlpha];},restore(){[this.globalCompositeOperation,this.globalAlpha]=this.saved;}};
+    const ctx={globalCompositeOperation:'screen',globalAlpha:0.3,stroke(_p){strokes.push([this.globalCompositeOperation,this.lineWidth,this.strokeStyle]);},save(){this.saved=[this.globalCompositeOperation,this.globalAlpha];},restore(){[this.globalCompositeOperation,this.globalAlpha]=this.saved;}};
     paintTransitBracket(ctx,{},'#FF4538',1);
     assert.deepEqual(strokes,[['source-over',3.25,'#05080C'],['source-over',1.25,'#FF4538']],theme);
     assert.equal(ctx.globalCompositeOperation,'screen');

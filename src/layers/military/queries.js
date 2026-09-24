@@ -14,8 +14,8 @@ export function createQueries({
   flightState,
   services,
   parts,
-  layer,
-  resolveAsset,
+  layer: _layer,
+  resolveAsset: _resolveAsset,
 }) {
   const { tr3bAircraftClass, tr3bTypeLabel } = services.aircraftPresentation;
   const { formatFlightLevel } = services.labels;
@@ -337,7 +337,7 @@ export function createQueries({
       const maxRange =
         Number.isFinite(range) && range > 0 ? range : Number.POSITIVE_INFINITY;
 
-      const now = Cesium.JulianDate.now();
+      const _now = Cesium.JulianDate.now();
       const nearby = [];
 
       for (const [icao24, bb] of flightState._billboards) {
@@ -762,7 +762,7 @@ export function createQueries({
       if (!flightState._trackedIcao) return null;
       const described = _describeFlight(flightState._trackedIcao);
       if (!described) return null;
-      const { position, ...rest } = described;
+      const { position: _position, ...rest } = described;
       return rest;
     },
 

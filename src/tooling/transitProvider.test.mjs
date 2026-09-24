@@ -245,7 +245,7 @@ test('a redirect is followed only within the feed origin, and never contacted fi
   );
 });
 
-test('only registered feed ids reach an operator', async (t) => {
+test('only registered feed ids reach an operator', async (_t) => {
   const { fetchImpl, calls } = scriptedUpstream([
     upstreamResponse({ bytes: FULL }),
   ]);

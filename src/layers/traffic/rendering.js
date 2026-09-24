@@ -14,9 +14,9 @@ import {
 
 export function createRendering({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /**
    * At high altitude only major roads render — shared by the render pass and

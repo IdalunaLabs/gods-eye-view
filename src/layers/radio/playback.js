@@ -1,6 +1,11 @@
 import { RADIO_VOICE_PLAYBACK_TIMEOUT_MS } from './policy.js';
 
-export function createPlayback({ state: layerState, services, parts, source }) {
+export function createPlayback({
+  state: layerState,
+  services: _services,
+  parts,
+  source,
+}) {
   function audioEventBelongsToActiveAttempt(audio) {
     const attempt = layerState._activePlaybackAttempt;
     return (

@@ -3,10 +3,10 @@ import { CYAN_TRANSPARENT } from './policy.js';
 
 export function createTesting({
   flightState,
-  services,
+  services: _services,
   parts,
-  layer,
-  resolveAsset,
+  layer: _layer,
+  resolveAsset: _resolveAsset,
 }) {
   /** Test seam for the display-floor clamp (unit-tested against real Cesium math
    *  with seeded mesh cells — the drift mechanism is otherwise only reachable

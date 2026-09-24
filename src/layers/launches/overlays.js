@@ -7,7 +7,12 @@ import {
   ROCKET_MISSION_AMBIENT_OVERLAY_SOURCE_OPTIONS,
 } from './policy.js';
 
-export function createOverlays({ state: layerState, services, parts, source }) {
+export function createOverlays({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /**
    * Resolve whether a surface mission anchor is safely on the camera-facing
    * side of Earth. The small positive limb margin prevents labels anchored just

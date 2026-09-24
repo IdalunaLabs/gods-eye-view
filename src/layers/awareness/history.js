@@ -1,4 +1,9 @@
-export function createHistory({ state: layerState, services, parts, source }) {
+export function createHistory({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const militaryFlightsLayer = services.military;
   const flightsLayer = services.flights;
 

@@ -1,3 +1,4 @@
+// @ts-check
 /** Portable polygon and corridor operations; coordinates remain longitude/latitude. */
 export function ringAreaM2(ring) {
   if (!Array.isArray(ring) || ring.length < 3) return 0;

@@ -5,7 +5,7 @@ export function createLifecycle({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { registerPickOwner, unregisterPickOwner } = services.picking;
   const { clearSelectedEntityContextForLayer } = services.context;

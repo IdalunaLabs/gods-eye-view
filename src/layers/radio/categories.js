@@ -1,10 +1,10 @@
 import { MUSIC_GENRES, CATEGORY_MATCHERS } from './policy.js';
 
 export function createCategories({
-  state: layerState,
-  services,
+  state: _layerState,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /** Normalize one directory tag to a stable, lower-case display token. */
 

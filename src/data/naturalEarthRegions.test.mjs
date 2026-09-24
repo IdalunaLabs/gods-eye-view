@@ -3,6 +3,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { statSync, readFileSync } from 'node:fs';
 import { findNaturalRegion, listRegions, lookupNaturalRegionOutline, pointInRing } from './naturalEarthRegions.js';
+import { haversineKm } from '../geo/greatCircle.js';
 
 const PACK_DIR = new URL('./local_data/natural_earth/', import.meta.url);
 
@@ -144,4 +145,27 @@ test('pointInRing: basic square', () => {
   assert.equal(pointInRing(sq, 5, 5), true);
   assert.equal(pointInRing(sq, 15, 5), false);
   assert.equal(pointInRing([[0, 0], [1, 1]], 0.5, 0.5), false, 'degenerate ring');
+});
+
+test('bbox diagonals use latitude-first order, not the old lon/lat call', async () => {
+  const rockies = await findNaturalRegion('Rocky Mountains');
+  let minLon = Infinity;
+  let minLat = Infinity;
+  let maxLon = -Infinity;
+  let maxLat = -Infinity;
+  for (const ring of rockies.polygons) {
+    for (const [lon, lat] of ring) {
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    }
+  }
+  const correct = haversineKm(minLat, minLon, maxLat, maxLon);
+  const previousOrder = haversineKm(minLon, minLat, maxLon, maxLat);
+  assert.ok(Math.abs(rockies.bboxDiagonalKm - correct) < 1e-6);
+  assert.ok(
+    Math.abs(correct - previousOrder) > 100,
+    'calling haversine with lon before lat measured a different diagonal',
+  );
 });

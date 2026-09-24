@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Single-pass lexer: blank out quoted literals (→ empty quotes) and strip line
  * and block comments — recognizing each in one walk so a comment marker INSIDE a

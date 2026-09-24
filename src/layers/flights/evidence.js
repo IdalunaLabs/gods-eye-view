@@ -4,10 +4,10 @@ import { FOCUS_EVIDENCE_DEV } from './policy.js';
 
 export function createEvidence({
   flightState,
-  services,
+  services: _services,
   parts,
-  layer,
-  resolveAsset,
+  layer: _layer,
+  resolveAsset: _resolveAsset,
 }) {
   /** Resolve a JSON-safe evidence position into ECEF. DEV-only caller. */
 

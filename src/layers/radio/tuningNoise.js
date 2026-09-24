@@ -5,9 +5,9 @@ import {
 
 export function createTuningNoise({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /** Decide whether tuner static should be audible for the current handoff state. */
 

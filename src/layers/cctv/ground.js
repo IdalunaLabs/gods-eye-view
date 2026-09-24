@@ -7,7 +7,12 @@ import {
 /** Cooldown before a provisional (geoid-fallback / partial) footprint is retried. */
 const FOOTPRINT_RETRY_MS = 60_000;
 
-export function createGround({ state: layerState, services, parts, source }) {
+export function createGround({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const { resolveGroundFloorCells } = services.ground;
   const { resolveEllipsoidalGround } = services.terrain;
 

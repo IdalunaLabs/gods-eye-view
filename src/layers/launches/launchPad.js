@@ -3,9 +3,9 @@ import { LAUNCH_PAD_ZONE_RADIUS_M } from './policy.js';
 
 export function createLaunchPad({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   function hideLaunchPadZone() {
     if (layerState._launchPadZonePrimitive)

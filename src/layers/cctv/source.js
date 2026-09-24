@@ -1,3 +1,4 @@
+// @ts-check
 import {
   ACTIVE_FRAME_REFRESH_MS,
   FRAME_ENDPOINT,
@@ -30,9 +31,13 @@ function mediaUrlFor(camera) {
 }
 /** Supply catalog/health records and the existing registered camera URL families. */
 export function createCctvSource({
-  fetchImpl = (...args) => globalThis.fetch(...args),
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
 } = {}) {
-  async function read(path, key, { signal } = {}) {
+  async function read(
+    path,
+    key,
+    { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+  ) {
     signal?.throwIfAborted();
     const response = await fetchImpl(path, { cache: 'no-store', signal });
     if (!response.ok) throw new Error('Camera source HTTP ' + response.status);

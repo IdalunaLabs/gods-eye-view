@@ -7,10 +7,10 @@ import { MAX_AMBIENT_LABELS, LABEL_VIEW_MARGIN_PX } from './policy.js';
 
 export function createCards({
   layerState,
-  services,
+  services: _services,
   components,
   config,
-  feed,
+  feed: _feed,
 }) {
   const { overlayHost } = config;
 

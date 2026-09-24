@@ -1,15 +1,23 @@
+// @ts-check
 import { fetchTransitHistory } from '../../sources/transitHistory.js';
 
 /** Request transit snapshots through caller-owned transport. */
 export function createTransitSource({
-  fetchImpl = (...args) => fetch(...args),
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
 } = {}) {
   return {
-    getHistory(feedId, vehicleId, { signal } = {}) {
+    getHistory(
+      feedId,
+      vehicleId,
+      { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+    ) {
       signal?.throwIfAborted();
       return fetchTransitHistory(feedId, vehicleId, signal, fetchImpl);
     },
-    requestSnapshot(feedId, { signal } = {}) {
+    requestSnapshot(
+      feedId,
+      { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),
+    ) {
       signal?.throwIfAborted();
       if (typeof feedId !== 'string' || !feedId || feedId.length > 160)
         throw new TypeError('A transit feed identifier is required');

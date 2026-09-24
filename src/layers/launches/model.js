@@ -1,7 +1,12 @@
 import * as Cesium from 'cesium';
 import { WINDOW_DAYS } from './policy.js';
 
-export function createModel({ state: layerState, services, parts, source }) {
+export function createModel({
+  state: _layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   function finiteCoordinate(value) {
     const number = Number(value);
     return Number.isFinite(number) ? number : null;

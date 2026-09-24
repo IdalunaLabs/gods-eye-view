@@ -1580,6 +1580,7 @@ test('Pause and Stop preserve independent dedicated and generic Radio ON across 
               const sent = [];
               const visibility = [];
               const trace = [];
+              // eslint-disable-next-line prefer-const -- closed over before the single assignment
               let dataManager;
               const runPhase = (phase) => async () => {
                 trace.push(`${phase}:start`);
@@ -2118,6 +2119,7 @@ test('failed same-response Stop preserves Select auto-enable held inside real ma
     audioState: 'playing',
     volume: 0.8,
   };
+  // eslint-disable-next-line prefer-const -- closed over before the single assignment
   let dataManager;
   const radioLayer = {
     id: 'radio',
@@ -2371,6 +2373,7 @@ test('direct user Radio OFF aborts an in-flight voice enable before settled publ
   const initStarted = new Promise((resolve) => { markInitStarted = resolve; });
   const sent = [];
   const visibility = [];
+  // eslint-disable-next-line prefer-const -- closed over before the single assignment
   let dataManager;
   const state = { selected: null, audioState: 'stopped', volume: 0.8 };
   const radioLayer = {
@@ -2457,6 +2460,7 @@ test('direct user Radio OFF freezes a prepared handoff until disable success or 
       const disableGate = new Promise((resolve) => { releaseDisable = resolve; });
       const disableStarted = new Promise((resolve) => { markDisableStarted = resolve; });
       const trace = [];
+      // eslint-disable-next-line prefer-const -- closed over before the single assignment
       let dataManager;
       const radioLayer = {
         id: 'radio',

@@ -1,7 +1,7 @@
 import { readLayerSource } from '../testSupport/readLayerSource.mjs';
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
+import _fs from 'node:fs';
 import * as Cesium from 'cesium';
 import militaryAwarenessLayer, {
   _getAwarenessNavigationStateForTest,
@@ -2747,7 +2747,7 @@ test('runtime listeners exist only while the awareness layer is enabled', () => 
     },
     setInterval() { return nextTimer++; },
     clearInterval() {},
-    requestAnimationFrame(callback) { return nextTimer++; },
+    requestAnimationFrame(_callback) { return nextTimer++; },
     cancelAnimationFrame() {},
   };
   const fakeBody = new FakeElement();

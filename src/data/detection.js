@@ -43,7 +43,7 @@ import {
   detectionHorizontalSector,
   labelBudgetFor,
   normalizeAllocationStrategy,
-  normalizeProfile,
+  normalizeProfile as _normalizeProfile,
   profileForDensity,
   viewScaleForAltitude,
 } from './detectionPolicy.js';
@@ -219,7 +219,7 @@ let _hostLane = null;
  * @type {{surface:HTMLCanvasElement|null,setActive:Function,requestPaint:Function,unregister:Function}|null}
  */
 let _calloutLane = null;
-let _transitBracketPaths = new Map();
+const _transitBracketPaths = new Map();
 let _transitBracketAlpha = 1;
 /**
  * Callouts solved by the sensor lane this frame, replayed by the callout lane.

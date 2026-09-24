@@ -4,6 +4,7 @@ import {
   deriveWeatherEffectProfile,
   weatherAltitudeFactors,
 } from './weatherEffectsMath.js';
+import { haversineMeters } from './geo/greatCircle.js';
 
 const WEATHER_REFRESH_MS = 5 * 60_000;
 const CLOUD_FRAME_MS = 1000 / 12;
@@ -133,18 +134,7 @@ function greatCircleM(a, b) {
     )
   )
     return Infinity;
-  const latitudeA = Cesium.Math.toRadians(a.latitude);
-  const latitudeB = Cesium.Math.toRadians(b.latitude);
-  const latitudeDelta = Cesium.Math.toRadians(b.latitude - a.latitude);
-  const longitudeDelta = Cesium.Math.toRadians(b.longitude - a.longitude);
-  const haversine =
-    Math.sin(latitudeDelta / 2) ** 2 +
-    Math.cos(latitudeA) *
-      Math.cos(latitudeB) *
-      Math.sin(longitudeDelta / 2) ** 2;
-  return (
-    6371000 * 2 * Math.atan2(Math.sqrt(haversine), Math.sqrt(1 - haversine))
-  );
+  return haversineMeters(a.latitude, a.longitude, b.latitude, b.longitude);
 }
 
 /** Return whether cockpit weather must refresh for elapsed time or movement. */

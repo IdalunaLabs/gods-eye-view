@@ -187,7 +187,7 @@ export async function createSceneBundle(
     format: 'gev-scene-bundle',
     version: 1,
     project: copy,
-    assets: assets.map(({ byteLength, ...entry }) => entry),
+    assets: assets.map(({ byteLength: _byteLength, ...entry }) => entry),
   });
   if (new TextEncoder().encode(text).length > SHARE_LIMITS.bytes)
     fail('$', 'share exceeds 50 MiB');

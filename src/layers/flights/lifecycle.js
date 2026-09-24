@@ -5,7 +5,7 @@ export function createLifecycle({
   flightState,
   services,
   parts,
-  layer,
+  layer: _layer,
   resolveAsset,
 }) {
   const { clearFocusTarget } = services.focus;
@@ -197,7 +197,7 @@ export function createLifecycle({
      * Also clears any active flight tracking so the camera is released.
      * @param {Cesium.Viewer} viewer
      */
-    disable(viewer) {
+    disable(_viewer) {
       parts.controller._abortActiveUpdates();
       parts.tracking._cancelPendingTrackingRestore();
       if (flightState._billboardCollection)

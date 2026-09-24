@@ -1,3 +1,4 @@
+// @ts-check
 /**
  * Canonicalize a CCTV feed type string to one of:
  * 'image', 'mjpeg', 'mp4', 'webm', 'hls', or pass-through.

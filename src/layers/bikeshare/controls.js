@@ -1,6 +1,11 @@
 import { STATUS_POLL_MS } from './policy.js';
 
-export function createControls({ state: layerState, services, parts, source }) {
+export function createControls({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   const methods = {
     id: 'bikeshare',
 

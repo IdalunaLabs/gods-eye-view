@@ -13,7 +13,12 @@ import {
   REPLAY_INITIAL_RANGE_M,
 } from './policy.js';
 
-export function createReplay({ state: layerState, services, parts, source }) {
+export function createReplay({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /**
    * Rotate an upright screen-space rocket so its nose follows a projected path.
    * @param {{x: number, y: number}} from Current screen point.

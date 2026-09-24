@@ -1,6 +1,6 @@
 import * as Cesium from 'cesium';
 
-export function createFirmsState({ services, config }) {
+export function createFirmsState({ services: _services, config: _config }) {
   const layerState = {};
 
   /** Pre-baked radial-glow sprites keyed by `<colorStop>:<sizeBucket>`. */

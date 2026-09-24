@@ -12,7 +12,7 @@ import { readShellSource } from '../testSupport/readShellSource.mjs';
 // cancellable — an AbortSignal for the data manager, a liveness predicate for
 // the visual commit. Several of these assert exactly that plumbing.
 import assert from 'node:assert/strict';
-import fs from 'node:fs';
+import _fs from 'node:fs';
 import test from 'node:test';
 
 import { SceneDirector } from './director.js';
@@ -545,8 +545,10 @@ test('all saved Nepal shots choose a usable map in keyed and keyless runtimes wi
     for (const available of [false, true, false]) {
       photorealAvailable = available;
       for (const shot of scene.shots) {
-        const comparison = director._layerStatesForShot(scene, shot)
-          ['bhote-koshi-2026']?.params?.sceneControls?.imageryComparison;
+        const layerStates = director._layerStatesForShot(scene, shot);
+        const comparison =
+          layerStates['bhote-koshi-2026']?.params?.sceneControls
+            ?.imageryComparison;
         const visual = director._visualStateForShot(shot);
         assert.equal(visual.mapStack, available && !comparison ? 'photoreal' : 'esri-imagery', shot.title);
       }
