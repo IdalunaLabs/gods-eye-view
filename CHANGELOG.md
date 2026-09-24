@@ -1,5 +1,9 @@
 # Changelog
 
+- Rate-limit `/api/gbfs` per IP (120/minute by default; `GEV_RATELIMIT_GBFS_PER_MIN=0`
+  disables) and keep successful station_information feeds in a 48-entry LRU.
+  Live station_status responses stay uncached.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 

@@ -1,5 +1,10 @@
 # God's Eye View Current State
 
+`/api/gbfs` rate-limits each client IP (120/minute unless
+`GEV_RATELIMIT_GBFS_PER_MIN=0`) and stores successful station_information
+feeds in a 48-entry LRU. station_status stays uncached. Allowlisting, redirect
+refusal, and the 5 MiB streaming cap are unchanged.
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial

@@ -90,7 +90,10 @@ Context:
   - Error payloads are sanitized.
   - OpenSky cache stores successful responses only.
   - OpenSky token refresh is coalesced.
-  - GBFS/CCTV memory growth is bounded.
+  - GBFS/CCTV memory growth is bounded. GBFS keeps successful
+    station_information feeds in a 48-entry LRU and rate-limits `/api/gbfs`
+    at 120 requests/minute per IP unless `GEV_RATELIMIT_GBFS_PER_MIN=0`.
+    Live station_status responses are not cached.
 
 Validation target:
 - `vite.config.js`

@@ -1,5 +1,9 @@
 import { readResponseTextCapped } from './common/http.js';
 import {
+  enforceRateLimit,
+  makeDefaultOnRateLimiter,
+} from './common/rate-limit.js';
+import {
   isAllowedGbfsHost,
   isAllowedGbfsPath,
   gbfsCacheControl,
@@ -12,6 +16,66 @@ import {
 const GBFS_PROXY_TIMEOUT_MS = 12000;
 
 export const GBFS_MAX_BODY_BYTES = 5 * 1024 * 1024; // 5 MB
+
+/** Successful station_information feeds kept in memory. */
+export const GBFS_FEED_CACHE_MAX = 48;
+
+/** Per-IP cap when GEV_RATELIMIT_GBFS_PER_MIN is unset. `0` disables. */
+export const GBFS_DEFAULT_RATE_PER_MIN = 120;
+
+/** station_information is semi-static; station_status stays uncached. */
+const GBFS_INFORMATION_TTL_MS = 300_000;
+
+/**
+ * @param {string} pathname
+ * @returns {number} Cache TTL in ms, or 0 when the feed must not be stored.
+ */
+export function gbfsFeedTtlMs(pathname) {
+  return /\/station_information\.json$/i.test(String(pathname || ''))
+    ? GBFS_INFORMATION_TTL_MS
+    : 0;
+}
+
+/**
+ * Read a feed cache entry and refresh its LRU position.
+ * @param {Map<string, {at:number, ttlMs:number, contentType:string, body:string}>} cache
+ * @param {string} key
+ * @param {number} [now]
+ * @returns {{contentType:string, body:string}|null}
+ */
+export function readGbfsFeedCache(cache, key, now = Date.now()) {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  if (now - entry.at >= entry.ttlMs) {
+    cache.delete(key);
+    return null;
+  }
+  cache.delete(key);
+  cache.set(key, entry);
+  return entry;
+}
+
+/**
+ * Store a successful feed and evict the least-recently-used entry past `max`.
+ * @param {Map<string, {at:number, ttlMs:number, contentType:string, body:string}>} cache
+ * @param {string} key
+ * @param {{at:number, ttlMs:number, contentType:string, body:string}} entry
+ * @param {number} [max]
+ */
+export function writeGbfsFeedCache(
+  cache,
+  key,
+  entry,
+  max = GBFS_FEED_CACHE_MAX,
+) {
+  if (cache.has(key)) cache.delete(key);
+  cache.set(key, entry);
+  while (cache.size > max) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
 
 function gbfsRedirectHost(location, requestUrl) {
   if (!location) return '';
@@ -111,12 +175,28 @@ export async function fetchGbfsUpstream(
  * restricts to station_information/station_status paths, enforces HTTPS,
  * and caps response body at 5 MB.
  *
+ * @param {object} [options]
+ * @param {() => string|undefined} [options.resolvePerMin] - Rate-limit env reader.
+ * @param {number} [options.feedCacheMax] - LRU cap for station_information feeds.
  * @returns {import('vite').Plugin}
  */
-export function gbfsProxy() {
+export function gbfsProxy({
+  resolvePerMin = () => process.env.GEV_RATELIMIT_GBFS_PER_MIN,
+  feedCacheMax = GBFS_FEED_CACHE_MAX,
+} = {}) {
+  /** @type {Map<string, {at:number, ttlMs:number, contentType:string, body:string}>} */
+  const feeds = new Map();
+  let limiter;
   const installMiddleware = (server) => {
     server.middlewares.use('/api/gbfs', async (req, res) => {
       try {
+        if (limiter === undefined) {
+          limiter = makeDefaultOnRateLimiter(
+            resolvePerMin(),
+            GBFS_DEFAULT_RATE_PER_MIN,
+          );
+        }
+        if (!enforceRateLimit(limiter, req, res)) return;
         if (req.method !== 'GET') {
           res.writeHead(405, {
             'Content-Type': 'application/json',
@@ -195,7 +275,34 @@ export function gbfsProxy() {
           return;
         }
 
+        const cacheKey = upstreamUrl.toString();
+        const ttlMs = gbfsFeedTtlMs(upstreamUrl.pathname);
+        const cached = ttlMs ? readGbfsFeedCache(feeds, cacheKey) : null;
+        if (cached) {
+          res.writeHead(200, {
+            'Content-Type': cached.contentType,
+            'Cache-Control': gbfsCacheControl(upstreamUrl.pathname),
+            'X-GBFS-Upstream': upstreamUrl.hostname,
+            'X-GBFS-Cache': 'HIT',
+          });
+          res.end(cached.body);
+          return;
+        }
+
         const upstream = await fetchGbfsUpstream(upstreamUrl.toString());
+        if (ttlMs && upstream.status === 200) {
+          writeGbfsFeedCache(
+            feeds,
+            cacheKey,
+            {
+              at: Date.now(),
+              ttlMs,
+              contentType: upstream.contentType,
+              body: upstream.body,
+            },
+            feedCacheMax,
+          );
+        }
         res.writeHead(upstream.status, {
           'Content-Type': upstream.contentType,
           'Cache-Control': gbfsCacheControl(upstreamUrl.pathname),

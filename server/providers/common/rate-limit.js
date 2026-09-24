@@ -24,6 +24,53 @@ export function makeOptInRateLimiter(envValue) {
 }
 
 /**
+ * Per-IP limiter that stays on unless the operator explicitly disables it.
+ * A blank value uses `defaultPerMin`. `0` disables. A positive number is that
+ * cap. Any other value falls back to the default so a typo cannot turn the
+ * guard off.
+ *
+ * @param {string|number|undefined|null} envValue - Raw env value.
+ * @param {number} defaultPerMin - Requests/minute/IP when unset.
+ * @returns {((key:string)=>boolean)|null} An `allow(key)` fn, or null when disabled.
+ */
+export function makeDefaultOnRateLimiter(envValue, defaultPerMin) {
+  const raw =
+    envValue === undefined || envValue === null ? '' : String(envValue).trim();
+  if (raw === '') return makeOptInRateLimiter(String(defaultPerMin));
+  if (raw === '0') return null;
+  const configured = makeOptInRateLimiter(raw);
+  return configured || makeOptInRateLimiter(String(defaultPerMin));
+}
+
+/**
+ * Apply a per-IP limiter, writing a sanitized 429 when the cap is exceeded.
+ * A null limiter allows the request.
+ *
+ * @param {((key:string)=>boolean)|null} limiter
+ * @param {import('http').IncomingMessage} req
+ * @param {import('http').ServerResponse} res
+ * @returns {boolean} True when the request may proceed.
+ */
+export function enforceRateLimit(limiter, req, res) {
+  if (!limiter || limiter(clientKey(req))) return true;
+  const headers = {
+    'Content-Type': 'application/json',
+    'Cache-Control': 'no-store',
+    'Retry-After': '5',
+  };
+  const body = JSON.stringify({ error: 'Rate limit exceeded' });
+  if (typeof res.writeHead === 'function') res.writeHead(429, headers);
+  else {
+    res.statusCode = 429;
+    for (const [name, value] of Object.entries(headers)) {
+      res.setHeader?.(name, value);
+    }
+  }
+  res.end(body);
+  return false;
+}
+
+/**
  * Client key for rate limiting. Uses the real socket peer address only — we do
  * NOT trust X-Forwarded-For (client-controlled; a rotating value would mint fresh
  * quota and grow the limiter map). This is a localhost dev proxy, so the socket
