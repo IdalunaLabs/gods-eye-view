@@ -8,9 +8,9 @@ import {
 
 export function createCalibration({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /**
    * Returns whether a calibration patch moves the camera's ground anchor.

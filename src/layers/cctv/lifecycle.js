@@ -13,7 +13,7 @@ export function createLifecycle({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { registerSpriteCollection, restoreSpriteOrder } = services.sprites;
   const { activateCctvCameraFromWorldClick } = services.activation;

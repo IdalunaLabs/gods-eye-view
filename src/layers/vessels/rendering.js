@@ -24,7 +24,7 @@ export function createRendering({
   vesselState,
   services,
   parts: components,
-  layer,
+  layer: _layer,
   options,
 }) {
   const { state } = vesselState;

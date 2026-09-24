@@ -639,6 +639,7 @@ test('rapid tilt presses reverse direction and north-up keeps the requested tilt
   const tiltButton = new FakeButton();
   const northButton = new FakeButton();
   let controls;
+  // eslint-disable-next-line prefer-const -- closed over before the single assignment
   controls = bindCameraOrientationControls({
     viewer,
     elements: { tiltButton, northButton },

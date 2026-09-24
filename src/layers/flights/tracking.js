@@ -28,7 +28,7 @@ export function createTracking({
   services,
   parts,
   layer,
-  resolveAsset,
+  resolveAsset: _resolveAsset,
 }) {
   const {
     selectTrackedSubjectContext,

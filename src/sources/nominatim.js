@@ -19,6 +19,7 @@ export function normalizeNominatimReverse(hit) {
   if (!result || !region) return null;
   const clean = (value) =>
     String(value || '')
+      // eslint-disable-next-line no-control-regex -- replace C0 controls before collapsing whitespace
       .replace(/[\x00-\x1f\x7f]/g, ' ')
       .replace(/\s+/g, ' ')
       .trim()

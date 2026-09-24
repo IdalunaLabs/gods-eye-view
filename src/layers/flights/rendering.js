@@ -50,7 +50,7 @@ export function createRendering({
   flightState,
   services,
   parts,
-  layer,
+  layer: _layer,
   resolveAsset,
 }) {
   const { isMilitaryIcao } = services.militaryRegistry;

@@ -5,7 +5,12 @@ import {
   AWARENESS_REEVALUATE_DISTANCE_M,
 } from './policy.js';
 
-export function createModel({ state: layerState, services, parts, source }) {
+export function createModel({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const flightsLayer = services.flights;
   const militaryFlightsLayer = services.military;
 

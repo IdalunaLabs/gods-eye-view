@@ -4,7 +4,7 @@ export function createLifecycle({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { holdContinuousRender, releaseContinuousRender } = services.render;
 

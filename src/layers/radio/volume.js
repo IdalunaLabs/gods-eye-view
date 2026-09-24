@@ -1,6 +1,11 @@
 import { VOICE_RESTORE_DELAY_MS, VOICE_RESTORE_DURATION_MS } from './policy.js';
 
-export function createVolume({ state: layerState, services, parts, source }) {
+export function createVolume({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   function clampRadioVolume(value) {
     return Math.min(1, Math.max(0, Number(value) || 0));
   }

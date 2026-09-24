@@ -16,9 +16,9 @@ import {
 
 export function createAnimation({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /**
    * Spawn animated dot primitives along a single road.

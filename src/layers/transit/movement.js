@@ -301,7 +301,7 @@ export function applyDisplayCourse(entry, nowMs) {
   return true;
 }
 
-export function displayMotion(entry, nowMs) {
+export function displayMotion(entry, _nowMs) {
   if (!entry) return { moving: false, word: '' };
   const sample = entry.sample;
   if (!sample) return { moving: false, word: 'WAITING' };

@@ -106,7 +106,7 @@ const _iconCache = new Map();
 const _b64 = (s) =>
   typeof btoa === 'function'
     ? btoa(s)
-    : Buffer.from(s, 'utf8').toString('base64');
+    : globalThis.Buffer.from(s, 'utf8').toString('base64');
 
 /**
  * Fleet raster size. Same reasoning as the aircraft fleet glyphs: Cesium's

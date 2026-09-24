@@ -8,7 +8,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const css = readStylesheet(path.join(ROOT, 'style.css'));
-const ui = readShellSource();
+const _ui = readShellSource();
 
 /*
  * Required-attribution keep-out pin.

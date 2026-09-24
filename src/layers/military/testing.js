@@ -2,10 +2,10 @@ import { AMBER_TRANSPARENT, TRACKED_ICON_COLOR } from './policy.js';
 
 export function createTesting({
   flightState,
-  services,
+  services: _services,
   parts,
-  layer,
-  resolveAsset,
+  layer: _layer,
+  resolveAsset: _resolveAsset,
 }) {
   /**
    * Seed only the mutable state needed to exercise tracked-card refreshes through

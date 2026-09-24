@@ -4,7 +4,12 @@ import {
   RADIO_MARKER_CATEGORY_ORDER,
 } from './policy.js';
 
-export function createModel({ state: layerState, services, parts, source }) {
+export function createModel({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /** Return the shared CSS color for a canonical or detected-genre category. */
 
   function radioCategoryColor(categoryId = 'other') {

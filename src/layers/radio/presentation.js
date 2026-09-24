@@ -1,8 +1,8 @@
 export function createPresentation({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /** Return the deeply immutable healthy catalog generation shared with tuner consumers. */
 

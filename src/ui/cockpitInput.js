@@ -64,7 +64,7 @@ export function onKeyDown(event) {
     event.preventDefault();
     event.stopImmediatePropagation();
     if (!this.active && !this.isEntryAllowed()) return;
-    const changed = this.active ? this.exit() : this.enter();
+    const _changed = this.active ? this.exit() : this.enter();
     return;
   }
 }

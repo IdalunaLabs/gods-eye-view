@@ -1,9 +1,9 @@
 export function createController({
   flightState,
-  services,
-  parts,
-  layer,
-  resolveAsset,
+  services: _services,
+  parts: _parts,
+  layer: _layer,
+  resolveAsset: _resolveAsset,
 }) {
   function _abortActiveUpdates() {
     for (const controller of flightState.feed._activeUpdateControllers)

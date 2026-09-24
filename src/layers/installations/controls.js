@@ -2,7 +2,12 @@ import * as Cesium from 'cesium';
 import { installationFeedback } from '../../data/installationFeedback.js';
 import { LAYER_ID, DISTANCE_PREFILTER_MARGIN_M } from './policy.js';
 
-export function createControls({ state: layerState, services, parts, source }) {
+export function createControls({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   const methods = {
     id: LAYER_ID,
 

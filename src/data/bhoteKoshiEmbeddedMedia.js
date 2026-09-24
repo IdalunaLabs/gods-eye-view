@@ -50,6 +50,7 @@ function loadYouTubeApi(documentRef, globalRef) {
   if (youtubeApis.has(documentRef)) return youtubeApis.get(documentRef);
   const pending = new Promise((resolve, reject) => {
     const previous = globalRef.onYouTubeIframeAPIReady;
+    // eslint-disable-next-line prefer-const -- closed over before the single assignment
     let timer;
     let settled = false;
     const script = documentRef.createElement('script');

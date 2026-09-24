@@ -2,10 +2,10 @@ import { normalizeRadioCountryInput } from '../../data/radioCountry.js';
 import { RADIO_UUID_RE } from './policy.js';
 
 export function createCatalogModel({
-  state: layerState,
-  services,
-  parts,
-  source,
+  state: _layerState,
+  services: _services,
+  parts: _parts,
+  source: _source,
 }) {
   function isNonGlobalRadioIpv4(hostname) {
     const pieces = hostname.split('.');
@@ -63,6 +63,7 @@ export function createCatalogModel({
       typeof value === 'string' &&
       value.length <= maxLength &&
       (allowEmpty || value.trim().length > 0) &&
+      // eslint-disable-next-line no-control-regex -- reject C0 controls in station text
       !/[\u0000-\u001f\u007f]/.test(value) &&
       value === value.trim() &&
       !/\s{2,}/.test(value);

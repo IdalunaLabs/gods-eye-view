@@ -12,7 +12,12 @@ import {
   JAM_DOT_DEPTH_PUNCH,
 } from './policy.js';
 
-export function createModel({ state: layerState, services, parts, source }) {
+export function createModel({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /** Build scene waypoints from source records; thinning and terrain remain rendering policy. */
   function parseRoads(roadData) {
     if (!roadData || !roadData.roads) {

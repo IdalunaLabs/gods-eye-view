@@ -1,7 +1,7 @@
 import { readStylesheet } from './testSupport/readStylesheet.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync as _readFileSync } from 'node:fs';
 
 const css = readStylesheet(new URL('../style.css', import.meta.url));
 

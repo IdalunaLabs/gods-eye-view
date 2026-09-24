@@ -1045,8 +1045,8 @@ check({
       }
       const body = r.text.slice(0, 400000);
       if (/\bsk-[A-Za-z0-9]{20,}/.test(body)) leaked.push(`${p}: sk- key`);
-      if (/AIza[0-9A-Za-z_\-]{30,}/.test(body)) leaked.push(`${p}: Google key`);
-      if (/(client_secret|api_?key|MAP_KEY)["']?\s*[:=]\s*["'][A-Za-z0-9_\-]{16,}/i.test(body)) leaked.push(`${p}: key-shaped assignment`);
+      if (/AIza[0-9A-Za-z_-]{30,}/.test(body)) leaked.push(`${p}: Google key`);
+      if (/(client_secret|api_?key|MAP_KEY)["']?\s*[:=]\s*["'][A-Za-z0-9_-]{16,}/i.test(body)) leaked.push(`${p}: key-shaped assignment`);
     }
     if (leaked.length) return fail(leaked.join('; '));
     if (unscannable.length) {
@@ -1874,8 +1874,8 @@ async function runBrowserGroup(record) {
     if (!inPageR.ok) return crash(`could not read browser state for the key-leak scan: ${inPageR.reason}`);
     const inPage = inPageR.value;
     if (/\bsk-[A-Za-z0-9]{20,}/.test(inPage.storage)) leaked.push('localStorage holds an sk- key');
-    if (/AIza[0-9A-Za-z_\-]{30,}/.test(inPage.storage)) leaked.push('localStorage holds a Google key');
-    const keyish = requestUrls.filter((u) => u.startsWith(APP_ORIGIN) && /[?&](key|api_?key|token|client_secret)=[A-Za-z0-9_\-]{12,}/i.test(u));
+    if (/AIza[0-9A-Za-z_-]{30,}/.test(inPage.storage)) leaked.push('localStorage holds a Google key');
+    const keyish = requestUrls.filter((u) => u.startsWith(APP_ORIGIN) && /[?&](key|api_?key|token|client_secret)=[A-Za-z0-9_-]{12,}/i.test(u));
     if (keyish.length) leaked.push(`${keyish.length} same-origin URL(s) carry a key query param: ${keyish[0].slice(0, 90)}`);
     return leaked.length === 0
       ? pass(`${requestUrls.length} requests + localStorage scanned, no credential material`)

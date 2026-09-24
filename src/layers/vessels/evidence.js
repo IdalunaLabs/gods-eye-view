@@ -3,10 +3,10 @@ import { FOCUS_EVIDENCE_DEV } from './policy.js';
 
 export function createEvidence({
   vesselState,
-  services,
+  services: _services,
   parts: components,
-  layer,
-  options,
+  layer: _layer,
+  options: _options,
 }) {
   const { state } = vesselState;
 

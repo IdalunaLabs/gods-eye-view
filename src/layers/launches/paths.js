@@ -5,7 +5,12 @@ import {
   STAGE_REENTRY_ALTITUDE_M,
 } from './policy.js';
 
-export function createPaths({ state: layerState, services, parts, source }) {
+export function createPaths({
+  state: layerState,
+  services: _services,
+  parts: _parts,
+  source: _source,
+}) {
   function orbitInsertionOffsetSeconds(launch) {
     const events = (launch.timeline || []).filter(
       (event) =>

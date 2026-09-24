@@ -1,7 +1,7 @@
 import * as Cesium from 'cesium';
 import { createFrustumVolumePrimitive } from '../../data/cctvViewshed.js';
 import {
-  PROJECTION_VERT_ASPECT,
+  PROJECTION_VERT_ASPECT as _PROJECTION_VERT_ASPECT,
   FRUSTUM_GROUND_CLEARANCE_M,
   PROBE_MIN_RANGE_M,
   PROBE_CLEARANCE_M,
@@ -17,7 +17,12 @@ import {
   requiredPlaneLift,
 } from '../../data/cctvFootprint.js';
 
-export function createGeometry({ state: layerState, services, parts, source }) {
+export function createGeometry({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const { warmGroundFloor, cachedGroundFloor } = services.ground;
   const { sampleMeshFloorCells } = services.mesh;
 

@@ -8,7 +8,7 @@ export function createRendering({
   services,
   components,
   config,
-  feed,
+  feed: _feed,
 }) {
   const { warmFireAnchorFloors } = services.anchors;
   const { registerSpriteCollection, restoreSpriteOrder } = services.sprites;

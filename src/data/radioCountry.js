@@ -99,6 +99,7 @@ export function normalizeRadioCountryInput(value) {
   if (
     !trimmed ||
     trimmed.length > RADIO_COUNTRY_MAX_LENGTH ||
+    // eslint-disable-next-line no-control-regex -- reject C0 controls in country names
     /[\u0000-\u001f\u007f]/.test(trimmed) ||
     !/^[\p{L}\p{M}.&'’()\-\s]+$/u.test(trimmed)
   )

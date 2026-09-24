@@ -8,9 +8,9 @@ import {
 
 export function createClustering({
   state: layerState,
-  services,
-  parts,
-  source,
+  services: _services,
+  parts: _parts,
+  source: _source,
 }) {
   /** Return the bounded singleton-label allowance for the current camera scale. */
 

@@ -4,7 +4,12 @@ import {
   MISSION_GLOBE_VIEW_RANGE_M,
 } from './policy.js';
 
-export function createPanel({ state: layerState, services, parts, source }) {
+export function createPanel({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /**
    * Preserve the user's globe scale for roster previews while avoiding an
    * accidental surface-level fly-to when the list is opened from a close view.

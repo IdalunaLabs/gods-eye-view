@@ -1,8 +1,8 @@
 export function createIngestion({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   const methods = {
     /**

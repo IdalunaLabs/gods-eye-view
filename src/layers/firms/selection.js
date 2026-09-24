@@ -11,7 +11,7 @@ export function createSelection({
   services,
   components,
   config,
-  feed,
+  feed: _feed,
 }) {
   const { resolvePickId, isOwnedByOtherLayer } = services.picking;
   const { requestWorldFocus } = services.focus;

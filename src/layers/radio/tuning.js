@@ -4,7 +4,12 @@ import {
   EMPTY_ACCEPTED_CATALOG_SNAPSHOT,
 } from './policy.js';
 
-export function createTuning({ state: layerState, services, parts, source }) {
+export function createTuning({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /** Bound one already ordered filtered directory without injecting outside selections. */
 
   function buildRadioTunerBand(

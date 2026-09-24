@@ -3,7 +3,12 @@ import { staticFrameRefreshMs } from '../../data/cctvLod.js';
 import { frameFetchDue, cardFetchPolicy } from '../../data/cctvCards.js';
 import { DEFAULT_CAMERA_CALIBRATION } from './policy.js';
 
-export function createModel({ state: layerState, services, parts, source }) {
+export function createModel({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const { focusPassIsNeeded, getFocusTarget } = services.focus;
 
   /**

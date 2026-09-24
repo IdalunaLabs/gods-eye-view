@@ -11,7 +11,12 @@ import {
   FLOW_BUCKET_COLORS,
 } from './policy.js';
 
-export function createStyle({ state: layerState, services, parts, source }) {
+export function createStyle({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /** @returns {boolean} A non-normal preset profile is active and enabled. */
 
   function presetProfileActive() {

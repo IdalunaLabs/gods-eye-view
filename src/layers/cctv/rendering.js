@@ -15,7 +15,7 @@ export function createRendering({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const {
     focusNowMs,

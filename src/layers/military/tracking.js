@@ -30,8 +30,8 @@ export function createTracking({
   flightState,
   services,
   parts,
-  layer,
-  resolveAsset,
+  layer: _layer,
+  resolveAsset: _resolveAsset,
 }) {
   const {
     selectTrackedSubjectContext,

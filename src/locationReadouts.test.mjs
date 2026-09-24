@@ -1,5 +1,5 @@
 import { readShellSource, shellMethod } from './testSupport/readShellSource.mjs';
-import { StyleManager } from './ui/applicationShell.js';
+import { StyleManager as _StyleManager } from './ui/applicationShell.js';
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';

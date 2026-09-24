@@ -29,7 +29,7 @@ export function createMilitarySnapshotRenderer({
     groundFloor;
   const { sampleMeshFloorCells } = meshFloor;
   const { registerMilitaryIcaos } = militaryRegistry;
-  return function applySnapshot(snapshot, viewer) {
+  return function applySnapshot(snapshot, _viewer) {
     const currentIcaos = new Set();
     const receiptNowMs = snapshot.observedAtMs;
     // Field-test fix (RS46): coarse floor cells to warm for the below-ground
@@ -177,7 +177,7 @@ export function createMilitarySnapshotRenderer({
       // If this is the tracked aircraft, update label text
       // (position updates automatically via dead-reckoning CallbackProperty)
       if (isTracked && flightState._trackedEntity) {
-        const info = flightState.records.data.get(icao24);
+        const _info = flightState.records.data.get(icao24);
         tracking._updateTrackedLabelModel(icao24);
       }
     }

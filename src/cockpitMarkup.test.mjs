@@ -534,7 +534,7 @@ test('Location navigation releases immediate routes before flight and deferred r
 });
 
 test('Cockpit Radio station changes preserve first-person camera ownership', () => {
-  const cycleHelper = radioBindings.match(/const cycleRadio = \(direction, \{ rotate = true \} = \{\}\) => \{([\s\S]*?)\n  \};/);
+  const cycleHelper = radioBindings.match(/const cycleRadio = \(direction, \{ rotate = true \} = \{\}\) => \{([\s\S]*?)\n {2}\};/);
   assert.ok(cycleHelper, 'shared Radio cycle helper is missing');
   assert.match(cycleHelper[1], /cycleStation\(direction, \{[\s\S]*?rotate,/);
   assert.match(radioBindings, /listen\(this\._radioPrevBtn, 'click', \(\) => cycleRadio\(-1\)\)/);

@@ -1,7 +1,12 @@
 import { AWARENESS_RADIUS_M } from '../../data/militaryAwarenessEngine.js';
 import { DEPENDENCIES, AWARENESS_QUERY_LIMIT } from './policy.js';
 
-export function createQueries({ state: layerState, services, parts, source }) {
+export function createQueries({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const flightsLayer = services.flights;
   const militaryFlightsLayer = services.military;
 

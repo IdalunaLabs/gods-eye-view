@@ -5,7 +5,7 @@ export function createLifecycle({
   flightState,
   services,
   parts,
-  layer,
+  layer: _layer,
   resolveAsset,
 }) {
   const { clearFocusTarget } = services.focus;
@@ -174,7 +174,7 @@ export function createLifecycle({
      * so clicks do not get intercepted while the layer is off.
      * @param {Cesium.Viewer} viewer - The Cesium viewer instance
      */
-    disable(viewer) {
+    disable(_viewer) {
       parts.controller._abortActiveUpdates();
       parts.tracking._cancelPendingTrackingRestore();
       if (flightState._billboardCollection)

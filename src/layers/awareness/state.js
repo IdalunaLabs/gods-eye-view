@@ -1,6 +1,6 @@
 import * as Cesium from 'cesium';
 
-export function createState({ services }) {
+export function createState({ services: _services }) {
   const state = {};
 
   state.DIRECTION_SCRATCH = Array.from(

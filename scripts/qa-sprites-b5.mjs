@@ -375,8 +375,8 @@ async function main() {
     console.log('\nB2 — per-class billboard glyph + scale');
     const bbs = await page.evaluate(() => window.__collectBillboards());
     const bbById = new Map(bbs.map((b) => [b.id, b]));
-    let glyphBad = [];
-    let scaleBad = [];
+    const glyphBad = [];
+    const scaleBad = [];
     for (const [id, klass] of expectedFlights) {
       const bb = bbById.get(id);
       const wantImg = aircraftIcon(klass);

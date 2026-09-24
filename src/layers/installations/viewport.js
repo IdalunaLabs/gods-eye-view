@@ -1,7 +1,12 @@
 import * as Cesium from 'cesium';
 import { MAX_VIEWPORT_DEGREES, REQUEST_DEBOUNCE_MS } from './policy.js';
 
-export function createViewport({ state: layerState, services, parts, source }) {
+export function createViewport({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   function viewportBox(viewer) {
     const rectangle = viewer?.camera?.computeViewRectangle(
       viewer.scene.globe.ellipsoid,

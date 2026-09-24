@@ -7,9 +7,9 @@ import {
 
 export function createPolicyHelpers({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /**
    * Derive the temporary Satellite display mode required by Space Missions.

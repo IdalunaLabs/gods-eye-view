@@ -19,7 +19,12 @@ import {
   CARD_FETCH_TICK_MS,
 } from './policy.js';
 
-export function createCards({ state: layerState, services, parts, source }) {
+export function createCards({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /**
    * Configures optional CCTV card presentation without changing card density.
    * The active-camera thumbnail defaults OFF, preserving the shipped behavior

@@ -1,4 +1,9 @@
-export function createQueries({ state: layerState, services, parts, source }) {
+export function createQueries({
+  state: layerState,
+  services: _services,
+  parts: _parts,
+  source: _source,
+}) {
   /**
    * Build a compact HUD detection ID string for a station.
    * Truncates long names to 24 chars for readability.

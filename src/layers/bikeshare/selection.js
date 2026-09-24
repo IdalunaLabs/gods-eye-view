@@ -7,9 +7,9 @@ import {
 
 export function createSelection({
   state: layerState,
-  services,
-  parts,
-  source,
+  services: _services,
+  parts: _parts,
+  source: _source,
 }) {
   /**
    * Build a multi-line text label for the selected station popup.

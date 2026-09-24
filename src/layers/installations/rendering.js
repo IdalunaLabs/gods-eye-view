@@ -5,7 +5,7 @@ export function createRendering({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { floorAltitudeM, cachedGroundFloor } = services.ground;
   const {

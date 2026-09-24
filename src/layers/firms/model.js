@@ -15,9 +15,9 @@ import {
 export function createModel({
   layerState,
   services,
-  components,
-  config,
-  feed,
+  components: _components,
+  config: _config,
+  feed: _feed,
 }) {
   const { fireAnchorHeight } = services.anchors;
 

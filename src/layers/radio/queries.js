@@ -1,7 +1,12 @@
 import * as Cesium from 'cesium';
 import { normalizeRadioCountryInput } from '../../data/radioCountry.js';
 
-export function createQueries({ state: layerState, services, parts, source }) {
+export function createQueries({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   function radioAngularDistance(station, anchor) {
     const lat1 = Cesium.Math.toRadians(Number(anchor?.lat));
     const lon1 = Cesium.Math.toRadians(Number(anchor?.lon));

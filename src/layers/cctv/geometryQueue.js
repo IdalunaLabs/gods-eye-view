@@ -10,9 +10,9 @@ import {
 
 export function createGeometryQueue({
   state: layerState,
-  services,
+  services: _services,
   parts,
-  source,
+  source: _source,
 }) {
   /**
    * Stops the staggered geometry-load queue and optionally clears progress

@@ -1,7 +1,12 @@
 import * as Cesium from 'cesium';
 import { VESSEL_FOCUS_RADIUS_M } from './policy.js';
 
-export function createFocus({ state: layerState, services, parts, source }) {
+export function createFocus({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const flightsLayer = services.flights;
   const militaryFlightsLayer = services.military;
   const { announceNavigationAuthority } = services.navigation;

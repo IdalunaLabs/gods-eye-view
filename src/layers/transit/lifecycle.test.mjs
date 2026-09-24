@@ -6,7 +6,7 @@ import {
   FEED_EVICT_AFTER_MS,
   FEED_STALE_AFTER_MS,
   MISSED_POLLS_TO_DROP,
-  SELECTED_CARD_REFRESH_MS,
+  SELECTED_CARD_REFRESH_MS as _SELECTED_CARD_REFRESH_MS,
   TRANSIT_POLL_MS,
   VEHICLE_MAX_FIX_AGE_MS,
 } from './policy.js';
@@ -1407,7 +1407,7 @@ test('the selected card lands where the vehicle stopped, not short of it', async
   // segment ends left it a few metres behind, and then the render hold was
   // released with no frame scheduled to close the gap.
   const app = harness(t);
-  const start = Date.now();
+  const _start = Date.now();
   app.serve('mbta', () => ({
     status: 200,
     body: snapshot('mbta', 'MBTA', [vehicle('b', 42.36, -71.06, reported())], {
@@ -3080,6 +3080,7 @@ for (const bounds of ['null', 'stale']) {
 
 test('keyless loaded terrain resolves a pending surface without needing a frame first', async (t) => {
   const app = harness(t, { floorAt: () => undefined });
+  // eslint-disable-next-line prefer-const -- closed over before the single assignment
   let floor;
   app.viewer.scene.globe.show = true;
   app.viewer.scene.globe.getHeight = () => floor;
@@ -3284,8 +3285,8 @@ test('scripted straight and changing delay preserve ordinary-frame speed through
     };
   });
   await h.layer.enable(h.viewer);
-  let prior = new Map(),
-    worst = 0,
+  const prior = new Map();
+  let worst = 0,
     pair = null,
     samples = 0;
   for (let ms = 17; ms <= 200000; ms += 17) {

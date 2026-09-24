@@ -428,7 +428,10 @@ test('a COLD corridor never descends blind — the seed holds until terrain land
   // The warm lands DURING the arm — the ordinary case, and the one where the
   // floor may be taken whole because nothing has moved yet.
   advanceRouteFlight(acquiring, FRAME_S);
-  assert.equal(acquiring.floorM, Number.NaN === acquiring.floorM ? Number.NaN : acquiring.floorM);
+  assert.equal(
+    acquiring.floorM,
+    Number.isNaN(acquiring.floorM) ? Number.NaN : acquiring.floorM,
+  );
   acquiring.floorFn = () => REAL_FLOOR_M;
   advanceRouteFlight(acquiring, FRAME_S);
   assert.equal(acquiring.floorM, REAL_FLOOR_M, 'a pre-departure floor is adopted whole, not eased');

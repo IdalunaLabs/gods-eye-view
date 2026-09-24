@@ -698,7 +698,7 @@ async function runBehaviorLayer() {
     r = await run('move_camera', { motion: 'orbit', mode: 'once' });
     await settle(5000);
     let h1 = await heading();
-    let dOnce = Math.abs(((h1 - h0 + 540) % 360) - 180);
+    const dOnce = Math.abs(((h1 - h0 + 540) % 360) - 180);
     report(r?.ok === true && dOnce > 10 && dOnce < 45,
       'behavior: orbit once advances ~30° and self-stops', `Δheading=${dOnce.toFixed(1)}° result=${JSON.stringify(r)?.slice(0, 90)}`);
 
@@ -763,11 +763,11 @@ async function runBehaviorLayer() {
       await settle(1500);
       if (Math.abs((await camState()).altKm - a) < a * 0.02) break;
     }
-    let altBefore = (await camState()).altKm;
+    const altBefore = (await camState()).altKm;
     r = await run('adjust_camera_zoom', { direction: 'out', amount: 'medium' });
     await settle(2500);
-    let altAfter = (await camState()).altKm;
-    let stillOrbiting = (await run('move_camera', { motion: 'stop' }))?.stopped === true;
+    const altAfter = (await camState()).altKm;
+    const stillOrbiting = (await run('move_camera', { motion: 'stop' }))?.stopped === true;
     report(r?.orbitRadiusAdjusted === true && altAfter > altBefore * 1.1 && stillOrbiting,
       'behavior: zoom during orbit grows the radius while circling',
       `alt ${altBefore.toFixed(2)}→${altAfter.toFixed(2)}km adjusted=${r?.orbitRadiusAdjusted} stillOrbiting=${stillOrbiting}`);

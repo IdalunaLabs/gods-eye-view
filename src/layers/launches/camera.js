@@ -13,7 +13,12 @@ import {
   REPLAY_ORBIT_FRAME_CENTER_BLEND,
 } from './policy.js';
 
-export function createCamera({ state: layerState, services, parts, source }) {
+export function createCamera({
+  state: _layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   function cameraHeadingForPath(path, progress, fallback = Math.PI) {
     if (!path?.length) return fallback;
     const current = parts.paths.samplePath(path, progress);

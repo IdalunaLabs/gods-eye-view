@@ -4,7 +4,12 @@ import {
 } from '../../data/trafficPresetStyle.js';
 import { TRAFFIC_TIMING_ENABLED } from './policy.js';
 
-export function createControls({ state: layerState, services, parts, source }) {
+export function createControls({
+  state: layerState,
+  services: _services,
+  parts,
+  source,
+}) {
   const { getFlowSessionStats } = source;
 
   const methods = {

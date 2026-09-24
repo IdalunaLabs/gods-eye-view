@@ -1,6 +1,11 @@
 import * as Cesium from 'cesium';
 
-export function createTesting({ state: layerState, services, parts, source }) {
+export function createTesting({
+  state: layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   /** Test seam: republishes host entries through the real push path, so tests
    * can observe the pristine module default without touching the setter. */
 

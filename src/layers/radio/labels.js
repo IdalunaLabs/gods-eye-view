@@ -5,7 +5,12 @@ import {
   RADIO_CATEGORY_COLORS,
 } from './policy.js';
 
-export function createLabels({ state: layerState, services, parts, source }) {
+export function createLabels({
+  state: _layerState,
+  services: _services,
+  parts,
+  source: _source,
+}) {
   function compactRadioLabelText(value, maxChars) {
     const text = String(value || '')
       .replace(/\s+/g, ' ')

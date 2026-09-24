@@ -10,8 +10,8 @@ export function createViewport({
   layerState,
   services,
   components,
-  config,
-  feed,
+  config: _config,
+  feed: _feed,
 }) {
   const { governorRequestRender } = services.render;
 

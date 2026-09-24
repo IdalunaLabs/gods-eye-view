@@ -5,7 +5,7 @@ export function createSelection({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { warmGroundFloor } = services.ground;
 

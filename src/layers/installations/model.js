@@ -6,7 +6,12 @@ import {
   GOOGLE_MILITARY_PLACE_TYPES,
 } from './policy.js';
 
-export function createModel({ state: layerState, services, parts, source }) {
+export function createModel({
+  state: _layerState,
+  services: _services,
+  parts: _parts,
+  source: _source,
+}) {
   /**
    * Allocation-free spherical distance used only as a conservative rejection
    * pass before the exact ellipsoidal geodesic calculation.

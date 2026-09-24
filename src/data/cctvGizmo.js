@@ -316,11 +316,11 @@ export function createCalibrationGizmo({
     }
     const mount = positions.mount;
     const axes = enuAxes(mount);
-    const { forwardHoriz, right, view } = viewAxesFor(
-      camera.headingDeg,
-      camera.pitchDeg,
-      axes,
-    );
+    const {
+      forwardHoriz,
+      right: _right,
+      view: _view,
+    } = viewAxesFor(camera.headingDeg, camera.pitchDeg, axes);
     const rangeM = Math.max(1, Number(camera.rangeM) || 1);
     const radius = Math.min(
       RING_RADIUS_MAX_M,

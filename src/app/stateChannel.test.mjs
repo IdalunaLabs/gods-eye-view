@@ -48,6 +48,7 @@ test('unsubscribe and destroy during delivery revoke pending callbacks and futur
   let reads = 0;
   const channel = createStateChannel(() => ({ reads: ++reads }));
   let late = 0;
+  // eslint-disable-next-line prefer-const -- closed over before the single assignment
   let remove;
   channel.subscribe(
     () => {

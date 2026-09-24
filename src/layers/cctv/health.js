@@ -1,6 +1,14 @@
-import { HEALTH_SYNC_INTERVAL_MS, HEALTH_ENDPOINT } from './policy.js';
+import {
+  HEALTH_SYNC_INTERVAL_MS,
+  HEALTH_ENDPOINT as _HEALTH_ENDPOINT,
+} from './policy.js';
 
-export function createHealth({ state: layerState, services, parts, source }) {
+export function createHealth({
+  state: layerState,
+  services: _services,
+  parts,
+  source,
+}) {
   /**
    * Fetches per-camera health status from the backend and updates _healthById.
    * Rate-limited to HEALTH_SYNC_INTERVAL_MS unless forced.

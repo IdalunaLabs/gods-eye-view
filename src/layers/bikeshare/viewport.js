@@ -7,7 +7,12 @@ import {
   CAMERA_DEBOUNCE_MS,
 } from './policy.js';
 
-export function createViewport({ state: layerState, services, parts, source }) {
+export function createViewport({
+  state: layerState,
+  services,
+  parts,
+  source: _source,
+}) {
   const { governorRequestRender } = services.render;
 
   /**

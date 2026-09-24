@@ -550,17 +550,17 @@ export class ShellFacade {
   }
 
   /** Settle only the search generation that still owns the shared input UI. */
-  _settleLocationSearchUi(generation) {
+  _settleLocationSearchUi(_generation) {
     return this._navigation._settleLocationSearchUi(...arguments);
   }
 
   /** Run one immediate destination through the shared ownership policy. */
-  _runExplicitNavigation(noun, navigate, releaseOptions = undefined) {
+  _runExplicitNavigation(noun, navigate, _releaseOptions = undefined) {
     return this._navigation._runExplicitNavigation(...arguments);
   }
 
   /** Final authority check and release immediately before a delayed flight. */
-  _reassertNavigationHandoff(generation) {
+  _reassertNavigationHandoff(_generation2) {
     return this._navigation._reassertNavigationHandoff(...arguments);
   }
 
@@ -605,7 +605,7 @@ export class ShellFacade {
    * @param {number} value - Intensity in [0, 1].
    * @returns {void}
    */
-  _setStageIntensity(stage, value) {
+  _setStageIntensity(_stage, _value) {
     return this._visualSettings._setStageIntensity(...arguments);
   }
 
@@ -693,7 +693,7 @@ export class ShellFacade {
    * @param {number} intensity - Bloom intensity percentage (0-200).
    * @returns {void}
    */
-  _applyBloomIntensity(intensity) {
+  _applyBloomIntensity(_intensity) {
     return this._visualSettings._applyBloomIntensity(...arguments);
   }
 
@@ -702,7 +702,7 @@ export class ShellFacade {
    * @param {boolean} enabled - Whether bloom should be active.
    * @returns {void}
    */
-  _setBloomEnabled(enabled) {
+  _setBloomEnabled(_enabled) {
     return this._visualSettings._setBloomEnabled(...arguments);
   }
 
@@ -712,7 +712,7 @@ export class ShellFacade {
    * @param {number} val - Normalized sharpen intensity (0.0 to 1.0).
    * @returns {void}
    */
-  _applySharpenIntensity(val) {
+  _applySharpenIntensity(_val) {
     return this._visualSettings._applySharpenIntensity(...arguments);
   }
 
@@ -721,7 +721,7 @@ export class ShellFacade {
    * @param {boolean} enabled - Whether sharpening should be active.
    * @returns {void}
    */
-  _setSharpenEnabled(enabled) {
+  _setSharpenEnabled(_enabled2) {
     return this._visualSettings._setSharpenEnabled(...arguments);
   }
 
@@ -748,7 +748,7 @@ export class ShellFacade {
    * @param {string} modeLabel - Detection mode label to set.
    * @returns {void}
    */
-  _setDetectionMode(modeLabel) {
+  _setDetectionMode(_modeLabel) {
     return this._visualSettings._setDetectionMode(...arguments);
   }
 
@@ -758,7 +758,7 @@ export class ShellFacade {
    * @param {string} variantName - HUD variant identifier.
    * @returns {void}
    */
-  _setHudVariant(variantName) {
+  _setHudVariant(_variantName) {
     return this._visualSettings._setHudVariant(...arguments);
   }
 
@@ -780,7 +780,7 @@ export class ShellFacade {
    * @param {string} styleName - The style whose defaults to apply.
    * @returns {void}
    */
-  _applyStylePresetDefaults(styleName) {
+  _applyStylePresetDefaults(_styleName) {
     return this._visualSettings._applyStylePresetDefaults(...arguments);
   }
 
@@ -794,7 +794,7 @@ export class ShellFacade {
    * @param {{mode?: string, densityPct?: number}} det Preset detection config.
    * @returns {void}
    */
-  _applyDetectionPreset(det) {
+  _applyDetectionPreset(_det) {
     return this._visualSettings._applyDetectionPreset(...arguments);
   }
 
@@ -863,7 +863,7 @@ export class ShellFacade {
    * @param {string} panelId - Collapsible panel containing the listener.
    * @returns {boolean} Whether this panel handled the key.
    */
-  _collapsePanelOnEscape(event, panelId) {
+  _collapsePanelOnEscape(_event, _panelId) {
     return this._panelChrome._collapsePanelOnEscape(...arguments);
   }
 
@@ -926,7 +926,7 @@ export class ShellFacade {
     return this._layerBindings.attachDataManager(...args);
   }
 
-  _handleShareTrackingRestoreStatus(result) {
+  _handleShareTrackingRestoreStatus(_result) {
     return this._shareRestoration._handleShareTrackingRestoreStatus(
       ...arguments,
     );
@@ -996,7 +996,7 @@ export class ShellFacade {
    * @param {string} panelId - DOM id of the panel.
    * @returns {void}
    */
-  _restorePanelCollapsedState(panelId, options1) {
+  _restorePanelCollapsedState(_panelId2, _options1) {
     return this._panelChrome._restorePanelCollapsedState(...arguments);
   }
 
@@ -1006,7 +1006,7 @@ export class ShellFacade {
    * @param {boolean} collapsed - Whether the panel is collapsed.
    * @returns {void}
    */
-  _savePanelCollapsedState(panelId, collapsed) {
+  _savePanelCollapsedState(_panelId3, _collapsed) {
     return this._panelChrome._savePanelCollapsedState(...arguments);
   }
 
@@ -1021,7 +1021,7 @@ export class ShellFacade {
     return this._panelLayout._initRightPanelAdaptiveLayout();
   }
 
-  _scheduleRightPanelLayout(options0) {
+  _scheduleRightPanelLayout(_options0) {
     return this._panelChrome._scheduleRightPanelLayout(...arguments);
   }
 
@@ -1051,7 +1051,7 @@ export class ShellFacade {
    * Batches adaptive accordion work into one animation frame.
    * @returns {void}
    */
-  _scheduleLeftPanelLayout(options0) {
+  _scheduleLeftPanelLayout(_options02) {
     return this._panelChrome._scheduleLeftPanelLayout(...arguments);
   }
 
@@ -1071,7 +1071,7 @@ export class ShellFacade {
    * @param {HTMLElement} panelEl - The panel DOM element.
    * @returns {void}
    */
-  _syncPanelCollapseButton(panelEl) {
+  _syncPanelCollapseButton(_panelEl) {
     return this._panelChrome._syncPanelCollapseButton(...arguments);
   }
 
@@ -1137,7 +1137,7 @@ export class ShellFacade {
     return this._panelChrome._buildSharePanelState(...arguments);
   }
 
-  _restorePanelState(panelState) {
+  _restorePanelState(_panelState) {
     return this._panelChrome._restorePanelState(...arguments);
   }
 
@@ -1276,7 +1276,7 @@ export class ShellFacade {
    * @param {number} toValue - Target intensity (0.0 to fade out, 1.0 to fade in).
    * @returns {void}
    */
-  _startTransition(styleName, fromValue, toValue) {
+  _startTransition(_styleName2, _fromValue, _toValue) {
     return this._visualSettings._startTransition(...arguments);
   }
 
@@ -1391,7 +1391,7 @@ export class ShellFacade {
    * @param {string} [styleName=this.activeStyle] - Style name to display.
    * @returns {void}
    */
-  _updateStyleMiniStatus(styleName = this.activeStyle) {
+  _updateStyleMiniStatus(_styleName3 = this.activeStyle) {
     return this._visualSettings._updateStyleMiniStatus(...arguments);
   }
 
@@ -1507,7 +1507,7 @@ export class ShellFacade {
    * @param {string} modeLabel - Current detection mode label.
    * @returns {void}
    */
-  _updateDetectionButton(modeLabel) {
+  _updateDetectionButton(_modeLabel2) {
     return this._visualSettings._updateDetectionButton(...arguments);
   }
 
@@ -1526,7 +1526,7 @@ export class ShellFacade {
     return !!this._hasShareState;
   }
 
-  _settleInitialShareRestore(result) {
+  _settleInitialShareRestore(_result2) {
     return this._shareRestoration._settleInitialShareRestore(...arguments);
   }
 }

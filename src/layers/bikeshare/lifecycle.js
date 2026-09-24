@@ -10,7 +10,7 @@ export function createLifecycle({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const { registerSpriteCollection, restoreSpriteOrder } = services.sprites;
   const { registerPickOwner, unregisterPickOwner } = services.picking;

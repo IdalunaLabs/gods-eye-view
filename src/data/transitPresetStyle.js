@@ -110,7 +110,7 @@ export function presetSpriteRgba(styleName, mode) {
  * @param {string|null|undefined} styleName
  * @returns {number} 1 under the normal profile.
  */
-export function presetSpriteScale(styleName, selected = false) {
+export function presetSpriteScale(styleName, _selected = false) {
   return SPRITE_STYLE[transitStyleProfile(styleName)]?.scale ?? 1;
 }
 

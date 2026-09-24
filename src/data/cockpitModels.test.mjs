@@ -1,7 +1,7 @@
 import { readLayerSource } from '../testSupport/readLayerSource.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { readFileSync } from 'node:fs';
+import { readFileSync as _readFileSync } from 'node:fs';
 
 /**
  * Cockpit 3D aircraft policy.

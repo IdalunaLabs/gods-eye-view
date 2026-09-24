@@ -1,4 +1,4 @@
-import { CAMERA_SEEDS, SOURCE_ENDPOINT } from './policy.js';
+import { CAMERA_SEEDS, SOURCE_ENDPOINT as _SOURCE_ENDPOINT } from './policy.js';
 
 export function createCatalog({ state: layerState, services, parts, source }) {
   const { CITY_POIS } = services.locations;

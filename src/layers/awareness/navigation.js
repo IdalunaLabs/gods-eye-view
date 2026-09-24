@@ -14,7 +14,7 @@ export function createNavigation({
   state: layerState,
   services,
   parts,
-  source,
+  source: _source,
 }) {
   const flightsLayer = services.flights;
   const militaryFlightsLayer = services.military;
