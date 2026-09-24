@@ -64,13 +64,30 @@ The highest-leverage places to jump in:
 
 ## Formatting and reusable components
 
-Run `npm run format` before submitting changes, then `npm run format:check`
-and `npm run check:boundaries`. Runtime JavaScript under the owned roots in
+Run `npm run format` before submitting changes, then `npm run format:check`,
+`npm run lint`, `npm run typecheck`, and `npm run check:boundaries`. Runtime
+JavaScript under the owned roots in
 `scripts/format-runtime.json` is discovered automatically, including new files.
 Tests and other adopted files remain listed in `scripts/format-scope.json`.
 Git-ignored files and `.prettierignore` exclusions are not automatically adopted.
-Keep mechanical formatting separate from behavioral edits. CI checks formatting
-and package boundaries on Linux and Windows.
+Keep mechanical formatting separate from behavioral edits. CI checks formatting,
+lint, portable-graph types, and package boundaries on Linux. The Windows
+onboarding job checks formatting and package boundaries.
+
+`npm run lint` is ESLint 9 (`eslint.config.js`): recommended rules plus
+`no-unused-vars` (names starting with `_` are allowed), `no-undef`, `eqeqeq`
+(`== null` / `!= null` stays the nullish test), `no-var`, `prefer-const`, and
+`no-implicit-globals`. Browser sources use browser globals. Node programs,
+including tests and QA scripts that name browser globals inside page
+callbacks, use Node and browser globals. `server/` is reported as warnings.
+Files owned by parallel workstreams are listed in `ignores` until they can be
+cleaned without colliding with those edits.
+
+`npm run typecheck` runs `tsc -p tsconfig.json` with `checkJs` off. Only
+portable graphs marked `// @ts-check` are checked: `src/sources/*.js`,
+`src/layers/*/source.js`, action schemas, the session interface, lifecycle,
+and feed state. `src/sources/transitService.js` and
+`src/layers/satellites/source.js` are not marked yet.
 
 Reusable package exports own their state and receive application operations
 through explicit callbacks. They must not import the standalone bootstrap or

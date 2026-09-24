@@ -7,6 +7,18 @@ combined scope on Linux and Windows. Prettier is pinned in the development
 dependencies; use the installed version so local and CI output agree. The shared
 configuration specifies two spaces, single quotes, semicolons and LF endings.
 
+`npm run lint` checks the same adopted JavaScript with ESLint 9. The flat
+config is `eslint.config.js`. Server modules are warnings. See
+[CONTRIBUTING.md](../CONTRIBUTING.md) for the rule set and the ignored
+parallel-work trees. `npm run typecheck` checks portable graphs that carry
+`// @ts-check`; it does not emit types and does not check the Cesium app.
+
+`gods-eye-view/geo` exports the shared spherical helpers in
+`src/geo/greatCircle.js`: distance, initial bearing, and destination point.
+Callers pass latitude then longitude. The module imports no Cesium, DOM, or
+Node builtins. Package groups that import it list the file in their owned
+modules.
+
 Owned runtime modules are discovered automatically; add their tests and other
 non-runtime files to the explicit list as they are adopted.
 Keep mechanical formatting in its own commit after behavior is stable. Existing

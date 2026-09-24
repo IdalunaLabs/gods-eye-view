@@ -1,5 +1,9 @@
 # Changelog
 
+- Share great-circle distance, bearing, and destination math in `src/geo/greatCircle.js`.
+  Natural Earth region diagonals now use latitude-first arguments. ESLint and
+  portable-graph typecheck run in CI.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 
