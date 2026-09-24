@@ -132,7 +132,8 @@ function locate(snaps, tMs) {
     if (snaps[mid].tMs <= tMs) lo = mid;
     else hi = mid - 1;
   }
-  if (snaps[lo].tMs === tMs) return { single: true, left: snaps[lo], held: false };
+  if (snaps[lo].tMs === tMs)
+    return { single: true, left: snaps[lo], held: false };
   const span = snaps[lo + 1].tMs - snaps[lo].tMs;
   return {
     single: false,

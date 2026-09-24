@@ -24,12 +24,32 @@ test('a memory storage fake round-trips snapshots inside the same caps', async (
   });
   store.append(
     'flights',
-    [{ id: 'A', lat: 1, lon: 2, alt: 3, heading: 4, speed: 5, callsign: 'UA1' }],
+    [
+      {
+        id: 'A',
+        lat: 1,
+        lon: 2,
+        alt: 3,
+        heading: 4,
+        speed: 5,
+        callsign: 'UA1',
+      },
+    ],
     1000,
   );
   store.append(
     'vessels',
-    [{ id: 'B', lat: 10, lon: 20, alt: 0, heading: 90, speed: 1, name: 'SHIP' }],
+    [
+      {
+        id: 'B',
+        lat: 10,
+        lon: 20,
+        alt: 0,
+        heading: 90,
+        speed: 1,
+        name: 'SHIP',
+      },
+    ],
     2000,
   );
   assert.equal(queued.length, 1);

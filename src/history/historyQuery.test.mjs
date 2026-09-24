@@ -20,11 +20,7 @@ test('sampleAt interpolates across the antimeridian and wraps heading', () => {
     [contact('A', 0, 179, 1000, 350, 100), contact('B', 1, 10, 0, 0, 0)],
     0,
   );
-  store.append(
-    'flights',
-    [contact('A', 2, -179, 3000, 10, 200)],
-    1000,
-  );
+  store.append('flights', [contact('A', 2, -179, 3000, 10, 200)], 1000);
   const query = createHistoryQuery(store);
   const mid = sample(store, query, 500);
   assert.equal(mid.count, 2);
@@ -43,11 +39,18 @@ test('sampleAt interpolates across the antimeridian and wraps heading', () => {
 
 test('sampleAt drops ids that are gone at an exact later snapshot and reuses buffers', () => {
   const store = createHistoryStore();
-  store.append('flights', [contact('A', 0, 0, 0, 0, 0), contact('B', 5, 5, 1, 1, 1)], 0);
+  store.append(
+    'flights',
+    [contact('A', 0, 0, 0, 0, 0), contact('B', 5, 5, 1, 1, 1)],
+    0,
+  );
   store.append('flights', [contact('A', 4, 4, 4, 4, 4)], 1000);
   const query = createHistoryQuery(store);
   const between = query.sampleAt('flights', 500);
-  assert.equal(between.ids.filter((_, index) => index < between.count).length, 2);
+  assert.equal(
+    between.ids.filter((_, index) => index < between.count).length,
+    2,
+  );
   const later = query.sampleAt('flights', 1000);
   assert.equal(later.count, 1);
   assert.equal(later.ids[0], 'A');

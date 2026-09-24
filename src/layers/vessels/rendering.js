@@ -280,10 +280,7 @@ export function createRendering({
       const visual = getVisual(record);
       writeReplayDegrees(visual, sample.lon[i], sample.lat[i]);
       if (visual.billboard) {
-        visual.billboard.show = isVisible(
-          visual.replaySurface,
-          occluder,
-        );
+        visual.billboard.show = isVisible(visual.replaySurface, occluder);
       }
     }
     for (const record of state.records.all) {
@@ -314,7 +311,8 @@ export function createRendering({
       }
       record._replayHeading = undefined;
     }
-    for (const record of replayEphemeral.values()) removeRecordPrimitives(record);
+    for (const record of replayEphemeral.values())
+      removeRecordPrimitives(record);
     replayEphemeral.clear();
   }
 

@@ -118,5 +118,8 @@ test('replay replaces the live chip without changing a non-replay partial row', 
     LayerPanel.prototype._buildMetaText(layer),
     /^REPLAY · OpenSky · historical positions$/,
   );
-  assert.equal(layerFeedState({ partial: true, count: 2, lastUpdate: 1 }), 'partial');
+  assert.equal(
+    layerFeedState({ partial: true, count: 2, lastUpdate: 1 }),
+    'partial',
+  );
 });

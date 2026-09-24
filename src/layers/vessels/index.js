@@ -54,7 +54,8 @@ export function createVesselLayer({ source, services, options = {} } = {}) {
       const rows = [];
       for (const record of vesselState.state.records.all) {
         if (!record?.mmsi) continue;
-        if (!Number.isFinite(record.lat) || !Number.isFinite(record.lon)) continue;
+        if (!Number.isFinite(record.lat) || !Number.isFinite(record.lon))
+          continue;
         const heading = Number.isFinite(record.heading)
           ? record.heading
           : record.course;

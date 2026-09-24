@@ -43,7 +43,8 @@ export function createReplayController({ store, now = () => Date.now() }) {
     for (const layer of HISTORY_LAYERS) {
       const extent = store.range(layer);
       if (extent.startMs == null) continue;
-      startMs = startMs == null ? extent.startMs : Math.min(startMs, extent.startMs);
+      startMs =
+        startMs == null ? extent.startMs : Math.min(startMs, extent.startMs);
       endMs = endMs == null ? extent.endMs : Math.max(endMs, extent.endMs);
     }
     return { startMs, endMs };
@@ -65,8 +66,7 @@ export function createReplayController({ store, now = () => Date.now() }) {
   function snapshot() {
     const { startMs, endMs } = bufferedRange();
     const timeMs = mode === 'LIVE' ? null : cursorMs;
-    const offsetMs =
-      timeMs == null || endMs == null ? 0 : timeMs - endMs;
+    const offsetMs = timeMs == null || endMs == null ? 0 : timeMs - endMs;
     return {
       mode,
       speed,
@@ -133,7 +133,8 @@ export function createReplayController({ store, now = () => Date.now() }) {
   function play() {
     const { startMs, endMs } = bufferedRange();
     if (startMs == null || endMs == null) return snapshot();
-    if (mode === 'LIVE' || cursorMs == null || cursorMs >= endMs) cursorMs = startMs;
+    if (mode === 'LIVE' || cursorMs == null || cursorMs >= endMs)
+      cursorMs = startMs;
     mode = 'REPLAY_PLAYING';
     lastTickMs = now();
     return emit();

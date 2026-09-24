@@ -4,7 +4,9 @@ import { readFileSync } from 'node:fs';
 
 function sliceFunction(source, name, nextName) {
   const start = source.indexOf(`function ${name}`);
-  const end = nextName ? source.indexOf(`function ${nextName}`, start) : source.length;
+  const end = nextName
+    ? source.indexOf(`function ${nextName}`, start)
+    : source.length;
   assert.ok(start >= 0, name);
   return source.slice(start, end === -1 ? source.length : end);
 }
@@ -40,6 +42,9 @@ test('live flight rendering still dead-reckons when replay is off', () => {
     'utf8',
   );
   const visibility = sliceFunction(vessels, 'updateVisibility(');
-  assert.match(visibility, /if \(replaying\) \{\s*state\._replayWasActive = true;\s*syncReplayVessels\(\);/);
+  assert.match(
+    visibility,
+    /if \(replaying\) \{\s*state\._replayWasActive = true;\s*syncReplayVessels\(\);/,
+  );
   assert.match(visibility, /for \(const record of state\.records\.all\)/);
 });

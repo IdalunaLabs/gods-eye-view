@@ -919,7 +919,8 @@ export function createRendering({
   function _releaseReplayOnlyBillboards() {
     const stale = [];
     for (const [id, bb] of flightState._billboards) {
-      if (bb._gevReplayOnly && !flightState.records.data.has(id)) stale.push(id);
+      if (bb._gevReplayOnly && !flightState.records.data.has(id))
+        stale.push(id);
     }
     for (const id of stale) {
       const bb = flightState._billboards.get(id);

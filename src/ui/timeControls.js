@@ -64,7 +64,9 @@ export function bindTimeControls({
   });
 
   const unsubscribe = session.replay.subscribe(paint);
-  const unsubscribeStore = session.store.subscribe(() => paint(session.replay.snapshot()));
+  const unsubscribeStore = session.store.subscribe(() =>
+    paint(session.replay.snapshot()),
+  );
   let removeTick = null;
   if (viewer?.scene?.preRender?.addEventListener) {
     removeTick = viewer.scene.preRender.addEventListener(() => {
@@ -96,7 +98,10 @@ export function bindTimeControls({
         state.playing ? 'Pause replay' : 'Play replay',
       );
     }
-    if (controls.speedSelect && controls.speedSelect.value !== String(state.speed)) {
+    if (
+      controls.speedSelect &&
+      controls.speedSelect.value !== String(state.speed)
+    ) {
       controls.speedSelect.value = String(state.speed);
     }
     if (controls.scrubber) {
