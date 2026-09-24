@@ -1,5 +1,11 @@
 # God's Eye View Current State
 
+OpenAI cost routes stay unlimited on a loopback `HOST`. When `HOST` is not
+loopback and `GEV_RATELIMIT_OPENAI_PER_MIN` is unset, `/api/realtime/token`
+and `/api/openai/hud-summary` allow 10 requests/minute/IP (`0` disables).
+`GEV_API_ACCESS_TOKEN` is not enforced: the browser would have to present it,
+which publishes the secret. No new token is added to the client bundle.
+
 `/api/opensky-track` spends the same OpenSky credit governor as `/api/opensky`
 (cooldown and remaining-credit TTL) and keeps using the coalesced token
 refresh. Successful track bodies are cached; failures and oversized payloads

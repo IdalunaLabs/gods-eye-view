@@ -1,5 +1,10 @@
 # Changelog
 
+- Default OpenAI cost routes to 10 requests/minute per IP when `HOST` is not
+  loopback and `GEV_RATELIMIT_OPENAI_PER_MIN` is unset. Loopback stays
+  unlimited; `0` still disables the guard. Do not send a shared access token
+  to the browser.
+
 - Route `/api/opensky-track` through the shared OpenSky credit governor and
   return 502 for oversized track bodies without caching them. Cache only
   successful track responses. Rate-limit OpenSky track backfill (30/min) and
