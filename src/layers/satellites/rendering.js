@@ -1,6 +1,8 @@
 import * as Cesium from 'cesium';
 import { gstime } from 'satellite.js';
 import { ISS_NORAD, POSITION_UPDATE_MS, RING_ROTATION_MS } from './policy.js';
+import { PROPAGATION_STRIDE } from './propagation.js';
+import { createPropagationClient } from './propagationClient.js';
 
 export function createRendering({
   state: layerState,
@@ -16,6 +18,7 @@ export function createRendering({
     advanceSpriteFocus,
     focusAlphaNeedsWrite,
   } = services.focus;
+  const fleet = createPropagationClient();
 
   /**
    * Show orbital path for a satellite.
@@ -113,12 +116,19 @@ export function createRendering({
   function _updateOrbitPathRotations(nowDate) {
     if (layerState._orbitPaths.size === 0) return;
 
-    for (const path of layerState._orbitPaths.values()) {
+    const liveGmst = gstime(nowDate);
+    const fleetGmst = layerState._fleetGmst;
+    for (const [noradId, path] of layerState._orbitPaths) {
       if (!path.primitive) continue;
+      const gmst =
+        noradId === layerState._trackedNorad || !Number.isFinite(fleetGmst)
+          ? liveGmst
+          : fleetGmst;
       parts.orbits.orbitFrameModelMatrix(
         path.gmstAtBake,
         nowDate,
         path.primitive.modelMatrix,
+        gmst,
       );
     }
   }
@@ -137,33 +147,91 @@ export function createRendering({
   }
 
   /**
-   * Propagate all CORE satellite positions and update point primitives.
-   * (~840 sats ≈ 1.6 ms/pass — fine at the 1s/200ms cadence.) Dense extras are
-   * excluded: they refresh on the round-robin budget in _propagateDenseChunk.
+   * Reload the fleet worker from the current catalog. Indexes stay aligned with
+   * the buffer so a later sample can update points without another TLE parse.
    */
 
-  function _propagateAll() {
-    const now = new Date();
-    let updated = 0;
-
-    for (const [noradId, sat] of layerState._catalog) {
-      if (sat.group === 'dense') continue;
-      const pos = parts.orbits.propagatePosition(sat.satrec, now);
-      if (!pos) continue;
-
-      const cartesian = Cesium.Cartesian3.fromDegrees(
-        pos.longitude,
-        pos.latitude,
-        pos.altitude,
-      );
-      const point = layerState._points.get(noradId);
-      if (point) {
-        point.position = cartesian;
-        updated++;
-      }
+  function _syncFleetPropagation() {
+    const records = [];
+    let index = 0;
+    for (const [id, sat] of layerState._catalog) {
+      sat.fleetIndex = index;
+      records.push({
+        id,
+        line1: sat.line1,
+        line2: sat.line2,
+        satrec: sat.satrec,
+      });
+      index += 1;
     }
+    layerState._fleetBuffer = null;
+    layerState._fleetGmst = null;
+    fleet.load(records, layerState._catalogRevision);
+  }
 
-    return updated;
+  /** Drop the worker when the layer is reinitialized or destroyed. */
+  function _resetFleetPropagation() {
+    fleet.reset();
+    layerState._fleetBuffer = null;
+    layerState._fleetGmst = null;
+    layerState._appliedFleetGeneration = 0;
+    layerState._appliedFleetSequence = 0;
+  }
+
+  function _writeFleetPoint(noradId, buffer, index) {
+    const base = index * PROPAGATION_STRIDE;
+    if (buffer[base + 3] !== 1) return false;
+    const point = layerState._points.get(noradId);
+    if (!point) return false;
+    point.position = new Cesium.Cartesian3(
+      buffer[base],
+      buffer[base + 1],
+      buffer[base + 2],
+    );
+    return true;
+  }
+
+  /**
+   * Copy one completed ECEF sample onto core points and remember it for the
+   * dense slice. Untracked rings lock to this sample's GMST.
+   * @param {object} sample
+   * @param {number} nowMs
+   */
+
+  function _applyFleetSample(sample, nowMs) {
+    const buffer = sample.buffer;
+    const tracked = layerState._trackedNorad;
+    for (let i = 0; i < sample.ids.length; i += 1) {
+      const noradId = sample.ids[i];
+      if (noradId === tracked) continue;
+      if (layerState._catalog.get(noradId)?.group === 'dense') continue;
+      _writeFleetPoint(noradId, buffer, i);
+    }
+    layerState._fleetBuffer = buffer;
+    layerState._fleetGmst = sample.gmst;
+    layerState._appliedFleetGeneration = sample.generation;
+    layerState._appliedFleetSequence = sample.sequence;
+    if (layerState._params.showOrbits) {
+      _updateOrbitPathRotations(new Date(nowMs));
+    }
+  }
+
+  function _fleetCoversDense() {
+    return Boolean(
+      layerState._fleetBuffer && fleet.coversAll(layerState._denseIds),
+    );
+  }
+
+  function _applyFreshFleetSample(nowMs) {
+    const sample = fleet.latest();
+    if (
+      !sample ||
+      (sample.generation === layerState._appliedFleetGeneration &&
+        sample.sequence === layerState._appliedFleetSequence)
+    ) {
+      return;
+    }
+    _applyFleetSample(sample, nowMs);
   }
 
   /**
@@ -183,18 +251,28 @@ export function createRendering({
     // hiding its standalone fleet. Do not rebuild hidden point buffers on the
     // one-second propagation cadence: that GPU upload presented as a periodic
     // whole-globe pulse even though the camera remained stationary.
-    if (
-      layerState._params.showPoints &&
-      now - layerState._lastPropagation >= interval
-    ) {
-      _propagateAll();
-      layerState._lastPropagation = now;
+    if (layerState._params.showPoints) {
+      if (fleet.boundRevision() !== layerState._catalogRevision) {
+        _syncFleetPropagation();
+      }
+      // Publish any sample already in hand before the next request can transfer
+      // its buffer, then publish again so a synchronous fallback is visible
+      // this frame. A late worker keeps the previous sample.
+      _applyFreshFleetSample(now);
+      fleet.poll();
+      if (
+        now - layerState._lastPropagation >= interval &&
+        fleet.propagate(now)
+      ) {
+        layerState._lastPropagation = now;
+      }
+      _applyFreshFleetSample(now);
     }
 
     if (layerState._params.showPoints) parts.catalog._propagateDenseChunk();
 
     // Keep the tracked dot on the per-frame epoch shared with label + camera —
-    // runs after _propagateAll so the per-frame sample wins over the 200ms one.
+    // runs after the fleet sample so the per-frame sample wins over the batch.
     if (layerState._trackedNorad !== null) {
       const pos = parts.tracking._getTrackedFramePosition();
       const point = layerState._points.get(layerState._trackedNorad);
@@ -312,7 +390,9 @@ export function createRendering({
     _showOrbitPath,
     _updateOrbitPathRotations,
     _hideOrbitPath,
-    _propagateAll,
+    _syncFleetPropagation,
+    _resetFleetPropagation,
+    _fleetCoversDense,
     _preRenderTick,
     _updatePointFocus,
     applySatellitePointFocusDeemphasis,

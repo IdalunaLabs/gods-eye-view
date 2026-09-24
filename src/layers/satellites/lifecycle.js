@@ -44,6 +44,7 @@ export function createLifecycle({
       layerState._denseStatus = 'idle';
       layerState._denseError = null;
       layerState._catalogRevision++;
+      parts.rendering._resetFleetPropagation();
 
       // Point primitives for satellite dots
       layerState._pointCollection = new Cesium.PointPrimitiveCollection();
@@ -159,6 +160,7 @@ export function createLifecycle({
       layerState._denseStatus = 'idle';
       layerState._denseError = null;
       layerState._catalogRevision++;
+      parts.rendering._resetFleetPropagation();
       layerState._rowControlsListener = null;
       layerState._count = 0;
       layerState._lastUpdate = null;

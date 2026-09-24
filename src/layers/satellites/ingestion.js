@@ -115,6 +115,8 @@ export function createIngestion({
           // Store in catalog
           layerState._catalog.set(noradId, {
             name: entry.name,
+            line1: entry.line1,
+            line2: entry.line2,
             satrec,
             group: entry.group,
           });
@@ -155,6 +157,7 @@ export function createIngestion({
 
         layerState._count = layerState._points.size;
         layerState._catalogRevision++;
+        parts.rendering._syncFleetPropagation();
         layerState._lastUpdate = Date.now();
         layerState._lastPropagation = Date.now();
         layerState._lastTrackingRefreshOutcome = {

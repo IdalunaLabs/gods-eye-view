@@ -1,5 +1,6 @@
 import * as Cesium from 'cesium';
 import { twoline2satrec } from 'satellite.js';
+import { PROPAGATION_STRIDE } from './propagation.js';
 import {
   DENSE_REFRESH_FRAMES,
   DENSE_GROUP_PATH,
@@ -18,11 +19,12 @@ export function createCatalog({ state: layerState, services, parts, source }) {
 
   /**
    * Re-propagate a small per-frame slice of the dense extras (round-robin).
+   * Once the fleet sample includes those ids, the slice copies ECEF from that
+   * buffer and does no SGP4. Until then (worker load, or a catalog the sample
+   * does not cover) it still propagates on the main thread.
    * Budget: the full dense set completes one pass every ~DENSE_REFRESH_FRAMES
-   * frames (~5s at 60fps ≈ 1/5 of the core cadence), so per-frame cost stays
-   * ~35 propagations (~0.1 ms) even with 10K+ Starlink sats — spreading the
-   * work per frame avoids the once-per-second spike a tick-sized chunk
-   * (~2K props ≈ 4ms) would cause.
+   * frames (~5s at 60fps), so a 10K Starlink shell never uploads every point
+   * in one frame.
    */
 
   function _propagateDenseChunk() {
@@ -31,7 +33,12 @@ export function createCatalog({ state: layerState, services, parts, source }) {
       1,
       Math.ceil(layerState._denseIds.length / DENSE_REFRESH_FRAMES),
     );
-    const now = new Date();
+    const buffer = layerState._fleetBuffer;
+    const covered =
+      buffer && parts.rendering._fleetCoversDense
+        ? parts.rendering._fleetCoversDense()
+        : false;
+    const now = covered ? null : new Date();
     for (let i = 0; i < perFrame; i++) {
       if (layerState._denseCursor >= layerState._denseIds.length)
         layerState._denseCursor = 0;
@@ -40,6 +47,18 @@ export function createCatalog({ state: layerState, services, parts, source }) {
       const sat = layerState._catalog.get(noradId);
       const point = layerState._points.get(noradId);
       if (!sat || !point) continue;
+      if (covered) {
+        const index = sat.fleetIndex;
+        if (!Number.isInteger(index)) continue;
+        const base = index * PROPAGATION_STRIDE;
+        if (buffer[base + 3] !== 1) continue;
+        point.position = new Cesium.Cartesian3(
+          buffer[base],
+          buffer[base + 1],
+          buffer[base + 2],
+        );
+        continue;
+      }
       const pos = parts.orbits.propagatePosition(sat.satrec, now);
       if (pos) {
         point.position = Cesium.Cartesian3.fromDegrees(
@@ -120,6 +139,8 @@ export function createCatalog({ state: layerState, services, parts, source }) {
 
           layerState._catalog.set(noradId, {
             name: entry.name,
+            line1: entry.line1,
+            line2: entry.line2,
             satrec,
             group: 'dense',
           });
@@ -162,6 +183,7 @@ export function createCatalog({ state: layerState, services, parts, source }) {
 
       layerState._count = layerState._points.size;
       layerState._catalogRevision++;
+      parts.rendering._syncFleetPropagation();
       layerState._denseStatus = 'ready';
       console.log(
         `[Data:Satellites] Dense catalog: +${added} ${DENSE_GROUP_PATH} (points only)`,
@@ -228,6 +250,7 @@ export function createCatalog({ state: layerState, services, parts, source }) {
     layerState._denseCursor = 0;
     layerState._count = layerState._points.size;
     layerState._catalogRevision++;
+    parts.rendering._syncFleetPropagation();
   }
   return {
     _abortActiveUpdates,
