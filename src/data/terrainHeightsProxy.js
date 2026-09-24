@@ -5,6 +5,15 @@
 /** Decimal precision used by the terrain client when serializing lon/lat. */
 export const TERRAIN_POINT_PRECISION = 5;
 
+/** In-memory point cap for the terrain-heights proxy. */
+export const TERRAIN_MEMORY_CACHE_MAX = 20_000;
+
+/** On-disk JSON ceiling. Flush evicts oldest points until the file fits. */
+export const TERRAIN_DISK_CACHE_MAX_BYTES = 8 * 1024 * 1024;
+
+/** Per-IP cap when GEV_RATELIMIT_TERRAIN_PER_MIN is unset. `0` disables. */
+export const TERRAIN_DEFAULT_RATE_PER_MIN = 120;
+
 /** Maximum time retries may add after the first upstream attempt settles. */
 export const TERRAIN_RETRY_BUDGET_MS = 10_000;
 
@@ -36,6 +45,7 @@ export function parseTerrainPoints(raw) {
     const lon = Number(parts[0]);
     const lat = Number(parts[1]);
     if (!Number.isFinite(lon) || !Number.isFinite(lat)) return null;
+    if (lat < -90 || lat > 90 || lon < -180 || lon > 180) return null;
     points.push([lon, lat]);
   }
   return points;
@@ -53,6 +63,76 @@ export function terrainPointKey([lon, lat]) {
 function canonicalTerrainPoint(point) {
   const key = terrainPointKey(point);
   return { key, point: key.split(',').map(Number) };
+}
+
+/**
+ * Insert or refresh a point and evict the least-recently-used keys past `max`.
+ * @param {Map<string, {at:number, result:object}>} cache
+ * @param {string} key
+ * @param {{at:number, result:object}} entry
+ * @param {number} [max]
+ */
+export function rememberTerrainPoint(
+  cache,
+  key,
+  entry,
+  max = TERRAIN_MEMORY_CACHE_MAX,
+) {
+  if (cache.has(key)) cache.delete(key);
+  cache.set(key, entry);
+  while (cache.size > max) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+}
+
+/**
+ * @param {Map<string, {at:number, result:object}>} cache
+ * @param {string} key
+ * @returns {{at:number, result:object}|null}
+ */
+export function touchTerrainPoint(cache, key) {
+  const entry = cache.get(key);
+  if (!entry) return null;
+  cache.delete(key);
+  cache.set(key, entry);
+  return entry;
+}
+
+/**
+ * Evict oldest points until both the entry cap and the serialized byte cap hold.
+ * @param {Map<string, {at:number, result:object}>} cache
+ * @param {number} [maxEntries]
+ * @param {number} [maxBytes]
+ * @returns {string} JSON document safe to write.
+ */
+export function boundTerrainCache(
+  cache,
+  maxEntries = TERRAIN_MEMORY_CACHE_MAX,
+  maxBytes = TERRAIN_DISK_CACHE_MAX_BYTES,
+) {
+  while (cache.size > maxEntries) {
+    const oldest = cache.keys().next().value;
+    if (oldest === undefined) break;
+    cache.delete(oldest);
+  }
+  const encode = () =>
+    JSON.stringify({ version: 2, points: Object.fromEntries(cache.entries()) });
+  let payload = encode();
+  while (
+    new TextEncoder().encode(payload).byteLength > maxBytes &&
+    cache.size > 0
+  ) {
+    const drop = Math.max(1, Math.ceil(cache.size / 8));
+    for (let i = 0; i < drop && cache.size > 0; i += 1) {
+      const oldest = cache.keys().next().value;
+      if (oldest === undefined) break;
+      cache.delete(oldest);
+    }
+    payload = encode();
+  }
+  return payload;
 }
 
 /** Only a real numeric ellipsoid height is cacheable/servable. */
@@ -186,6 +266,7 @@ export async function fetchTerrainChunkWithRetry(
  * @param {Map<string, {at:number, result:object}>} options.cache
  * @param {(points:Array<[number, number]>)=>Promise<Array<object>>} options.fetchMissing
  * @param {number} options.ttlMs
+ * @param {number} [options.maxEntries]
  * @param {()=>number} [options.now]
  */
 export async function resolveTerrainHeightRequest({
@@ -193,6 +274,7 @@ export async function resolveTerrainHeightRequest({
   cache,
   fetchMissing,
   ttlMs,
+  maxEntries = TERRAIN_MEMORY_CACHE_MAX,
   now = Date.now,
 }) {
   const requested = points.map(canonicalTerrainPoint);
@@ -204,7 +286,7 @@ export async function resolveTerrainHeightRequest({
   const requestStartedAt = now();
   const missing = [];
   for (const [key, point] of unique) {
-    const entry = cache.get(key);
+    const entry = touchTerrainPoint(cache, key);
     if (
       entry &&
       validTerrainResult(entry.result) &&
@@ -227,7 +309,12 @@ export async function resolveTerrainHeightRequest({
       for (let i = 0; i < missing.length; i += 1) {
         const result = fetched[i];
         if (validTerrainResult(result)) {
-          cache.set(missing[i].key, { at: fetchedAt, result });
+          rememberTerrainPoint(
+            cache,
+            missing[i].key,
+            { at: fetchedAt, result },
+            maxEntries,
+          );
           cacheChanged = true;
         } else if (absentTerrainDatum(result)) {
           // Upstream answered but had no height. Transient, so deliberately

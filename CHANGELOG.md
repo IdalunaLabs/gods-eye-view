@@ -1,5 +1,11 @@
 # Changelog
 
+- Validate `/api/terrain/heights` latitude and longitude, reject oversized
+  batches with 400, and cap the server memory cache (20,000-point LRU) and
+  the on-disk cache (8 MiB). Rate-limit the route at 120 requests/minute per
+  IP unless `GEV_RATELIMIT_TERRAIN_PER_MIN=0`. Cap the browser height cache at
+  10,000 LRU entries without changing its read API.
+
 - Validate `/api/adsbdb` callsign, ICAO hex, and registration before any cache
   use. Cap each in-memory store at 2048 LRU entries and the flushed disk cache
   at 1 MiB. Rate-limit the route at 60 requests/minute per IP unless

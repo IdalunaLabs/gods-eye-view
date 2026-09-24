@@ -15,6 +15,12 @@ import {
   ADSBDB_CACHE_MAX_ENTRIES,
   ADSBDB_DEFAULT_RATE_PER_MIN,
 } from '../server/providers/aircraft/enrichment.js';
+import {
+  TERRAIN_DEFAULT_RATE_PER_MIN,
+  TERRAIN_DISK_CACHE_MAX_BYTES,
+  TERRAIN_MEMORY_CACHE_MAX,
+  boundTerrainCache,
+} from './data/terrainHeightsProxy.js';
 
 const source = [
   'local.js',
@@ -75,6 +81,10 @@ function fixture(name, overrides = {}, preview = false) {
     ADSBDB_CACHE_MAX_BYTES,
     ADSBDB_CACHE_MAX_ENTRIES,
     ADSBDB_DEFAULT_RATE_PER_MIN,
+    TERRAIN_DEFAULT_RATE_PER_MIN,
+    TERRAIN_DISK_CACHE_MAX_BYTES,
+    TERRAIN_MEMORY_CACHE_MAX,
+    boundTerrainCache,
     LL2_CACHE_TTL_MS: 15 * 60_000,
     parseTerrainPoints: () => [[1, 2]],
     resolveTerrainHeightRequest: async () => {

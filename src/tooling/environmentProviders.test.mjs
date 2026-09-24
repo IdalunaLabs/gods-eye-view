@@ -100,7 +100,7 @@ test('terrain middleware chunks missing points and reconstructs repeated/reorder
   assert.equal((await request('/?points=invalid')).status, 400);
   assert.equal(
     (await request('/?points=' + Array(2001).fill('0,1').join(';'))).status,
-    500,
+    400,
   );
   // Rejected requests add no upstream calls: still the five from the first batch.
   assert.equal(calls, 5);
@@ -108,6 +108,7 @@ test('terrain middleware chunks missing points and reconstructs repeated/reorder
 
 test('terrain middleware migrates valid legacy disk points without fabricating omitted heights', async (t) => {
   isolate(t);
+  t.mock.method(fsp, 'stat', async () => ({ size: 64 }));
   t.mock.method(fsp, 'readFile', async () =>
     JSON.stringify({
       '1,2;3,4': { at: Date.now(), results: [{ ellipsoid: 77 }] },

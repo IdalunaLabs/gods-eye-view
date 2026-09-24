@@ -98,6 +98,11 @@ Context:
     cache use, keeps each store to 2048 LRU entries, caps the flushed disk
     file, and rate-limits at 60 requests/minute per IP unless
     `GEV_RATELIMIT_ADSBDB_PER_MIN=0`.
+  - `/api/terrain/heights` rejects out-of-range coordinates and oversized
+    batches with a sanitized 400, keeps a 20,000-point LRU, caps the on-disk
+    cache at 8 MiB, and rate-limits at 120 requests/minute per IP unless
+    `GEV_RATELIMIT_TERRAIN_PER_MIN=0`. The browser terrain-height cache is a
+    10,000-entry LRU.
 
 Validation target:
 - `vite.config.js`

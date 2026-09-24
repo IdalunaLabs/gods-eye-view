@@ -55,6 +55,7 @@
   "src/tooling/liveProviders.test.mjs",
   "src/data/adsbLolFallback.js",
   "src/data/adsbdbProxy.test.mjs",
+  "src/data/terrainHeightCache.test.mjs",
   "src/data/aisStreamAdapter.js",
   "src/data/aisWatchdog.js",
   "server/providers/common/geo.js",

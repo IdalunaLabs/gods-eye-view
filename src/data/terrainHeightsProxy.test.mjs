@@ -3,10 +3,14 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import {
+  boundTerrainCache,
   fetchTerrainChunkWithRetry,
+  parseTerrainPoints,
+  rememberTerrainPoint,
   resolveTerrainHeightRequest,
   terrainPointKey,
 } from './terrainHeightsProxy.js';
+import { terrainHeightsProxy } from '../../server/providers/terrain.js';
 
 function result(id, ellipsoid) {
   return { id, ellipsoid, elevation: ellipsoid - 10, geoid: 10 };
@@ -226,4 +230,84 @@ test('malformed height objects remain refresh failures, not absent readings', as
     assert.equal(response.absentPoints, 0);
     assert.equal(response.cacheChanged, false);
   }
+});
+
+test('terrain points reject non-finite and out-of-range coordinates', () => {
+  assert.equal(parseTerrainPoints('181,0'), null);
+  assert.equal(parseTerrainPoints('0,91'), null);
+  assert.equal(parseTerrainPoints('0,NaN'), null);
+  assert.equal(parseTerrainPoints('Infinity,0'), null);
+  assert.deepEqual(parseTerrainPoints('180,90;-180,-90'), [
+    [180, 90],
+    [-180, -90],
+  ]);
+});
+
+test('terrain memory cache evicts least-recently-used points and the disk payload stays byte-capped', () => {
+  const cache = new Map();
+  rememberTerrainPoint(cache, 'a', { at: 1, result: { ellipsoid: 1 } }, 2);
+  rememberTerrainPoint(cache, 'b', { at: 2, result: { ellipsoid: 2 } }, 2);
+  rememberTerrainPoint(cache, 'a', { at: 3, result: { ellipsoid: 1 } }, 2);
+  rememberTerrainPoint(cache, 'c', { at: 4, result: { ellipsoid: 3 } }, 2);
+  assert.deepEqual([...cache.keys()], ['a', 'c']);
+  const fat = new Map();
+  for (let i = 0; i < 30; i += 1) {
+    fat.set(`k${i}`, { at: i, result: { ellipsoid: i, note: 'x'.repeat(80) } });
+  }
+  const body = boundTerrainCache(fat, 30, 400);
+  assert.ok(new TextEncoder().encode(body).byteLength <= 400);
+  assert.ok(fat.size < 30);
+  assert.ok(fat.size > 0);
+});
+
+function mountTerrain(plugin) {
+  let handler;
+  plugin.configureServer({
+    middlewares: {
+      use(_route, callback) {
+        handler = callback;
+      },
+    },
+  });
+  return (url) =>
+    new Promise((resolve, reject) => {
+      const res = {
+        headersSent: false,
+        writeHead(status, headers) {
+          this.status = status;
+          this.headers = headers;
+          this.headersSent = true;
+        },
+        end(body) {
+          resolve({ status: this.status, body });
+        },
+      };
+      Promise.resolve(
+        handler(
+          { url, method: 'GET', socket: { remoteAddress: '203.0.113.20' } },
+          res,
+        ),
+      ).catch(reject);
+    });
+}
+
+test('terrain middleware rejects bad batches with 400 and rate-limits before upstream', async (t) => {
+  t.mock.method(globalThis, 'fetch', async () =>
+    Response.json({ results: [{ ellipsoid: 12 }] }),
+  );
+  const limited = mountTerrain(
+    terrainHeightsProxy({ resolvePerMin: () => '1' }),
+  );
+  const ok = await limited('/?points=1,2');
+  assert.equal(ok.status, 200);
+  const blocked = await limited('/?points=1,2');
+  assert.equal(blocked.status, 429);
+  assert.equal(JSON.parse(blocked.body).error, 'Rate limit exceeded');
+  const ranged = mountTerrain(
+    terrainHeightsProxy({ resolvePerMin: () => '0' }),
+  );
+  assert.equal((await ranged('/?points=0,91')).status, 400);
+  assert.equal((await ranged('/?points=181,0')).status, 400);
+  const many = Array.from({ length: 2001 }, () => '0,0').join(';');
+  assert.equal((await ranged(`/?points=${many}`)).status, 400);
 });

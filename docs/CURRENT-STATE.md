@@ -1,5 +1,11 @@
 # God's Eye View Current State
 
+`/api/terrain/heights` accepts only finite latitude `[-90, 90]` and longitude
+`[-180, 180]`, rejects batches over 2000 points with 400, and defaults to 120
+requests/minute per IP (`GEV_RATELIMIT_TERRAIN_PER_MIN=0` disables). The server
+cache is a 20,000-point LRU and flush keeps the disk file within 8 MiB. The
+browser height cache is a separate 10,000-entry LRU with the same read API.
+
 `/api/adsbdb` checks callsign (`[A-Z0-9]{1,8}`), ICAO hex (`[0-9a-f]{6}`), and
 registration (`[A-Z0-9-]{1,12}`) before lookup or cache write. Each store is a
 2048-entry LRU; flush evicts until `.gev-cache/adsbdb.json` is within 1 MiB.
