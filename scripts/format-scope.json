@@ -97,6 +97,7 @@
   "src/tooling/mediaProviders.test.mjs",
   "server/standalone/api-not-found.js",
   "src/tooling/previewServing.test.mjs",
+  "src/tooling/productionServer.test.mjs",
   "server/providers/common/request.js",
   "server/providers/common/source-root.js",
   "server/providers/local.js",
