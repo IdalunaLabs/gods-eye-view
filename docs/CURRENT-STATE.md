@@ -1,5 +1,14 @@
 # God's Eye View Current State
 
+Screen-space overlay labels are blitted from an LRU glyph cache instead of
+calling `fillText` for every label on every frame. The cache keys text, font,
+fill, stroke, letter spacing, alignment, baseline, and device pixel ratio
+(default 2,048 sprites and 64 MB). `getWorldOverlayDiagnostics()` reports
+`textDraws`, `spriteBlits`, and `spriteRasters`. Dev builds toggle it with
+`window.__gevWorldOverlay.setLabelSpritesEnabled`. Visual-preset changes and
+web-font loads drop the cache. Strings wider than 512 CSS pixels still draw
+directly. Detection brackets stay batched strokes.
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial

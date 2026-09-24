@@ -23,7 +23,11 @@ import {
   initWorldOverlay,
   setOverlayEntries,
 } from '../overlays/worldOverlay.js';
+import { setLabelSpritesEnabled } from '../overlays/labelSpriteCache.js';
 import { DETECTION_THEME_MAP } from '../overlays/worldOverlayTokens.js';
+
+// Callout traces in this file follow the direct fillText path.
+setLabelSpritesEnabled(false);
 import { composeLabel, resolveTier } from './detectionDraw.js';
 
 test('detection diagnostics count rendered fading rows instead of absent selected identities', () => {

@@ -718,6 +718,7 @@
   "src/data/transitPresetStyle.test.mjs",
   "src/data/transitIcons.test.mjs",
   "src/overlays/worldOverlayTokens.test.mjs",
+  "src/overlays/labelSpriteCache.test.mjs",
   "src/app/layers/transit.test.mjs",
   "src/layers/transit/qaMetrics.js",
   "src/layers/transit/qaMetrics.test.mjs",
