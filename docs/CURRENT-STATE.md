@@ -1,5 +1,11 @@
 # God's Eye View Current State
 
+`/api/adsbdb` checks callsign (`[A-Z0-9]{1,8}`), ICAO hex (`[0-9a-f]{6}`), and
+registration (`[A-Z0-9-]{1,12}`) before lookup or cache write. Each store is a
+2048-entry LRU; flush evicts until `.gev-cache/adsbdb.json` is within 1 MiB.
+The route defaults to 60 requests/minute per IP (`GEV_RATELIMIT_ADSBDB_PER_MIN=0`
+disables).
+
 `/api/gbfs` rate-limits each client IP (120/minute unless
 `GEV_RATELIMIT_GBFS_PER_MIN=0`) and stores successful station_information
 feeds in a 48-entry LRU. station_status stays uncached. Allowlisting, redirect

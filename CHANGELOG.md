@@ -1,5 +1,10 @@
 # Changelog
 
+- Validate `/api/adsbdb` callsign, ICAO hex, and registration before any cache
+  use. Cap each in-memory store at 2048 LRU entries and the flushed disk cache
+  at 1 MiB. Rate-limit the route at 60 requests/minute per IP unless
+  `GEV_RATELIMIT_ADSBDB_PER_MIN=0`.
+
 - Rate-limit `/api/gbfs` per IP (120/minute by default; `GEV_RATELIMIT_GBFS_PER_MIN=0`
   disables) and keep successful station_information feeds in a 48-entry LRU.
   Live station_status responses stay uncached.

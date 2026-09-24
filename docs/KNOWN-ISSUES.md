@@ -94,6 +94,10 @@ Context:
     station_information feeds in a 48-entry LRU and rate-limits `/api/gbfs`
     at 120 requests/minute per IP unless `GEV_RATELIMIT_GBFS_PER_MIN=0`.
     Live station_status responses are not cached.
+  - `/api/adsbdb` validates callsign, ICAO hex, and registration before
+    cache use, keeps each store to 2048 LRU entries, caps the flushed disk
+    file, and rate-limits at 60 requests/minute per IP unless
+    `GEV_RATELIMIT_ADSBDB_PER_MIN=0`.
 
 Validation target:
 - `vite.config.js`
