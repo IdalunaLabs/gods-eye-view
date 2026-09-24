@@ -846,6 +846,88 @@ export function createRendering({
     }
   }
 
+  function _historyReplayActive() {
+    const mode = services.history?.replay?.mode;
+    return mode === 'REPLAY_PAUSED' || mode === 'REPLAY_PLAYING';
+  }
+
+  function _applyHistoryReplayFrame() {
+    const history = services.history;
+    const timeMs = history?.replay?.timeMs;
+    if (timeMs == null || !flightState._billboardCollection) return;
+    const sample = history.query.sampleAt('flights', timeMs);
+    const gen = (flightState._replayStamp =
+      (flightState._replayStamp || 0) + 1);
+    for (const model of flightState._models.values()) {
+      if (model.show) model.show = false;
+    }
+    for (let i = 0; i < sample.count; i += 1) {
+      const id = sample.ids[i];
+      let bb = flightState._billboards.get(id);
+      if (!bb) {
+        const info = flightState.records.data.get(id);
+        const meta = history.store.metadata(id);
+        const klass = info?.klass || meta?.type;
+        bb = flightState._billboardCollection.add({
+          position: Cesium.Cartesian3.ZERO,
+          image: aircraftIcon(_iconKind(id, klass)),
+          width: 20,
+          height: 20,
+          scale: _fleetBillboardScale(id, klass),
+          rotation: 0,
+          alignedAxis: Cesium.Cartesian3.ZERO,
+          color: _fleetBillboardColor(id),
+          sizeInMeters: false,
+          scaleByDistance: _normalBillboardScaleByDistance(),
+          disableDepthTestDistance: _groundDepthDistance(),
+          id,
+          show: true,
+        });
+        flightState._billboards.set(id, bb);
+        if (!info) bb._gevReplayOnly = true;
+      }
+      bb._gevReplayStamp = gen;
+      const alt = Number.isFinite(sample.alt[i]) ? sample.alt[i] : 0;
+      Cesium.Cartesian3.fromDegrees(
+        sample.lon[i],
+        sample.lat[i],
+        alt,
+        Cesium.Ellipsoid.WGS84,
+        flightState._scratchFleetPos,
+      );
+      bb.position = flightState._scratchFleetPos;
+      bb.show = id !== flightState._trackedIcao;
+      const scene = flightState._viewer?.scene;
+      const heading = sample.heading[i];
+      if (scene && bb.show && Number.isFinite(heading)) {
+        const rot = screenProjectedRotation(
+          scene,
+          bb.position,
+          heading,
+          bb.rotation,
+        );
+        if (rot !== null && Math.abs(rot - bb.rotation) > 0.002) {
+          bb.rotation = rot;
+        }
+      }
+    }
+    for (const [, bb] of flightState._billboards) {
+      if (bb._gevReplayStamp !== gen) bb.show = false;
+    }
+  }
+
+  function _releaseReplayOnlyBillboards() {
+    const stale = [];
+    for (const [id, bb] of flightState._billboards) {
+      if (bb._gevReplayOnly && !flightState.records.data.has(id)) stale.push(id);
+    }
+    for (const id of stale) {
+      const bb = flightState._billboards.get(id);
+      flightState._billboardCollection.remove(bb);
+      flightState._billboards.delete(id);
+    }
+  }
+
   function _fleetTick() {
     if (
       !flightState._viewer ||
@@ -853,6 +935,15 @@ export function createRendering({
       !flightState._billboardCollection.show
     )
       return;
+    if (_historyReplayActive()) {
+      flightState._replayWasActive = true;
+      _applyHistoryReplayFrame();
+      return;
+    }
+    if (flightState._replayWasActive) {
+      flightState._replayWasActive = false;
+      _releaseReplayOnlyBillboards();
+    }
     const scene = flightState._viewer.scene;
     const camera = flightState._viewer.camera;
     const nowMs = focusNowMs(Date.now());

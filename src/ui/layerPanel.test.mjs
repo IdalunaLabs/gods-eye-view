@@ -89,3 +89,34 @@ test('partial feed controls distinguish incomplete records from stale data and o
   panel._syncToggleButton(button, layer);
   assert.equal(button.textContent, 'OFF');
 });
+
+test('replay replaces the live chip without changing a non-replay partial row', async () => {
+  const { LayerPanel, layerFeedState } = await import('./layerPanel.js');
+  const classes = new Map();
+  const button = {
+    classList: { toggle: (key, value) => classes.set(key, value) },
+    dataset: {},
+    setAttribute() {},
+  };
+  const layer = {
+    id: 'flights',
+    name: 'Flights',
+    source: 'OpenSky',
+    enabled: true,
+    stats: {
+      replay: true,
+      partial: true,
+      count: 4,
+      lastUpdate: Date.now(),
+    },
+  };
+  LayerPanel.prototype._syncToggleButton(button, layer);
+  assert.equal(button.textContent, 'REPLAY');
+  assert.equal(button.dataset.feedState, 'replay');
+  assert.equal(classes.get('feed-replay'), true);
+  assert.match(
+    LayerPanel.prototype._buildMetaText(layer),
+    /^REPLAY · OpenSky · historical positions$/,
+  );
+  assert.equal(layerFeedState({ partial: true, count: 2, lastUpdate: 1 }), 'partial');
+});

@@ -1,0 +1,15 @@
+<div id="time-travel-bar" class="time-travel-bar" role="group" aria-label="Time travel">
+  <button type="button" id="time-travel-live" class="time-travel-live active" aria-pressed="true">LIVE</button>
+  <button type="button" id="time-travel-play" class="time-travel-play" aria-label="Play replay" disabled>PLAY</button>
+  <label class="time-travel-speed-label">
+    <span>Speed</span>
+    <select id="time-travel-speed" aria-label="Replay speed">
+      <option value="1" selected>1×</option>
+      <option value="4">4×</option>
+      <option value="16">16×</option>
+    </select>
+  </label>
+  <input id="time-travel-scrubber" class="time-travel-scrubber" type="range" min="0" max="0" value="0" step="1000" aria-label="Replay time" disabled />
+  <span id="time-travel-offset" class="time-travel-offset">-00:00</span>
+</div>
+<div id="history-replay-badge" class="history-replay-badge" hidden>REPLAY -00:00</div>

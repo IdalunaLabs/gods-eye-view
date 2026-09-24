@@ -3,10 +3,11 @@ import { GUIDANCE_STATUSES } from '../loadingFeedback.js';
 /**
  * Normalize heterogeneous layer stats into one honest control-chip state.
  * @param {object|null} stats Layer getStats() result.
- * @returns {'nominal'|'loading'|'degraded'|'stale'|'partial'|'fallback'|'unavailable'} Feed state.
+ * @returns {'nominal'|'loading'|'degraded'|'stale'|'partial'|'fallback'|'unavailable'|'replay'} Feed state.
  */
 export function layerFeedState(stats = {}) {
   const state = stats || {};
+  if (state.replay === true) return 'replay';
   const status =
     typeof state.status === 'string' ? state.status.toLowerCase() : '';
   const source = `${state.source || ''} ${state.coverage || ''}`;

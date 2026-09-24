@@ -15,6 +15,7 @@ export function createIngestion({
   settleFirstConnect,
   now,
   setSourceLabel,
+  onReconciled,
 }) {
   async function loadLivePositions(viewer) {
     if (!viewer || feed.loading) return;
@@ -145,6 +146,7 @@ export function createIngestion({
     feed.lastUpdate = Object.hasOwn(payload, 'observedAtMs')
       ? payload.observedAtMs
       : now();
+    onReconciled?.(feed.lastUpdate ?? now());
     return { reconciled: true, ...snapshot };
   }
 

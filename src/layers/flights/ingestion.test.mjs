@@ -83,3 +83,34 @@ test('civil acquisition publishes source time and uses a replaced source on the 
   assert.deepEqual(probe.labels, ['First', 'Second']);
   assert.equal(probe.restores.length, 2);
 });
+
+test('an accepted flight snapshot reports the source time for history capture', async () => {
+  const feed = {
+    _source: {
+      async getSnapshot() {
+        return {
+          records: [],
+          source: 'Fixture',
+          observedAtMs: 4242,
+          freshness: 'fresh',
+        };
+      },
+    },
+    _activeUpdateControllers: new Set(),
+    _trackingRefreshEpoch: 0,
+    _lastSource: 'Fixture',
+    _lastCoverage: 'local',
+    _retryAt: 0,
+  };
+  const times = [];
+  const { methods } = createIngestion({
+    feed,
+    getQuery: () => ({}),
+    applySnapshot: () => ({ count: 1, ids: new Set(['abc']) }),
+    setSourceLabel: () => {},
+    applyPendingTrackingRestore: () => {},
+    onReconciled: (tMs) => times.push(tMs),
+  });
+  await methods.update(null);
+  assert.deepEqual(times, [4242]);
+});

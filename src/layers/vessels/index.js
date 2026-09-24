@@ -48,6 +48,30 @@ export function createVesselLayer({ source, services, options = {} } = {}) {
     setSourceLabel: (source) => {
       layer.source = source;
     },
+    onReconciled: (tMs) => {
+      const note = services.history?.noteRecords;
+      if (typeof note !== 'function') return;
+      const rows = [];
+      for (const record of vesselState.state.records.all) {
+        if (!record?.mmsi) continue;
+        if (!Number.isFinite(record.lat) || !Number.isFinite(record.lon)) continue;
+        const heading = Number.isFinite(record.heading)
+          ? record.heading
+          : record.course;
+        rows.push({
+          id: record.mmsi,
+          lat: record.lat,
+          lon: record.lon,
+          alt: 0,
+          heading,
+          speed: Number.isFinite(record.speed) ? record.speed * 0.514444 : 0,
+          name: record.name || '',
+          callsign: record.name || '',
+          type: record.type || '',
+        });
+      }
+      note('vessels', rows, tMs);
+    },
   });
   Object.assign(
     layer,

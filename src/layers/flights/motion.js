@@ -366,6 +366,72 @@ export function createMotion({
    * @returns {Cesium.Cartesian3|null}
    */
 
+  function _historyReplayActive() {
+    const mode = services.history?.replay?.mode;
+    return mode === 'REPLAY_PAUSED' || mode === 'REPLAY_PLAYING';
+  }
+
+  function _replayTrackedPosition(icao24) {
+    if (!_historyReplayActive()) return null;
+    const timeMs = services.history.replay.timeMs;
+    if (timeMs == null) return null;
+    const sample = services.history.query.sampleAt('flights', timeMs);
+    let index = -1;
+    for (let i = 0; i < sample.count; i += 1) {
+      if (sample.ids[i] === icao24) {
+        index = i;
+        break;
+      }
+    }
+    if (!flightState._replayHoldPos) {
+      flightState._replayHoldPos = new Cesium.Cartesian3();
+    }
+    if (index < 0) {
+      return flightState._replayHoldValid &&
+        flightState._replayHoldIcao === icao24
+        ? flightState._replayHoldPos
+        : null;
+    }
+    const alt = Number.isFinite(sample.alt[index]) ? sample.alt[index] : 0;
+    Cesium.Cartesian3.fromDegrees(
+      sample.lon[index],
+      sample.lat[index],
+      alt,
+      Cesium.Ellipsoid.WGS84,
+      flightState._trackedPosHolder,
+    );
+    Cesium.Cartesian3.clone(
+      flightState._trackedPosHolder,
+      flightState._replayHoldPos,
+    );
+    flightState._replayHoldIcao = icao24;
+    flightState._replayHoldValid = true;
+    const heading = sample.heading[index];
+    flightState._cachedDRCourse = Number.isFinite(heading) ? heading : 0;
+    flightState._cachedDRSpeedMps = Number.isFinite(sample.speed[index])
+      ? sample.speed[index]
+      : 0;
+    flightState._cachedDRHold = false;
+    const nowMs = Date.now();
+    Cesium.Cartesian3.clone(
+      flightState._trackedPosHolder,
+      flightState._drPrevRaw,
+    );
+    Cesium.Cartesian3.clone(
+      flightState._trackedPosHolder,
+      flightState._drPrevDisplay,
+    );
+    Cesium.Cartesian3.fromElements(0, 0, 0, flightState._drCorrection);
+    flightState._drCorrectionStartMs = nowMs - DR_CORRECTION_MS;
+    flightState._drPrevMs = nowMs;
+    flightState._drReconcileValid = true;
+    flightState._drReconcileIcao = icao24;
+    flightState._cachedDRPosition = flightState._trackedPosHolder;
+    flightState._cachedDRFrame =
+      flightState._viewer?.scene?.frameState?.frameNumber ?? -1;
+    return flightState._trackedPosHolder;
+  }
+
   function _trackedDisplayPosition(icao24) {
     const frame = flightState._viewer?.scene?.frameState?.frameNumber ?? -1;
     if (
@@ -373,6 +439,9 @@ export function createMotion({
       icao24 === flightState._drReconcileIcao
     )
       return flightState._cachedDRPosition;
+
+    const replayPos = _replayTrackedPosition(icao24);
+    if (replayPos || _historyReplayActive()) return replayPos;
 
     // Does the reconciliation state belong to THIS aircraft? (Capture before overwriting
     // _drReconcileIcao, so a track switch doesn't inherit the old plane's _drPrevRaw.)

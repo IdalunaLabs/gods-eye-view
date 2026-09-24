@@ -1,5 +1,11 @@
 # God's Eye View Current State
 
+Flights and vessels keep a browser-local history of accepted polls and can replay
+it from a scrubber. Replay is labelled REPLAY on the clock and on those layer
+chips until LIVE; other layers stay live. The buffer starts empty, defaults to
+the last 60 minutes, and is capped by memory, age, and snapshot count. See
+[time travel](TIME-TRAVEL.md).
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial

@@ -14,6 +14,10 @@ export class LayerPresentation {
     this.manager = manager;
     this._panel = null;
     this.pendingVisible = false;
+    this._onReplay = () => this.refresh();
+    if (typeof document !== 'undefined') {
+      document.addEventListener('gev:history-replay', this._onReplay);
+    }
     this._unsubscribe = manager.subscribeActivity((change) => {
       if (change.type === 'status') this.refresh();
       else if (change.type === 'destroy-all') this.destroy();
@@ -76,6 +80,10 @@ export class LayerPresentation {
     this.refresh();
   }
   destroy() {
+    if (typeof document !== 'undefined' && this._onReplay) {
+      document.removeEventListener('gev:history-replay', this._onReplay);
+    }
+    this._onReplay = null;
     this._panel?.destroy();
     this._panel = null;
     this.pendingVisible = false;

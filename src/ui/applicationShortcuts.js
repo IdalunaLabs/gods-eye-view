@@ -38,6 +38,13 @@ export function bindApplicationShortcuts({
     if (key === 'f') actions.toggleLayers();
     if (key === 'd') actions.cycleDetection();
     if (key === 'c') actions.toggleCctv();
+    if (!event.metaKey && !event.ctrlKey && !event.altKey) {
+      if (event.key === '[') actions.stepReplay?.(-10_000);
+      if (event.key === ']') actions.stepReplay?.(10_000);
+      if (event.shiftKey && (event.key === 'L' || event.key === 'l')) {
+        actions.goLive?.();
+      }
+    }
   };
   documentRef.addEventListener('keydown', onKeyDown);
   return {

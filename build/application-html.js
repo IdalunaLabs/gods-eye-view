@@ -4,6 +4,7 @@ export const APPLICATION_TEMPLATES = Object.freeze([
   'scene-chrome',
   'cockpit',
   'display-controls',
+  'time-controls',
   'command-dock',
   'layer-panels',
   'context',

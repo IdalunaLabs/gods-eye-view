@@ -10,6 +10,7 @@ const FEED_STATE_LABELS = Object.freeze({
   partial: 'PARTIAL',
   fallback: 'FALLBACK',
   unavailable: 'UNAVAILABLE',
+  replay: 'REPLAY',
 });
 
 // Presentation order is independent of catalog registration and startup order.
@@ -498,6 +499,9 @@ export class LayerPanel {
           ? stats.loadingLabel.trim()
           : 'loading...';
       return `${source} · ${loadingLabel}`;
+    }
+    if (feedState === 'replay') {
+      return `REPLAY · ${source} · historical positions`;
     }
     if (feedState === 'fallback') {
       const detail =

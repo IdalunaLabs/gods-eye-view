@@ -202,8 +202,132 @@ export function createRendering({
     );
   }
 
+  function _historyReplayActive() {
+    const mode = services.history?.replay?.mode;
+    return mode === 'REPLAY_PAUSED' || mode === 'REPLAY_PLAYING';
+  }
+
+  const replayEphemeral = new Map();
+
+  function writeReplayDegrees(visual, lon, lat) {
+    if (!visual.replayPosition) visual.replayPosition = new Cesium.Cartesian3();
+    if (!visual.replaySurface) visual.replaySurface = new Cesium.Cartesian3();
+    Cesium.Cartesian3.fromDegrees(
+      lon,
+      lat,
+      VESSEL_LIFT_M,
+      Cesium.Ellipsoid.WGS84,
+      visual.replayPosition,
+    );
+    Cesium.Cartesian3.fromDegrees(
+      lon,
+      lat,
+      0,
+      Cesium.Ellipsoid.WGS84,
+      visual.replaySurface,
+    );
+    if (visual.billboard) visual.billboard.position = visual.replayPosition;
+  }
+
+  function replayOccluder() {
+    const cameraPosition = state.viewer?.camera?.positionWC;
+    if (!cameraPosition) return null;
+    if (!state._replayOccluder) {
+      state._replayOccluder = new Cesium.EllipsoidalOccluder(
+        Cesium.Ellipsoid.WGS84,
+        cameraPosition,
+      );
+    } else {
+      state._replayOccluder.cameraPosition = cameraPosition;
+    }
+    return state._replayOccluder;
+  }
+
+  function syncReplayVessels() {
+    const history = services.history;
+    const timeMs = history?.replay?.timeMs;
+    if (timeMs == null || !state.billboardCollection) return;
+    const sample = history.query.sampleAt('vessels', timeMs);
+    const gen = (state._replayStamp = (state._replayStamp || 0) + 1);
+    const occluder = replayOccluder();
+    for (let i = 0; i < sample.count; i += 1) {
+      const id = sample.ids[i];
+      let record = state.records.byMmsi.get(id);
+      if (!record) {
+        record = replayEphemeral.get(id);
+        if (!record) {
+          const meta = history.store.metadata(id);
+          record = {
+            mmsi: id,
+            lat: sample.lat[i],
+            lon: sample.lon[i],
+            name: meta?.name || id,
+            type: meta?.type || '',
+            speed: Number.isFinite(sample.speed[i])
+              ? sample.speed[i] / 0.514444
+              : 0,
+            heading: sample.heading[i],
+            course: sample.heading[i],
+            _replayOnly: true,
+          };
+          replayEphemeral.set(id, record);
+          prepareRecordVisual(record);
+          addRecordPrimitives(record, null);
+        }
+      }
+      record._replayStamp = gen;
+      record._replayHeading = sample.heading[i];
+      const visual = getVisual(record);
+      writeReplayDegrees(visual, sample.lon[i], sample.lat[i]);
+      if (visual.billboard) {
+        visual.billboard.show = isVisible(
+          visual.replaySurface,
+          occluder,
+        );
+      }
+    }
+    for (const record of state.records.all) {
+      if (record._replayStamp === gen) continue;
+      const billboard = getVisual(record).billboard;
+      if (billboard) billboard.show = false;
+    }
+    let dropped = null;
+    for (const [id, record] of replayEphemeral) {
+      if (record._replayStamp === gen) continue;
+      if (!dropped) dropped = [];
+      dropped.push(id);
+    }
+    if (dropped) {
+      for (const id of dropped) {
+        removeRecordPrimitives(replayEphemeral.get(id));
+        replayEphemeral.delete(id);
+      }
+    }
+  }
+
+  function restoreLiveVessels() {
+    for (const record of state.records.all) {
+      const visual = prepareRecordVisual(record);
+      if (visual.billboard) {
+        visual.billboard.position = visual.position;
+        visual.billboard.show = state.feed.enabled;
+      }
+      record._replayHeading = undefined;
+    }
+    for (const record of replayEphemeral.values()) removeRecordPrimitives(record);
+    replayEphemeral.clear();
+  }
+
   function updateVisibility(force = false) {
     if (!state.feed.enabled) return;
+    const replaying = _historyReplayActive();
+    if (replaying) {
+      state._replayWasActive = true;
+      syncReplayVessels();
+    } else if (state._replayWasActive) {
+      state._replayWasActive = false;
+      restoreLiveVessels();
+    }
     const now = focusNowMs(performance.now());
     const focusTarget = getFocusTarget();
     const regularPass =
@@ -233,14 +357,28 @@ export function createRendering({
       const labelCandidates = [];
       for (const record of state.records.all) {
         const visual = getVisual(record);
-        const visible = isVisible(visual.surfacePosition, occluder);
+        if (replaying && record._replayStamp !== state._replayStamp) {
+          if (visual.billboard) visual.billboard.show = false;
+          continue;
+        }
+        const surface =
+          replaying && visual.replaySurface
+            ? visual.replaySurface
+            : visual.surfacePosition;
+        const visible = isVisible(surface, occluder);
         if (visual.billboard) {
           visual.billboard.show = visible;
           if (visible && doRotations && scene) {
+            const course =
+              replaying && Number.isFinite(record._replayHeading)
+                ? record._replayHeading
+                : vesselCourseDeg(record);
             const rot = screenProjectedRotation(
               scene,
-              visual.position,
-              vesselCourseDeg(record),
+              replaying && visual.replayPosition
+                ? visual.replayPosition
+                : visual.position,
+              course,
               visual.billboard.rotation,
             );
             if (

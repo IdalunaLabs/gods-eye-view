@@ -1,6 +1,7 @@
 import { createFrameRateMonitor } from './frameRateMonitor.js';
 import { bindApplicationShortcuts } from './visualInput.js';
 import { bindDisplayControls } from './displayControls.js';
+import { bindTimeControls } from './timeControls.js';
 import { canonicalizeDensity } from '../data/detectionPolicy.js';
 
 /** Own keyboard/display event subscriptions; settings remain with their state owners. */
@@ -54,6 +55,12 @@ export class DisplayBindings {
       isScopeMaskEnabled,
       setScopeMaskFeather,
     } = this.services;
+    this._timeControls?.destroy();
+    this._timeControls = bindTimeControls({
+      viewer: this.viewer,
+      documentRef: document,
+      readHud: () => this.hud,
+    });
     this._applicationShortcuts?.destroy();
     this._frameRateMonitor?.destroy();
     this._frameRateMonitor = createFrameRateMonitor({
@@ -88,6 +95,8 @@ export class DisplayBindings {
           cycleDetectionMode();
           this._syncShareState();
         },
+        stepReplay: (deltaMs) => this._timeControls?.step(deltaMs),
+        goLive: () => this._timeControls?.goLive(),
         toggleCctv: () => this._toggleCctvEnabled(),
       },
     });
@@ -206,6 +215,8 @@ export class DisplayBindings {
     });
   }
   destroy() {
+    this._timeControls?.destroy();
+    this._timeControls = null;
     this._applicationShortcuts?.destroy();
     this._applicationShortcuts = null;
     this._frameRateMonitor?.destroy();

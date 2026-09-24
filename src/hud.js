@@ -190,6 +190,7 @@ export class IntelHUD {
           <div class="hud-classification">TOP SECRET // SI-TK // NOFORN</div>
           <div class="hud-system">${this._missionId}  ${this._sensorId}</div>
           <div class="hud-mode" id="hud-mode">NORMAL</div>
+          <div id="hud-replay-badge" class="hud-replay-badge" hidden>REPLAY</div>
           <div class="hud-summary-wrap">
             <div class="hud-summary-label">SUMMARY</div>
             <div class="hud-summary" id="hud-summary">Awaiting telemetry...</div>
@@ -832,6 +833,20 @@ export class IntelHUD {
   hide() {
     this._visible = false;
     if (this._el) this._el.classList.remove('active');
+  }
+
+  /**
+   * Show or clear the historical-replay label inside the HUD.
+   * An empty label hides it. Live contacts are never described as replay.
+   * @param {string} [label]
+   * @returns {void}
+   */
+  setReplayBadge(label) {
+    const badge = this._el?.querySelector('#hud-replay-badge');
+    if (!badge) return;
+    const text = String(label || '');
+    badge.hidden = text.length === 0;
+    if (text) badge.textContent = text;
   }
 
   /** Toggle HUD visibility and disable auto-mode (user override). */

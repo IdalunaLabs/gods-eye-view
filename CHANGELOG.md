@@ -1,5 +1,8 @@
 # Changelog
 
+- Add browser-local time travel for flights and vessels: a capped poll history,
+  playback at 1×/4×/16×, and a REPLAY label that stays up until LIVE.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 

@@ -104,3 +104,70 @@ test('vessel ingestion converts source units once and retains warm records on a 
   assert.equal(probe.feed.loading, false);
   assert.equal(probe.feed.abort, null);
 });
+
+test('a reconciled vessel snapshot reports its time for history capture', async () => {
+  const times = [];
+  const probe = setup({
+    async getSnapshot() {
+      return {
+        records: [
+          {
+            id: '222',
+            latitude: 1,
+            longitude: 2,
+            speedMps: 0,
+            observedAtMs: 50,
+          },
+        ],
+        source: 'Fixture',
+        observedAtMs: 8800,
+        freshness: 'fresh',
+        complete: true,
+      };
+    },
+  });
+  probe.feed.firstConnectPhase = 'ready';
+  const ingestion = createIngestion({
+    feed: probe.feed,
+    readSource: () => ({
+      async getSnapshot() {
+        return {
+          records: [
+            {
+              id: '222',
+              latitude: 1,
+              longitude: 2,
+              speedMps: 0,
+              observedAtMs: 50,
+            },
+          ],
+          source: 'Fixture',
+          observedAtMs: 8800,
+          freshness: 'fresh',
+          complete: true,
+        };
+      },
+    }),
+    readViewer: () => ({}),
+    getRowLimit: () => 500,
+    readCount: () => 1,
+    now: () => 9999,
+    setSourceLabel: () => {},
+    applyRows: () => {},
+    classifySnapshot: (payload) => ({
+      acceptedRows: payload.rows,
+      acceptedRowCount: payload.rows.length,
+      rawRowCount: payload.rows.length,
+      transportStatus: 'live',
+      lastMessageAt: null,
+      error: null,
+    }),
+    isDefinitiveTransportFailure: () => false,
+    isGraceEligibleTransport: () => false,
+    markUnavailable: () => {},
+    settleFirstConnect: () => {},
+    onReconciled: (tMs) => times.push(tMs),
+  });
+  await ingestion.methods.update();
+  assert.deepEqual(times, [8800]);
+});

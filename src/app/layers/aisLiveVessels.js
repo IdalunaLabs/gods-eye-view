@@ -9,9 +9,12 @@ import * as sprites from '../../data/spriteOrder.js';
 import * as focus from '../../data/focusDeemphasis.js';
 import * as worldFocus from '../../worldFocus.js';
 import * as render from '../../renderGovernor.js';
+import { attachSharedHistoryPersistence } from '../../history/historyPersistence.js';
+import { sharedHistorySession } from '../../history/session.js';
 
 /** Construct one layer using the application scene owners and a supplied source. */
 export function createApplicationVessels({ source, options = {} }) {
+  attachSharedHistoryPersistence();
   return createVesselLayer({
     source,
     options,
@@ -26,6 +29,7 @@ export function createApplicationVessels({ source, options = {} }) {
       focus,
       worldFocus,
       render,
+      history: sharedHistorySession(),
     },
   });
 }

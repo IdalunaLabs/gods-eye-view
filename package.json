@@ -192,6 +192,7 @@
     "./voice/actions": "./src/voice/gevActions.js",
     "./annotations": "./src/annotations/index.js",
     "./context": "./src/data/contextStore.js",
+    "./history": "./src/history/index.js",
     "./build/html": {
       "node": "./build/application-html.js"
     },

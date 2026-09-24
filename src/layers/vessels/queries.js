@@ -521,6 +521,9 @@ export function createQueries({
         // backing off, say how long until the next attempt instead of leaving
         // the user to guess whether anything is still happening.
         retryInSec: aisRetryInSec(),
+        replay:
+          services.history?.replay?.mode === 'REPLAY_PAUSED' ||
+          services.history?.replay?.mode === 'REPLAY_PLAYING',
       };
     },
   };

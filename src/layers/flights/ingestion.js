@@ -7,6 +7,7 @@ export function createIngestion({
   applySnapshot,
   setSourceLabel,
   applyPendingTrackingRestore,
+  onReconciled,
 }) {
   const methods = {
     async update(viewer, { signal = null } = {}) {
@@ -51,6 +52,7 @@ export function createIngestion({
         setSourceLabel(feed._lastSource);
         const accepted = applySnapshot(snapshot, viewer);
         feed._count = accepted.count;
+        onReconciled?.(sourceEpochMs ?? Date.now());
         // Freshness belongs to the source snapshot, not the moment this browser
         // received a cached 200 response.
         feed._lastUpdate = sourceEpochMs;

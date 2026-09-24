@@ -51,6 +51,28 @@ export function createCivilFlightLayer({
     },
     applyPendingTrackingRestore: () =>
       parts.tracking._applyPendingTrackingRestore(),
+    onReconciled: (tMs) => {
+      const note = services.history?.noteRecords;
+      if (typeof note !== 'function') return;
+      const rows = [];
+      for (const [id, meta] of flightState.records.data) {
+        if (!Number.isFinite(meta?.rawLat) || !Number.isFinite(meta?.rawLon)) {
+          continue;
+        }
+        rows.push({
+          id,
+          lat: meta.rawLat,
+          lon: meta.rawLon,
+          alt: meta.renderAltitudeM,
+          heading: meta.true_track,
+          speed: meta.velocity,
+          callsign: meta.callsign || '',
+          name: meta.callsign || '',
+          type: meta.klass || '',
+        });
+      }
+      note('flights', rows, tMs);
+    },
   });
 
   Object.assign(
