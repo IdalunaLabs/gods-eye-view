@@ -70,7 +70,7 @@ The data proxies under `server/providers/` are written so the browser cannot tur
 - **Transit fetches registered feeds only.** `/api/transit/vehicles/<id>` resolves the id against `src/data/transitFeeds.js`; the browser never supplies a URL, and a feed that is registered but disabled does not resolve at all. Redirects are followed manually and each hop is validated against the feed's own https origin before it is requested, so an off-origin or downgraded hop is refused rather than contacted. Bodies are capped at 8 MB, the protobuf is decoded server-side under entity-count and string-length ceilings, a differential feed is refused, and snapshots live 15 s in memory with no disk cache. A per-feed admission limiter and a failure cooldown ladder bound what this process can ask of any operator.
 - **Response-size caps and timeouts** on proxied responses.
 - **Sanitized errors** — internal error details are not echoed back to clients.
-- **Coalesced OAuth refresh** and cached successful responses only (OpenSky).
+- **Coalesced OAuth refresh** and cached successful responses only (OpenSky). `/api/opensky-track` uses that same credit governor: it will not call OpenSky during a cooldown, and a 429 or success from the track endpoint updates the shared cooldown and remaining-credit TTL. Oversized track bodies are a sanitized 502 and are not cached. `/api/adsblol/trace` is separately limited per IP (60/min unless `GEV_RATELIMIT_ADSBLOL_TRACE_PER_MIN=0`). `/api/opensky-track` is also limited per IP (30/min unless `GEV_RATELIMIT_OPENSKY_TRACK_PER_MIN=0`).
 - **Redacted debug logging.** The voice debug log (`.gev-logs/`, gitignored) strips API keys, bearer tokens, client secrets, and image data URLs before writing.
 
 ## Network exposure — the operator threat model

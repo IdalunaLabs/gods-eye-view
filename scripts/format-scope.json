@@ -56,6 +56,7 @@
   "src/data/adsbLolFallback.js",
   "src/data/adsbdbProxy.test.mjs",
   "src/data/terrainHeightCache.test.mjs",
+  "src/data/trackBackfillProxy.test.mjs",
   "src/data/aisStreamAdapter.js",
   "src/data/aisWatchdog.js",
   "server/providers/common/geo.js",

@@ -103,6 +103,10 @@ Context:
     cache at 8 MiB, and rate-limits at 120 requests/minute per IP unless
     `GEV_RATELIMIT_TERRAIN_PER_MIN=0`. The browser terrain-height cache is a
     10,000-entry LRU.
+  - `/api/opensky-track` shares the OpenSky credit governor and caches only
+    successful bodies. An oversized track response is HTTP 502 and is not
+    cached. `/api/adsblol/trace` is rate-limited per IP (60/min unless
+    `GEV_RATELIMIT_ADSBLOL_TRACE_PER_MIN=0`).
 
 Validation target:
 - `vite.config.js`

@@ -1,5 +1,13 @@
 # God's Eye View Current State
 
+`/api/opensky-track` spends the same OpenSky credit governor as `/api/opensky`
+(cooldown and remaining-credit TTL) and keeps using the coalesced token
+refresh. Successful track bodies are cached; failures and oversized payloads
+are not. An oversized body is a sanitized 502. `/api/opensky-track` defaults
+to 30 requests/minute per IP and `/api/adsblol/trace` to 60
+(`GEV_RATELIMIT_OPENSKY_TRACK_PER_MIN` / `GEV_RATELIMIT_ADSBLOL_TRACE_PER_MIN`,
+`0` disables that guard).
+
 `/api/terrain/heights` accepts only finite latitude `[-90, 90]` and longitude
 `[-180, 180]`, rejects batches over 2000 points with 400, and defaults to 120
 requests/minute per IP (`GEV_RATELIMIT_TERRAIN_PER_MIN=0` disables). The server

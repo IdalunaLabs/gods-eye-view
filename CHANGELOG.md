@@ -1,5 +1,11 @@
 # Changelog
 
+- Route `/api/opensky-track` through the shared OpenSky credit governor and
+  return 502 for oversized track bodies without caching them. Cache only
+  successful track responses. Rate-limit OpenSky track backfill (30/min) and
+  `/api/adsblol/trace` (60/min) per IP unless the matching
+  `GEV_RATELIMIT_*_PER_MIN` value is `0`.
+
 - Validate `/api/terrain/heights` latitude and longitude, reject oversized
   batches with 400, and cap the server memory cache (20,000-point LRU) and
   the on-disk cache (8 MiB). Rate-limit the route at 120 requests/minute per
