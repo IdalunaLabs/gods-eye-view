@@ -62,12 +62,21 @@ const HANDLERS = [
   nextIssPass,
 ];
 
-/** @type {Map<string, { name: string, execute: Function }>} */
-export const actionHandlers = new Map();
-
-for (const handler of HANDLERS) {
-  if (actionHandlers.has(handler.name)) {
-    throw new Error(`Duplicate voice action handler: ${handler.name}`);
+/**
+ * Index voice-tool handlers by name.
+ * @param {Array<{ name: string, execute: Function }>} handlers
+ * @returns {Map<string, { name: string, execute: Function }>}
+ */
+export function buildActionHandlers(handlers) {
+  const map = new Map();
+  for (const handler of handlers) {
+    if (map.has(handler.name)) {
+      throw new Error(`Duplicate voice action handler: ${handler.name}`);
+    }
+    map.set(handler.name, handler);
   }
-  actionHandlers.set(handler.name, handler);
+  return map;
 }
+
+/** @type {Map<string, { name: string, execute: Function }>} */
+export const actionHandlers = buildActionHandlers(HANDLERS);

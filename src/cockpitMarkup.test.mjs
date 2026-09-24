@@ -34,7 +34,10 @@ const css = readStylesheet(path.join(ROOT, 'style.css'));
 const sceneDirector = fs.readFileSync(path.join(ROOT, 'src', 'scenes', 'director.js'), 'utf8');
 const manager = fs.readFileSync(path.join(ROOT, 'src', 'data', 'lifecycle.js'), 'utf8');
 const contextLayer = readLayerSource(path.join(ROOT, 'src', 'data', 'militaryAwareness.js'), 'utf8');
-const voiceActions = fs.readFileSync(path.join(ROOT, 'src', 'voice', 'gevActions.js'), 'utf8');
+const voiceActions = fs.readFileSync(
+  path.join(ROOT, 'src', 'voice', 'actions', 'flyToLocation.js'),
+  'utf8',
+);
 
 test('Cockpit has one reset action beside its bottom exit path', () => {
   assert.doesNotMatch(html, /id="cockpit-quick-entry"/);
