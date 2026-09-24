@@ -44,8 +44,9 @@ See [application construction](APPLICATION.md) and the
 
 1. `scripts/check-import-directions.mjs` parses every runtime JS/MJS/CJS file in
    `src/` and `server/`, including files unused by the current bundle. Static,
-   literal dynamic and re-export edges are checked; computed module imports and
-   CommonJS `require` are rejected. Browser graphs cannot reach Node, server or
+   literal dynamic, re-export, and literal
+   `new Worker(new URL(..., import.meta.url))` edges are checked; computed
+   module imports and CommonJS `require` are rejected. Browser graphs cannot reach Node, server or
    test modules through helpers. Reusable modules cannot select standalone setup,
    and provider modules cannot import application/rendering modules.
 2. `scripts/check-package-boundaries.mjs` builds every declared export without

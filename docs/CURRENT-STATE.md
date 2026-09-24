@@ -1,5 +1,13 @@
 # God's Eye View Current State
 
+Satellite fleet SGP4 runs in a module Web Worker. Each tick transfers one
+preallocated ECEF buffer for the loaded catalog, including the Starlink shell in
+dense mode, and the globe draws the latest completed sample. A late worker keeps
+the previous sample instead of blocking the frame. Untracked orbit rings realign
+to that sample's GMST. The tracked satellite and ISS pass prediction stay on the
+main thread. If the worker fails or a response is lost, the same propagation
+math runs synchronously.
+
 Vessel snapshot completeness is separate from freshness. A current snapshot with
 rejected or duplicate records shows PARTIAL with accepted/received counts; stale
 or unknown freshness and transport failures retain their warnings. Partial

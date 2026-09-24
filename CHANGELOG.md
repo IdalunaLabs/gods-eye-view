@@ -1,5 +1,10 @@
 # Changelog
 
+- Move satellite fleet SGP4 off the main thread into a module worker. One
+  preallocated ECEF buffer covers the catalog, including dense mode, and a lost
+  worker response falls back to the same synchronous math. Orbit rings stay
+  locked to the sample they were drawn with.
+
 - Distinguish PARTIAL vessel snapshots from STALE data in the layer panel, with
   accepted-record counts and unchanged retention, freshness and outage safeguards.
 
