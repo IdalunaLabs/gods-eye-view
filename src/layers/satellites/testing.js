@@ -9,6 +9,8 @@ export function createTesting({ state: layerState, services, parts, source }) {
    * @param {number} state.noradId
    * @param {string} state.name
    * @param {object} state.satrec
+   * @param {string} [state.line1]
+   * @param {string} [state.line2]
    * @param {object} state.entity
    * @param {object} state.point
    * @param {object} state.viewer
@@ -19,6 +21,8 @@ export function createTesting({ state: layerState, services, parts, source }) {
     noradId,
     name,
     satrec,
+    line1,
+    line2,
     entity,
     point,
     viewer,
@@ -29,13 +33,15 @@ export function createTesting({ state: layerState, services, parts, source }) {
   }) {
     layerState._viewer = viewer;
     layerState._catalog = new Map([
-      [noradId, { name, satrec, group: 'stations' }],
+      [noradId, { name, satrec, line1, line2, group: 'stations' }],
     ]);
     layerState._points = new Map([[noradId, point]]);
     for (const neighbour of neighbours) {
       layerState._catalog.set(neighbour.noradId, {
         name: neighbour.name,
         satrec: neighbour.satrec || satrec,
+        line1: neighbour.line1,
+        line2: neighbour.line2,
         group: neighbour.group || 'stations',
       });
       layerState._points.set(neighbour.noradId, neighbour.point);

@@ -9,6 +9,7 @@ import {
 } from 'satellite.js';
 import { findNextIssPass } from '../../data/issPass.js';
 import { ORBIT_PATH_STEPS, ISS_NORAD } from './policy.js';
+import { propagateGeodetic } from './propagation.js';
 
 export function createOrbits({ state: layerState, services, parts, source }) {
   /**
@@ -17,6 +18,7 @@ export function createOrbits({ state: layerState, services, parts, source }) {
    * @param {number} gmstAtBake GMST used when the path positions were baked.
    * @param {Date} nowDate Epoch whose rotating-Earth frame should be displayed.
    * @param {Cesium.Matrix4} [result] Optional matrix to update in place.
+   * @param {number} [currentGmst] GMST to align to. Defaults to `gstime(nowDate)`.
    * @returns {Cesium.Matrix4} Z-rotation from bake-time ECEF to current ECEF.
    */
 
@@ -24,8 +26,10 @@ export function createOrbits({ state: layerState, services, parts, source }) {
     gmstAtBake,
     nowDate,
     result = new Cesium.Matrix4(),
+    currentGmst,
   ) {
-    const deltaGmst = gstime(nowDate) - gmstAtBake;
+    const gmst = Number.isFinite(currentGmst) ? currentGmst : gstime(nowDate);
+    const deltaGmst = gmst - gmstAtBake;
     const rotation = Cesium.Matrix3.fromRotationZ(
       -deltaGmst,
       layerState._scratchRingRotation,
@@ -66,29 +70,7 @@ export function createOrbits({ state: layerState, services, parts, source }) {
    */
 
   function propagatePosition(satrec, date) {
-    try {
-      const posVel = propagate(satrec, date);
-      if (!posVel.position || typeof posVel.position === 'boolean') return null;
-
-      const gmst = gstime(date);
-      const geo = eciToGeodetic(posVel.position, gmst);
-      const velocity =
-        posVel.velocity && typeof posVel.velocity !== 'boolean'
-          ? posVel.velocity
-          : null;
-      const speedMps = velocity
-        ? Math.hypot(velocity.x, velocity.y, velocity.z) * 1000
-        : null;
-
-      return {
-        longitude: degreesLong(geo.longitude),
-        latitude: degreesLat(geo.latitude),
-        altitude: geo.height * 1000, // km → meters
-        speedMps: Number.isFinite(speedMps) ? speedMps : null,
-      };
-    } catch {
-      return null;
-    }
+    return propagateGeodetic(satrec, date);
   }
 
   function orbitalPeriodSeconds(satrec) {

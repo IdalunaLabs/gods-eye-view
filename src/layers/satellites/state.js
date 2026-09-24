@@ -120,6 +120,16 @@ export function createState({ services }) {
 
   state._catalogRevision = 0;
 
+  /** GMST of the fleet sample currently on screen, when one has been applied. */
+  state._fleetGmst = null;
+
+  /** Float64 ECEF sample the dense slice copies from. Null until a sample is applied. */
+  state._fleetBuffer = null;
+
+  state._appliedFleetGeneration = 0;
+
+  state._appliedFleetSequence = 0;
+
   state._classTallyCache = { revision: -1, counts: null };
 
   /** @type {(() => void)|null} Manager callback: "this layer's row controls changed". */
