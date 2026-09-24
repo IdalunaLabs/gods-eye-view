@@ -1,0 +1,45 @@
+# Render Blueprint. Set the public browser keys before the first Docker build
+# so they are baked into the client. Private provider keys are runtime only.
+# A persistent disk requires a paid instance and a single web service replica.
+
+services:
+  - type: web
+    name: gods-eye-view
+    runtime: docker
+    dockerfilePath: ./Dockerfile
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: GEV_IN_CONTAINER
+        value: "1"
+      - key: GEV_CACHE_DIR
+        value: /var/cache/gev
+      - key: GEV_RATELIMIT_OPENAI_PER_MIN
+        value: "30"
+      - key: GEV_RATELIMIT_GOOGLE_PER_MIN
+        value: "60"
+      - key: GOOGLE_MAPS_API_KEY
+        sync: false
+      - key: CESIUM_ION_TOKEN
+        sync: false
+      - key: GOOGLE_MAPS_SERVER_API_KEY
+        sync: false
+      - key: OPENAI_API_KEY
+        sync: false
+      - key: AISSTREAM_API_KEY
+        sync: false
+      - key: OPENSKY_CLIENT_ID
+        sync: false
+      - key: OPENSKY_CLIENT_SECRET
+        sync: false
+      - key: FIRMS_MAP_KEY
+        sync: false
+      - key: TOMTOM_API_KEY
+        sync: false
+      - key: LL2_API_TOKEN
+        sync: false
+    disk:
+      name: gev-cache
+      mountPath: /var/cache/gev
+      sizeGB: 1
