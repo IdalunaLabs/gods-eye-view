@@ -30,7 +30,9 @@ function mediaUrlFor(camera) {
   return `${MEDIA_ENDPOINT}/${encodeURIComponent(camera.id)}?ts=${Math.floor(Date.now() / 15000)}`;
 }
 /** Supply catalog/health records and the existing registered camera URL families. */
-export function createCctvSource({ fetchImpl = globalThis.fetch } = {}) {
+export function createCctvSource({
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
+} = {}) {
   async function read(
     path,
     key,

@@ -2,7 +2,9 @@
 import { DIRECTORY_ENDPOINT, RADIO_UUID_RE } from './policy.js';
 
 /** Supply directory metadata and click reporting; audio stays with the broadcaster. */
-export function createRadioSource({ fetchImpl = globalThis.fetch } = {}) {
+export function createRadioSource({
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
+} = {}) {
   return {
     async getDirectory(
       { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),

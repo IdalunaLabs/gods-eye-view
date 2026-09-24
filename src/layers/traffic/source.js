@@ -17,7 +17,9 @@ function buildOverpassQuery(
 }
 
 /** Supply road responses, flow availability and one decoded flow cache. */
-export function createTrafficSource({ fetchImpl = globalThis.fetch } = {}) {
+export function createTrafficSource({
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
+} = {}) {
   const flow = createFlowTileSource({ fetchImpl });
   return {
     ...flow,

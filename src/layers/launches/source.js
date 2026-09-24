@@ -1,6 +1,8 @@
 // @ts-check
 /** Read launch records and their optional active-orbit catalog with explicit cancellation. */
-export function createLaunchSource({ fetchImpl = globalThis.fetch } = {}) {
+export function createLaunchSource({
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
+} = {}) {
   return {
     async getLaunches(
       { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),

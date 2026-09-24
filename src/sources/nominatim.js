@@ -45,7 +45,7 @@ export function createNominatimClient(
   {
     searchEndpoint,
     reverseEndpoint,
-    fetchImpl = globalThis.fetch,
+    fetchImpl = (input, init) => globalThis.fetch(input, init),
   } = /** @type {{ searchEndpoint?: string, reverseEndpoint?: string, fetchImpl?: typeof fetch }} */ ({}),
 ) {
   for (const endpoint of [searchEndpoint, reverseEndpoint]) {

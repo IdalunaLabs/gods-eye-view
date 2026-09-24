@@ -4,7 +4,7 @@ const API_URL =
   'https://earthquake.usgs.gov/earthquakes/feed/v1.0/summary/all_day.geojson';
 /** Request and validate a complete USGS snapshot before it can replace displayed events. */
 export function createUsgsEarthquakeSource({
-  fetchImpl = globalThis.fetch,
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
 } = {}) {
   return {
     async getSnapshot(

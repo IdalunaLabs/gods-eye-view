@@ -1,6 +1,8 @@
 // @ts-check
 /** Construct the existing live-fire endpoint without making a request. */
-export function createFirmsSource({ fetchImpl = globalThis.fetch } = {}) {
+export function createFirmsSource({
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
+} = {}) {
   return {
     async getSnapshot(
       { signal } = /** @type {{ signal?: AbortSignal }} */ ({}),

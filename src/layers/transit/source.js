@@ -2,7 +2,9 @@
 import { fetchTransitHistory } from '../../sources/transitHistory.js';
 
 /** Request transit snapshots through caller-owned transport. */
-export function createTransitSource({ fetchImpl = globalThis.fetch } = {}) {
+export function createTransitSource({
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
+} = {}) {
   return {
     getHistory(
       feedId,

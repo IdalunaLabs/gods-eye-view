@@ -11,7 +11,7 @@ export function installationResponseSaturated(payload) {
 
 /** Read mapped installations and explicit nearby-place searches through fixed endpoints. */
 export function createInstallationSource({
-  fetchImpl = globalThis.fetch,
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
 } = {}) {
   return {
     async getMappedSites(

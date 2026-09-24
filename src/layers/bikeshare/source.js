@@ -1,6 +1,8 @@
 // @ts-check
 /** Read a GBFS station document through the existing bounded server proxy. */
-export function createBikeshareSource({ fetchImpl = globalThis.fetch } = {}) {
+export function createBikeshareSource({
+  fetchImpl = (input, init) => globalThis.fetch(input, init),
+} = {}) {
   return {
     async getStations(
       upstreamUrl,
