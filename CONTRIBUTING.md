@@ -74,10 +74,13 @@ Keep mechanical formatting separate from behavioral edits. CI checks formatting,
 lint, portable-graph types, and package boundaries on Linux. The Windows
 onboarding job checks formatting and package boundaries.
 
-`npm run lint` is ESLint 9 (`eslint.config.js`): recommended rules plus
+`npm run lint` is ESLint 10 (`eslint.config.js`): recommended rules plus
 `no-unused-vars` (names starting with `_` are allowed), `no-undef`, `eqeqeq`
 (`== null` / `!= null` stays the nullish test), `no-var`, `prefer-const`, and
-`no-implicit-globals`. Browser sources use browser globals. Node programs,
+`no-implicit-globals`. ESLint 10's new recommended rules
+`no-useless-assignment` and `preserve-caught-error` stay off so the gate
+matches the previous conservative set; server still warns on the recommended
+set. Browser sources use browser globals. Node programs,
 including tests and QA scripts that name browser globals inside page
 callbacks, use Node and browser globals. `server/` is reported as warnings.
 Files owned by parallel workstreams are listed in `ignores` until they can be

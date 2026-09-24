@@ -1,6 +1,6 @@
 # God's Eye View Current State
 
-Adopted JavaScript is linted with ESLint 9 (`npm run lint`); server findings
+Adopted JavaScript is linted with ESLint 10 (`npm run lint`); server findings
 are warnings and do not fail the gate. Portable graphs marked `// @ts-check`
 are typechecked with `npm run typecheck`. Great-circle distance, bearing, and
 destination calculations live in `src/geo/greatCircle.js` (`gods-eye-view/geo`).

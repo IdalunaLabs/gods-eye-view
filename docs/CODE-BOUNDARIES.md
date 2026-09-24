@@ -7,7 +7,7 @@ combined scope on Linux and Windows. Prettier is pinned in the development
 dependencies; use the installed version so local and CI output agree. The shared
 configuration specifies two spaces, single quotes, semicolons and LF endings.
 
-`npm run lint` checks the same adopted JavaScript with ESLint 9. The flat
+`npm run lint` checks the same adopted JavaScript with ESLint 10. The flat
 config is `eslint.config.js`. Server modules are warnings. See
 [CONTRIBUTING.md](../CONTRIBUTING.md) for the rule set and the ignored
 parallel-work trees. `npm run typecheck` checks portable graphs that carry

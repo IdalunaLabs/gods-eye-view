@@ -2,7 +2,7 @@ import js from '@eslint/js';
 import globals from 'globals';
 
 /**
- * Conservative ESLint 9 flat config.
+ * Conservative ESLint 10 flat config.
  * Runtime browser modules use browser globals; Node entrypoints and tests use
  * Node globals. Off-limits trees owned by parallel work are ignored until they
  * can be lint-clean without colliding with those edits (see CONTRIBUTING.md).
@@ -23,6 +23,10 @@ const conservativeRules = {
   'no-var': 'error',
   'prefer-const': 'error',
   'no-implicit-globals': 'error',
+  // ESLint 10 added these to recommended. Keep the previous gate until they
+  // are adopted; server still reports the recommended set as warnings.
+  'no-useless-assignment': 'off',
+  'preserve-caught-error': 'off',
 };
 
 const recommendedWarn = Object.fromEntries(
